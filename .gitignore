@@ -10,3 +10,5 @@ bin/
 .settings/
 .mtj.tmp/
 
+/build/
+/dist/
