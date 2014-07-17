@@ -21,7 +21,7 @@ public interface GlobCost {
 	 * 	 true  = test
 	 * 	 false = normal operation of the application
 	 */
-	public static final boolean	TESTenv = false;
+	public static final boolean TESTenv = false;
 	public static final boolean movsens = false;
 	boolean debug = false;
 	boolean debugGSM = false;
@@ -29,7 +29,7 @@ public interface GlobCost {
 	boolean debug_main = false;
 	boolean debug_speed = false;
 	boolean usbDebug = false; 
-	boolean mqttParser = false; 
+	boolean mqttParser = true; 
 	//remember to modify empty string "defaultGPS" and "posusr" for tests
 	
 	public static final String	NMEA 	= "NMEA";

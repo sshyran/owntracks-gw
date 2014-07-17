@@ -40,7 +40,10 @@ public class MQTTHandler  implements MqttCallback{
 		}
 	}
 
-	public void publish(String topicName, int qos, byte[] payload)
+	public void publish(String topicName,
+                int qos,
+                boolean retained,
+                byte[] payload)
 			throws MqttException {
 
 		if (client == null) {
@@ -57,7 +60,9 @@ public class MQTTHandler  implements MqttCallback{
 		//System.out.println("Client: publish2");
 		message.setQos(qos);
 		//System.out.println("Client: publish3");
-		if (client.isConnected()) {
+                message.setRetained(retained);
+
+                if (client.isConnected()) {
 			//System.out.println("Client: publish4");
 			// Publish the message
 			MqttDeliveryToken token = topic.publish(message);

@@ -243,7 +243,8 @@ public class AppMain extends MIDlet implements GlobCost {
 	 * </ul>
 	 */
 	protected void startApp() throws MIDletStateChangeException {
-		
+		System.out.println("startApp gw");
+
 		try{
 		
 		/*
@@ -1559,6 +1560,8 @@ public class AppMain extends MIDlet implements GlobCost {
 		 * when is in PAUSE.
 		 */
 		protected void pauseApp() {
+                        System.out.println("pauseApp");
+
 			if(debug){
 				System.out.println("Application in pause...");
 			}
@@ -1576,6 +1579,7 @@ public class AppMain extends MIDlet implements GlobCost {
 		 * @throws	MIDletStateChangeException
 		 */
 		protected void destroyApp(boolean cond) throws MIDletStateChangeException {
+                    	System.out.println("destroyApp");
 			if(debug){
 				System.out.println("Close application in progress...");
 			}

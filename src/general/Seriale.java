@@ -215,6 +215,7 @@ public class Seriale extends ThreadCustom implements GlobCost {
 							if(debug){
 								System.out.println("OK");
 							}
+						    serialOut.write(("\r\n" + "gw App" + "\r\n").getBytes());
 						    serialOut.write(("\r\n" + "Greenwich rev. " + revNumber + ", " + dataRev + "\r\n").getBytes());
 						    serialOut.write((moduleCodeRev + infoS.getREV() + "\n\r").getBytes());
 						    serialOut.write(("IMEI: " + infoS.getIMEI() + "\r\n").getBytes());
