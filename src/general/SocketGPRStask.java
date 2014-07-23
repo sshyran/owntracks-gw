@@ -9,7 +9,6 @@ package general;
 
 import java.io.*;
 import javax.microedition.io.*;
-import java.util.*;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
@@ -50,6 +49,8 @@ public class SocketGPRStask extends ThreadCustom implements GlobCost {
 	int nackCount = 0;
 	int errorCount = 0;
 	int timer3 = 0;
+        
+        final private boolean mqttRaw = true;
 	
 	//private String clientId = "EGS5x-356612026709230";
 	private String clientId = "EGS5x-";
@@ -319,78 +320,29 @@ public class SocketGPRStask extends ThreadCustom implements GlobCost {
 							}
 							//System.out.println("TT*SocketGPRSTask: INVIO DATO:");
 							
-							if(mqttParser){
-								Posusr msg = new Posusr();
-								outTextMqtt = msg.set_posusr_mqtt(outText);
-                                                                System.out.println(outText);
-								//for(int ind = 0; ind < outTextMqtt.length; ind++)
-								//	System.out.println(outTextMqtt[ind]);
-								//		
-								// Send string through GPRS
-								// send only date,time,longitude,latitude
-								// 4 - date
-								// 5 - time
-								// 6 - lat
-								// 7 - N/S
-								// 8 - lon
-								// 9 - E/W
-								//for(int ind = 2; ind < outTextMqtt.length; ind++){
-								//for(int ind = 4; ind < 10; ind++){	// send only date,time,longitude,latitude
-								//	if(outTextMqtt[ind] == null)
-								//		outTextMqtt[ind] = "-";
-								//	try {
-								//		semAT.getCoin(5);
-								//			//mqttH.publish(publishTopic + "/CH1/" + (ind), qos,outTextMqtt[ind].getBytes());
-								//			//mqttH.publish(publishTopic + "/" + infoS.getInfoFileString(IDtraker)+ "/" + (ind), qos,outTextMqtt[ind].getBytes());
-								//			mqttH.publish(infoS.getInfoFileString(PublishTopic) + infoS.getInfoFileString(IDtraker)+ "/" +(ind), qos, retained, outTextMqtt[ind].getBytes());
-								//		semAT.putCoin();	
-								//	} catch (MqttException e) {
-								//		e.printStackTrace();
-								//	}
-								//}
-                                                                long day;
-                                                                day = Long.parseLong(outTextMqtt[4]);
-
-                                                                long time;
-                                                                time = Long.parseLong(outTextMqtt[5]);
-                                                                
-                                                                double lat;
-                                                                lat = Double.parseDouble(outTextMqtt[6]) / 100;
-                                                                if (outTextMqtt[7].equalsIgnoreCase("S")) {
-                                                                    lat *=-1;
-                                                                }
-
-                                                                double lon;
-                                                                lon = Double.parseDouble(outTextMqtt[8]) / 100;
-                                                                if (outTextMqtt[9].equalsIgnoreCase("W")) {
-                                                                    lon *=-1;
-                                                                }
-
-                                                                Calendar cal;
-                                                                cal = Calendar.getInstance();
-                                                                if (day == 0) {
-                                                                        cal.set(Calendar.YEAR, 1970);
-                                                                        cal.set(Calendar.MONTH, 1);
-                                                                        cal.set(Calendar.DAY_OF_MONTH , 1);
-                                                                } else {
-                                                                    cal.set(Calendar.YEAR, (int) (day / 10000 + 2000));
-                                                                    cal.set(Calendar.MONTH, (int) ((day / 100) % 100));
-                                                                    cal.set(Calendar.DAY_OF_MONTH , (int) (day % 100));
-                                                                }
-                                                                cal.set(Calendar.HOUR, (int) (time / 10000));
-                                                                cal.set(Calendar.MINUTE, (int) ((time / 100) % 100));
-                                                                cal.set(Calendar.SECOND, (int) (time % 100));
-
-                                                                String json;
-                                                                json = "{\"_type\":\"location\","
-                                                                     + "\"tst\":\"" + (cal.getTime().getTime() / 1000) + "\","
-                                                                     + "\"lon\":\"" + lon + "\","
-                                                                     + "\"lat\":\"" + lat + "\""
-                                                                     + "}";
-                                                                System.out.println(json);
+                                                        if (mqttRaw) {
 								try {
 									semAT.getCoin(5);
-										mqttH.publish(infoS.getInfoFileString(PublishTopic) + infoS.getInfoFileString(IDtraker),
+										mqttH.publish(infoS.getInfoFileString(PublishTopic)
+                                                                                        + infoS.getInfoFileString(IDtraker)
+                                                                                        + "/raw",
+                                                                                        qos,
+                                                                                        retained,
+                                                                                        outText.getBytes());
+									semAT.putCoin();	
+								} catch (MqttException e) {
+									e.printStackTrace();
+								}
+							}
+							
+                                                        LocationManager locationManager = LocationManager.getInstance();
+                                                        if (locationManager.handleNMEAString(outText)) {
+                                                            String json = locationManager.getJSONString();
+                                                            if (json != null) {
+								try {
+									semAT.getCoin(5);
+										mqttH.publish(infoS.getInfoFileString(PublishTopic)
+                                                                                        + infoS.getInfoFileString(IDtraker),
                                                                                         qos,
                                                                                         retained,
                                                                                         json.getBytes("UTF-8"));
@@ -398,19 +350,10 @@ public class SocketGPRStask extends ThreadCustom implements GlobCost {
 								} catch (MqttException e) {
 									e.printStackTrace();
 								}
-							}
-							else{
-								try {
-									semAT.getCoin(5);
-										mqttH.publish(infoS.getInfoFileString(PublishTopic) + infoS.getInfoFileString(IDtraker) + "/raw", qos, retained, outText.getBytes());
-										//mqttH.publish(infoS.getInfoFileString(PublishTopic) + infoS.getInfoFileString(IDtraker), qos,outText.getBytes());
-									semAT.putCoin();	
-								} catch (MqttException e) {
-									e.printStackTrace();
-								}
-							}
-							
-							if (infoS.getChiudiGPRS()==true){
+                                                            }
+                                                        }
+
+                                                        if (infoS.getChiudiGPRS()==true){
 								
 								infoS.setTRKstate(false);
 								//System.out.println("CLOSE GPRS");

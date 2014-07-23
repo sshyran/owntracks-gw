@@ -29,7 +29,6 @@ public interface GlobCost {
 	boolean debug_main = false;
 	boolean debug_speed = false;
 	boolean usbDebug = false; 
-	boolean mqttParser = true; 
 	//remember to modify empty string "defaultGPS" and "posusr" for tests
 	
 	public static final String	NMEA 	= "NMEA";
