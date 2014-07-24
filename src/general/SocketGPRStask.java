@@ -14,6 +14,8 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import com.cinterion.io.BearerControl;
 import com.m2mgo.util.GPRSConnectOptions;
+import java.util.Date;
+import java.util.Vector;
 
 /**
  * Task that tales care of sending strings through a GPRS connection using a
@@ -281,10 +283,26 @@ public class SocketGPRStask extends ThreadCustom implements GlobCost {
                                                                 semAT.getCoin(5);
                                                                 
                                                                 if (mqttH == null) {
-                                                                    mqttH = new MQTTHandler(settings.getSetting("clientID", infoS.getIMEI()),
-                                                                                infoS.getInfoFileString(DestHost) + ":" + infoS.getInfoFileString(DestPort),
-                                                                                settings.getSetting("user", null),
-                                                                                settings.getSetting("password", null));
+                                                                    Date date = new Date();
+                                                                    mqttH = new MQTTHandler(
+                                                                            settings.getSetting("clientID", infoS.getIMEI()),
+                                                                            infoS.getInfoFileString(DestHost) + ":" + infoS.getInfoFileString(DestPort),
+                                                                            settings.getSetting("user", null),
+                                                                            settings.getSetting("password", null),
+                                                                            settings.getSetting("willTopic",
+                                                                                    infoS.getInfoFileString(PublishTopic)
+                                                                                            + settings.getSetting("clientID", infoS.getIMEI())),
+                                                                            settings.getSetting("will", "{\"_type\":\"lwt\",\"tst\":\""
+                                                                                    + date.getTime() / 1000 + "\"}").getBytes(),
+                                                                            settings.getSetting("willQos", 1),
+                                                                            settings.getSetting("willRetain", false),
+                                                                            settings.getSetting("keepAlive", 60),
+                                                                            settings.getSetting("cleanSession", true),
+                                                                            settings.getSetting("subscription", 
+                                                                                    infoS.getInfoFileString(PublishTopic)
+                                                                                            + settings.getSetting("clientID", infoS.getIMEI()) + "/cmd"),
+                                                                            settings.getSetting("subscriptionQos", 1)
+                                                                    );
                                                                     mqttH.applyView(this);
                                                                 }
 								try {
@@ -322,7 +340,13 @@ public class SocketGPRStask extends ThreadCustom implements GlobCost {
                                                         locationManager.setMaxInterval(settings.getSetting("maxInterval", 180));
                                                         
                                                         if (locationManager.handleNMEAString(outText)) {
-                                                            String json = locationManager.getJSONString();
+                                                            String[] fields = StringSplitter.split(
+                                                                    settings.getSetting("fields", "course,speed,altitude,distance,battery"), ",");
+                                                            Vector vector = new Vector();
+                                                            for (int i = 0; i < fields.length; i++) {
+                                                                vector.addElement(fields[i]);
+                                                            }
+                                                            String json = locationManager.getJSONString(vector);
                                                             if (json != null) {
 								semAT.getCoin(5);
 								try {

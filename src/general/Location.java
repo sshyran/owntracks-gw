@@ -16,4 +16,9 @@ public class Location {
     public Date date;
     public double longitude;
     public double latitude;
+    public double course;
+    public double speed;
+    public double altitude;
+    public long distance;
+    public String battery;
 }

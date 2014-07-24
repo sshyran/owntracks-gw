@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package general;
 
 import java.util.Calendar;
@@ -19,8 +14,8 @@ public class LocationManager {
     private Location lastReportedLocation = null;
     private Location currentLocation = null;
 
-    private int minDistance = 500; // in meters
-    private int maxInterval = 180; // in seconds
+    private int minDistance = 0; // in meters
+    private int maxInterval = 0; // in seconds
 
     private LocationManager() {
     }
@@ -54,29 +49,6 @@ public class LocationManager {
             max = 0;
         }
         maxInterval = max;
-    }
-
-    private String[] split(String original, String separator) {
-        Vector nodes = new Vector();
-        // Parse nodes into vector
-        int index = original.indexOf(separator);
-        while (index >= 0) {
-            nodes.addElement(original.substring(0, index));
-            original = original.substring(index + separator.length());
-            index = original.indexOf(separator);
-        }
-        // Get the last node
-        nodes.addElement(original);
-
-        // Create split string array
-        String[] result = new String[nodes.size()];
-        if (nodes.size() > 0) {
-            for (int loop = 0; loop < nodes.size(); loop++) {
-                result[loop] = (String) nodes.elementAt(loop);
-                //System.out.println(result[loop]);
-            }
-        }
-        return result;
     }
 
     static double acos(double a) {
@@ -113,16 +85,16 @@ public class LocationManager {
          15  Indicator       E/B E Indicates if external power supply is connected E or if the device is working on battery B 1 char
          16  Digital input   01 Bit-coded input values. LSB is associated to input 1 1 byte
          17  Digital output  00 Bit-coded output values. LSB is associated to output 1 1 byte
-         18  Analogue input  FFFFFFFF 16 Bit-coded analogue values. LSHW is associated to AI1 4 byte
-         Separator       * '*' 1 char
-         Checksum        76 NMEA standard checksum 2 chars
+         18a Analogue input  FFFFFFFF 16 Bit-coded analogue values. LSHW is associated to AI1 4 byte
+         18b Separator       * '*' 1 char
+         18c Checksum        76 NMEA standard checksum 2 chars
          */
 
         //#ifdef DEBUGGING
         System.out.println(nmea);
         //#endif
 
-        String[] parts = split(nmea, ",");
+        String[] parts = StringSplitter.split(nmea, ",");
         //#ifdef DEBUGGING
         System.out.println("parts " + parts.length);
         //#endif
@@ -157,6 +129,7 @@ public class LocationManager {
                         lat *= -1;
                     }
                     long latLong = (long)(lat * 1000000);
+                    lat = latLong / 1000000.0;
 
                     double lon;
                     lon = Double.parseDouble(parts[8].substring(0, 3))
@@ -165,11 +138,35 @@ public class LocationManager {
                         lon *= -1;
                     }
                     long lonLong = (long)(lon * 1000000);
+                    lon = lonLong / 1000000.0;
                     
+                    double course;
+                    course = Double.parseDouble(parts[10]);
+
+                    double speed;
+                    speed = Double.parseDouble(parts[11]);
+                    speed *= 1.852; // knots/h -> km/h
+                    long speedLong = (long)(speed * 1000000);
+                    speed = speedLong / 1000000.0;
+
+                    double altitude;
+                    altitude = Double.parseDouble(parts[12]);
+                    
+                    long distance;
+                    distance = Long.parseLong(parts[13]);
+                    
+                    String battery;
+                    battery = parts[15].concat(parts[14]);
+
                     currentLocation = new Location();
                     currentLocation.date = cal.getTime();
-                    currentLocation.longitude = lonLong / 1000000.0;
-                    currentLocation.latitude = latLong / 1000000.0;
+                    currentLocation.longitude = lon;
+                    currentLocation.latitude = lat;
+                    currentLocation.course = course;
+                    currentLocation.speed = speed;
+                    currentLocation.altitude = altitude;
+                    currentLocation.distance = distance;
+                    currentLocation.battery = battery;
 
                     if (firstLocation == null) {
                         firstLocation = currentLocation;
@@ -225,14 +222,31 @@ public class LocationManager {
         }
     }
 
-    public String getJSONString() {
+    public String getJSONString(Vector fields) {
         if (currentLocation != null) {
             String json;
-            json = "{\"_type\":\"location\","
-                    + "\"tst\":\"" + (currentLocation.date.getTime() / 1000) + "\","
-                    + "\"lon\":\"" + currentLocation.longitude + "\","
-                    + "\"lat\":\"" + currentLocation.latitude + "\""
-                    + "}";
+            json = "{\"_type\":\"location\"";
+            json = json.concat(",\"tst\":\"" + (currentLocation.date.getTime() / 1000) + "\"");
+            json = json.concat(",\"lon\":\"" + currentLocation.longitude + "\"");
+            json = json.concat(",\"lat\":\"" + currentLocation.latitude + "\"");
+            
+            if (fields.indexOf("course") != -1) {
+                            json = json.concat(",\"crs\":\"" + currentLocation.course + "\"");
+            }
+            if (fields.indexOf("speed") != -1) {
+                            json = json.concat(",\"spd\":\"" + currentLocation.speed + "\"");
+            }
+            if (fields.indexOf("altitude") != -1) {
+                            json = json.concat(",\"alt\":\"" + currentLocation.altitude + "\"");
+            }
+            if (fields.indexOf("distance") != -1) {
+                            json = json.concat(",\"dist\":\"" + currentLocation.distance + "\"");
+            }
+            if (fields.indexOf("battery") != -1) {
+                            json = json.concat(",\"batt\":\"" + currentLocation.battery + "\"");
+            }
+
+            json = json.concat("}");
             lastReportedLocation = currentLocation;
             currentLocation = null;
             return json;

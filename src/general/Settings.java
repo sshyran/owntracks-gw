@@ -15,7 +15,7 @@ import com.cinterion.io.file.FileConnection;
  * @author christoph krey
  */
 
-//#undef DEBUGGING
+//#undefine DEBUGGING
 
 public class Settings {
 
