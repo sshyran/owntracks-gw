@@ -57,8 +57,9 @@ public interface GlobCost {
 	public static final String 	recordPOS 			= "Pos_RS";
 	//public static final String 	recordPOS 			= "Pos_Prova";
 	public static final String 	fileName 			= "GWmqttSettings.txt";
-	public static final String 	revNumber 			= "1.23";
-	public static final String 	dataRev 			= "27/06/2014";
+        
+	public static final String 	revNumber 			= "0.0.95";
+	public static final String 	dataRev 			= "24/07/2014";
 	public static final String 	moduleCodeRev		= "EGS5 rev. ";
 	
 	/** Default messages */

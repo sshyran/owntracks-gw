@@ -25,6 +25,7 @@ public class FlashFile implements GlobCost {
 	/*
 	 * local variables 
 	 */
+            
 	/** Number of settings in the file */
 	private int			numValues;
 	private Vector		settings;

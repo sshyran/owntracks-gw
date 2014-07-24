@@ -22,6 +22,7 @@ import javax.microedition.io.CommConnection;
 import javax.microedition.io.Connector;
 
 import com.cinterion.io.file.FileConnection;
+import java.util.Enumeration;
 
 public class Seriale extends ThreadCustom implements GlobCost {
 
@@ -215,7 +216,6 @@ public class Seriale extends ThreadCustom implements GlobCost {
 							if(debug){
 								System.out.println("OK");
 							}
-						    serialOut.write(("\r\n" + "gw App" + "\r\n").getBytes());
 						    serialOut.write(("\r\n" + "Greenwich rev. " + revNumber + ", " + dataRev + "\r\n").getBytes());
 						    serialOut.write((moduleCodeRev + infoS.getREV() + "\n\r").getBytes());
 						    serialOut.write(("IMEI: " + infoS.getIMEI() + "\r\n").getBytes());
@@ -245,6 +245,46 @@ public class Seriale extends ThreadCustom implements GlobCost {
 						    serialOut.write((VBAT + ": " + infoS.getBatteryVoltage() + "\r\n\r\n").getBytes());
 						    serialOut.write(ACK.getBytes());
 						    						
+						}
+                                                // #SET					
+						else if (comando.indexOf("#SET") >= 0 && auth==true) {
+                                                    if(debug){
+							System.out.print("Th*Seriale: Settings");
+                                                        System.out.println("OK");
+                                                    }
+                                                    
+                                                    if (comando.equals("#SET")) {
+                                                        Settings settings = Settings.getInstance();
+                                                        for (Enumeration e = settings.keys(); e.hasMoreElements() ;) {
+                                                            String key = (String)e.nextElement();
+                                                            serialOut.write((key + "=" + settings.getSetting(key, "") + "\n").getBytes());
+                                                        }
+                                                        serialOut.write(ACK.getBytes());
+                                                    } else {
+                                                        String key = null;
+                                                        String value = null;
+                                                        int equal = comando.indexOf('=');
+                                                        if (equal != -1) {
+                                                            value = comando.substring(equal + 1);
+                                                            if (comando.length() > "#SET".length() + 1 - equal) {
+                                                                key = comando.substring("#SET".length() + 1, equal);
+                                                            } 
+                                                        } else {
+                                                            if (comando.length() > "#SET".length() + 1) {
+                                                                key = comando.substring("#SET".length() + 1);
+                                                            } 
+                                                        }
+                                                        if (key != null) {
+                                                            Settings settings = Settings.getInstance();
+                                                            if (value != null) {
+                                                                settings.setSetting(key, value);
+                                                            }
+                                                            serialOut.write((key + "=" + settings.getSetting(key, "") + "\n").getBytes());
+                                                            serialOut.write(ACK.getBytes());
+                                                        } else {
+                                                            serialOut.write(NACK.getBytes());                                                            
+                                                        }
+                                                    }
 						}
 						   			
 						// #CHPWD --> can change password						

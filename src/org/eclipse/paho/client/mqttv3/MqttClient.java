@@ -519,7 +519,7 @@ public class MqttClient implements DestinationProvider {
 	 * @see #subscribe(String[], int[])
 	 */
 	public void subscribe(String topicFilter) throws MqttException,
-			MqttSecurityException {
+		MqttSecurityException {
 		this.subscribe(new String[] { topicFilter }, new int[] { 1 });
 	}
 

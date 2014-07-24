@@ -52,18 +52,8 @@ public class SocketGPRStask extends ThreadCustom implements GlobCost {
         
         final private boolean mqttRaw = true;
 	
-	//private String clientId = "EGS5x-356612026709230";
 	private String clientId = "EGS5x-";
-		//private String clientId = "EGS5x-3";
-	//private String brokerUrl = "tcp://188.125.106.86";//"tcp://things.bluewind.it"; //"m2m.eclipse.org";
-	//private int brokerPort = 1883;
-	//private String publishTopic = "10000038/1/";
-	//private String subscribeTopic = "10000038/1";
-		//private String publishTopic = "01600018/1/";
-		//private String subscribeTopic = "01600018/1";
         
-	final private int qos = 1;
-        final private boolean retained = true;
 	//private String apn = "internetm2m.air.com"; //"internet";
 	
 	private boolean firstTime = true;
@@ -92,14 +82,6 @@ public class SocketGPRStask extends ThreadCustom implements GlobCost {
 			System.out.println("TT*SocketGPRStask: CREATED");
 		}
 		thisTask = this;
-		//GPRSConnectOptions.getConnectOptions().setAPN(apn);
-
-		//GPRSConnectOptions.getConnectOptions().setBearerType("gprs");
-		
-		//mqttH = new MQTTHandler(clientId, brokerUrl + ":" + brokerPort);
-		//mqttH = new MQTTHandler(infoS.getInfoFileString(IDtraker),"tcp://" + infoS.getInfoFileString(DestHost) + ":" + infoS.getInfoFileString(DestPort));
-		//mqttH.applyView(this);
-
 	}
 	
 	/*
@@ -122,11 +104,6 @@ public class SocketGPRStask extends ThreadCustom implements GlobCost {
 
 		GPRSConnectOptions.getConnectOptions().setBearerType("gprs");
 		
-		//mqttH = new MQTTHandler(clientId, brokerUrl + ":" + brokerPort);
-		//mqttH = new MQTTHandler(infoS.getInfoFileString(IDtraker),"tcp://" + infoS.getInfoFileString(DestHost) + ":" + infoS.getInfoFileString(DestPort));
-		//mqttH = new MQTTHandler((clientId + infoS.getInfoFileString(IDtraker)), "tcp://" + infoS.getInfoFileString(DestHost) + ":" + infoS.getInfoFileString(DestPort));
-		//mqttH.applyView(this);
-
 		list = new BCListenerCustom();
 		list.addInfoStato(infoS);
 		BearerControl.addListener(list);
@@ -299,57 +276,65 @@ public class SocketGPRStask extends ThreadCustom implements GlobCost {
 								// Open GPRS Channel
 								
 								// connect to MQTT broker
-								semAT.getCoin(5);
+                                                                Settings settings = Settings.getInstance();
+
+                                                                semAT.getCoin(5);
+                                                                
+                                                                if (mqttH == null) {
+                                                                    mqttH = new MQTTHandler(settings.getSetting("clientID", infoS.getIMEI()),
+                                                                                infoS.getInfoFileString(DestHost) + ":" + infoS.getInfoFileString(DestPort),
+                                                                                settings.getSetting("user", null),
+                                                                                settings.getSetting("password", null));
+                                                                    mqttH.applyView(this);
+                                                                }
 								try {
-									if(firstTime){
-										mqttH = new MQTTHandler((clientId + infoS.getInfoFileString(IDtraker)), infoS.getInfoFileString(DestHost) + ":" + infoS.getInfoFileString(DestPort));
-										//mqttH = new MQTTHandler((clientId + infoS.getInfoFileString(IDtraker)), "tcp://" + infoS.getInfoFileString(DestHost) + ":" + infoS.getInfoFileString(DestPort));
-										mqttH.applyView(this);
-									}
-									//System.out.println("TT*SocketGPRSTask: ***************************:");
-									mqttH.connectToBroker();
-									firstTime = false;
-								} catch (MqttSecurityException e1) {
-									e1.printStackTrace();
-								} catch (MqttException e1) {
-									e1.printStackTrace();
+                                                                    mqttH.connectToBroker();
+								} catch (MqttSecurityException mse) {
+									mse.printStackTrace();
+								} catch (MqttException me) {
+									me.printStackTrace();
 								}
 								semAT.putCoin();
 
 								infoS.setApriGPRS(false);
 							}
 							//System.out.println("TT*SocketGPRSTask: INVIO DATO:");
+                                                        
+                                                        Settings settings = Settings.getInstance();
 							
-                                                        if (mqttRaw) {
+                                                        if (settings.getSetting("raw", true)) {
+                                                                semAT.getCoin(5);
 								try {
-									semAT.getCoin(5);
 										mqttH.publish(infoS.getInfoFileString(PublishTopic)
-                                                                                        + infoS.getInfoFileString(IDtraker)
+                                                                                        + settings.getSetting("clientID", infoS.getIMEI())
                                                                                         + "/raw",
-                                                                                        qos,
-                                                                                        retained,
+                                                                                        settings.getSetting("qos", 1),
+                                                                                        settings.getSetting("retain", true),
                                                                                         outText.getBytes());
-									semAT.putCoin();	
 								} catch (MqttException e) {
 									e.printStackTrace();
 								}
+								semAT.putCoin();	
 							}
-							
+                                                        							
                                                         LocationManager locationManager = LocationManager.getInstance();
+                                                        locationManager.setMinDistance(settings.getSetting("minDistance", 500));
+                                                        locationManager.setMaxInterval(settings.getSetting("maxInterval", 180));
+                                                        
                                                         if (locationManager.handleNMEAString(outText)) {
                                                             String json = locationManager.getJSONString();
                                                             if (json != null) {
+								semAT.getCoin(5);
 								try {
-									semAT.getCoin(5);
 										mqttH.publish(infoS.getInfoFileString(PublishTopic)
-                                                                                        + infoS.getInfoFileString(IDtraker),
-                                                                                        qos,
-                                                                                        retained,
+                                                                                        + settings.getSetting("clientID", infoS.getIMEI()),
+                                                                                        settings.getSetting("qos", 1),
+                                                                                        settings.getSetting("retain", true),
                                                                                         json.getBytes("UTF-8"));
-									semAT.putCoin();	
 								} catch (MqttException e) {
 									e.printStackTrace();
 								}
+								semAT.putCoin();	
                                                             }
                                                         }
 
@@ -359,7 +344,7 @@ public class SocketGPRStask extends ThreadCustom implements GlobCost {
 								//System.out.println("CLOSE GPRS");
 								// Close GPRS Channel
 								semAT.getCoin(5);
-								mqttH.disconnect(0);
+								mqttH.disconnect();
 								semAT.putCoin();
 								infoS.setChiudiGPRS(false);
 							}
@@ -442,7 +427,7 @@ public class SocketGPRStask extends ThreadCustom implements GlobCost {
 					try{
 
 						semAT.getCoin(5);
-						mqttH.disconnect(0);
+						mqttH.disconnect();
 						semAT.putCoin();
 					
 						infoS.setTRKstate(false);
@@ -481,7 +466,7 @@ public class SocketGPRStask extends ThreadCustom implements GlobCost {
 						
 						if(!firstTime){
 							semAT.getCoin(5);
-							mqttH.disconnect(0);
+							mqttH.disconnect();
 							semAT.putCoin();
 						}
 						if(debug)

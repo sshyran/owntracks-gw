@@ -15,6 +15,8 @@ import choral.io.PowerManager;
 import java.io.IOException;
 import java.util.*;
 
+//#define DEBUGGING
+
 /**
  * Main application class.
  * <BR>
@@ -164,6 +166,10 @@ public class AppMain extends MIDlet implements GlobCost {
 		if(debug){
 			System.out.println("AppMain: starting...");
 		}
+                
+                Settings settings = Settings.getInstance();
+                settings.setfileURL("file:///a:/file/OwnTracks.properties");
+                
 		// Status info strcture creation
 		infoS = new InfoStato();
 		// Threads creation
@@ -243,7 +249,9 @@ public class AppMain extends MIDlet implements GlobCost {
 	 * </ul>
 	 */
 	protected void startApp() throws MIDletStateChangeException {
-		System.out.println("startApp gw");
+                        //#ifdef DEBUGGING
+                        System.out.println("startApp");
+                        //#endif
 
 		try{
 		
@@ -1560,8 +1568,9 @@ public class AppMain extends MIDlet implements GlobCost {
 		 * when is in PAUSE.
 		 */
 		protected void pauseApp() {
+                        //#ifdef DEBUGGING
                         System.out.println("pauseApp");
-
+                        //#endif
 			if(debug){
 				System.out.println("Application in pause...");
 			}
@@ -1579,7 +1588,9 @@ public class AppMain extends MIDlet implements GlobCost {
 		 * @throws	MIDletStateChangeException
 		 */
 		protected void destroyApp(boolean cond) throws MIDletStateChangeException {
-                    	System.out.println("destroyApp");
+                        //#ifdef DEBUGGING
+                        System.out.println("destroyApp");
+                        //#endif
 			if(debug){
 				System.out.println("Close application in progress...");
 			}
