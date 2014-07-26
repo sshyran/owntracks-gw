@@ -16,7 +16,7 @@ import com.cinterion.io.*;
  * @author 	alessioza
  * 
  */
-public class BCListenerCustom extends ATListenerCustom implements BearerControlListener {
+public class BCListenerCustom implements GlobCost, BearerControlListener {
 		
 	/* 
 	 * local variables
@@ -29,14 +29,14 @@ public class BCListenerCustom extends ATListenerCustom implements BearerControlL
 	public void stateChanged (int state) {
 		//new LogError("BCListener: " + state);
 		//System.out.println("BCListener: " + state);
-		infoS.setGPRSBearer(state);
+		InfoStato.getInstance().setGPRSBearer(state);
 		if(state == 3){
-			infoS.setGprsState(true);
+			InfoStato.getInstance().setGprsState(true);
 		}
 		else{
 			if(state == 5)
-				infoS.setReboot();
-			infoS.setGprsState(false);
+				InfoStato.getInstance().setReboot();
+			InfoStato.getInstance().setGprsState(false);
 		}
 	}
 	

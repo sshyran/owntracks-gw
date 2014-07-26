@@ -37,13 +37,12 @@ public class FlashFile implements GlobCost {
 	private int 		numBytesRead;
 	/** Index for read setting values */
 	private int			init;
-	InfoStato 			infoS;
 	
 	
 	/*
 	 * constructors 
 	 */
-	public FlashFile() {
+	private FlashFile() {
 		//System.out.println("FlashFile: CREATED");
 		// vector instances
 		settings 	= new Vector();
@@ -92,10 +91,18 @@ public class FlashFile implements GlobCost {
 		
 		// calculate number of settings
 		numValues = settings.size();
-		infoS = new InfoStato();
 	}
 	
-	
+    public static FlashFile getInstance() {
+        return FlashFileHolder.INSTANCE;
+    }
+    
+    private static class FlashFileHolder {
+
+        private static final FlashFile INSTANCE = new FlashFile();
+    }
+    
+
 	/*
 	 *  methods
 	 */
@@ -243,17 +250,6 @@ public class FlashFile implements GlobCost {
 		}  //for
 		return null;
 	} //getImpostazione
-	
-	/**
-	 *  Add reference to InfoStato data structure
-	 *  
-	 *  @param	is	InfoStato object
-	 *  @return "OK,infoS"
-	 */
-	public synchronized String addInfoStato(InfoStato is) {	
-		infoS = is;
-		return "OK,infoS";
-	} //addInfoStato
 	
 } //FlashFile
 

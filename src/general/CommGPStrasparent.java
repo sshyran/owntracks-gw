@@ -61,19 +61,6 @@ public class CommGPStrasparent extends ThreadCustom implements GlobCost {
 	int gpsReset = 0;
 	int timer1 = 0;
 	
-	/*
-	 * INHERITED RESOURCES from ThreadCustom and passed to AppMain 
-	 *
-	 * semaphore 'semAT', for the exclusive use of the AT resource
-	 * InfoStato 'infoS', status informations about application
-	 * Mailbox   'mboxMAIN', to send msg to AppMain
-	 * Mailbox   'mbox1', to receive msg with this thread
-	 * Mailbox   'mbox2', to send msg to th2 (ATsender)
-	 * DataStore 'dsDataCHORAL', to store the strings in CHORAL format 
-	 * DataStore 'dsDataNMEA', to store the strings in NMEA format
-	 */
-
-	
 	/* 
 	 * constructor
 	 */
@@ -135,11 +122,11 @@ public class CommGPStrasparent extends ThreadCustom implements GlobCost {
 				int leggo = 0;
 				while(true) {
 					
-						infoS.setGPSLive(true);
+						InfoStato.getInstance().setGPSLive(true);
 						
-						//System.out.println("infoS.getGpsState() " + infoS.getGpsState());
+						//System.out.println("InfoStato.getInstance().getGpsState() " + InfoStato.getInstance().getGpsState());
 						//System.out.println("pre_gps_state " + pre_gps_state);
-						if((infoS.getInfoFileString(MovState)).indexOf("GPSOFF")>=0){
+						if((InfoStato.getInstance().getInfoFileString(MovState)).indexOf("GPSOFF")>=0){
 							if(pre_gps_state){
 								sleep_GPS(outStreamgps);
 								pre_gps_state = false;
@@ -181,7 +168,7 @@ public class CommGPStrasparent extends ThreadCustom implements GlobCost {
 				    		
 				    		// RMC String: $GPRMC,hhmmss,status,latitude,N,longitude,E,spd,cog,ddmmyy,mv,mvE,mode*cs<CR><LF>
 				    		RMCstring = letturaStringa;
-				    		if(infoS.getUartTraspGPS()){
+				    		if(InfoStato.getInstance().getUartTraspGPS()){
 				    			System.out.println(RMCstring);
 				    			go = true;
 				    		}
@@ -202,9 +189,9 @@ public class CommGPStrasparent extends ThreadCustom implements GlobCost {
 					    		
 					    		if(go)
 					    			System.out.println(letturaStringa + "\r\n");
-					    		if(infoS.getCSDTraspGPS()){
-					    			infoS.setRMCTrasp(RMCstring);
-					    			infoS.setRMCTrasp(letturaStringa + "\r\n");
+					    		if(InfoStato.getInstance().getCSDTraspGPS()){
+					    			InfoStato.getInstance().setRMCTrasp(RMCstring);
+					    			InfoStato.getInstance().setRMCTrasp(letturaStringa + "\r\n");
 					    		}
 
 					    		if(true){
@@ -232,10 +219,10 @@ public class CommGPStrasparent extends ThreadCustom implements GlobCost {
 						    				switch (iii){
 							    				case 1:
 							    					if(SpliRMCstring.indexOf("A")>=0){
-							    						infoS.setGpsLed(true);
+							    						InfoStato.getInstance().setGpsLed(true);
 							    					}
 							    					else
-							    						infoS.setGpsLed(false);
+							    						InfoStato.getInstance().setGpsLed(false);
 							    					break;
 						    						    								    				
 							    				case 6:
@@ -243,7 +230,7 @@ public class CommGPStrasparent extends ThreadCustom implements GlobCost {
 								    					// Speed
 							    						if(debug)
 							    							System.out.println("Velocità precedente: " + DFSSpeed);
-							    						infoS.setPreSpeedDFS(DFSSpeed);
+							    						InfoStato.getInstance().setPreSpeedDFS(DFSSpeed);
 								    					DFSSpeed = Double.parseDouble(SpliRMCstring.substring(0, SpliRMCstring.indexOf(",")));
 								    					gpsReset = 0;
 							    					}catch(NumberFormatException e){
@@ -253,7 +240,7 @@ public class CommGPStrasparent extends ThreadCustom implements GlobCost {
 							    						gpsReset++;
 							    					}
 								    					//new LogError ("Set speed variable " + DFSSpeed);
-								    					infoS.setSpeedDFS(DFSSpeed);
+								    					InfoStato.getInstance().setSpeedDFS(DFSSpeed);
 								    				break;
 							    				default:break;
 						    				}
@@ -273,11 +260,11 @@ public class CommGPStrasparent extends ThreadCustom implements GlobCost {
 							    		//distance = getDistance(nlat, vlat, nlon, vlon);
 							    		tmpDistance = getDistance(nlat, nlon, vx, vy, vz, DFSSpeed);
 							    		if(!isFirstFIX){
-								    		if(((int)(infoS.getDist() + tmpDistance)) >= 1e6){
-								                infoS.setDist(0);
+								    		if(((int)(InfoStato.getInstance().getDist() + tmpDistance)) >= 1e6){
+								                InfoStato.getInstance().setDist(0);
 											}
 								    		else
-								    			infoS.setDist((infoS.getDist() + tmpDistance));
+								    			InfoStato.getInstance().setDist((InfoStato.getInstance().getDist() + tmpDistance));
 							    		}
 							    		isFirstFIX = false;
 							    		vx = nx;
@@ -286,24 +273,24 @@ public class CommGPStrasparent extends ThreadCustom implements GlobCost {
 						    		}
 						    		
 					    			// Restore GPRMC string into stack
-						    		dsDataRMC.replaceObject(RMCstring, true);
-						    		dsDataGGA.replaceObject(letturaStringa, true);
+						    		DataStores.getInstance(DataStores.dsDRMC).replaceObject(RMCstring, true);
+						    		DataStores.getInstance(DataStores.dsDGGA).replaceObject(letturaStringa, true);
 						    			
 						    		// Send msg to AppMain (only first time)
 						    		if (isFirstFIX==true) {
-						    			mboxMAIN.write(msgFIX);
-						    			infoS.setValidFIX(true);
+						    			Mailboxes.getInstance(0).write(msgFIX);
+						    			InfoStato.getInstance().setValidFIX(true);
 						    			isFirstFIX = false;		// because it does not happen again
 						    		}
 						    		else{
 						    			
-						    			infoS.setValidFIX(true);
+						    			InfoStato.getInstance().setValidFIX(true);
 							    		// Sending communication to AppMain
-										if((!infoS.getInfoFileString(TrackingType).equalsIgnoreCase("SMS")) && (count >= infoS.getInfoFileInt(TrackingInterv))){
+										if((!InfoStato.getInstance().getInfoFileString(TrackingType).equalsIgnoreCase("SMS")) && (count >= InfoStato.getInstance().getInfoFileInt(TrackingInterv))){
 											//System.out.println("SAVED STRING: " + stringaGPS + " " + count);
-											dsTrkRMC.replaceObject(RMCstring, true);
-								    		dsTrkGGA.replaceObject(letturaStringa, true);
-											mboxMAIN.write(msgFIXgprs);
+											DataStores.getInstance(DataStores.dsTRMC).replaceObject(RMCstring, true);
+                                                                                        DataStores.getInstance(DataStores.dsTGGA).replaceObject(letturaStringa, true);
+											Mailboxes.getInstance(0).write(msgFIXgprs);
 											count = 0;
 										}
 							    	}
@@ -311,13 +298,13 @@ public class CommGPStrasparent extends ThreadCustom implements GlobCost {
 						    		
 						    	else {	
 							
-						    		dsDataRMC.replaceObject(RMCstring, false);
-						    		dsDataGGA.replaceObject(letturaStringa, false);
+						    		DataStores.getInstance(DataStores.dsDRMC).replaceObject(RMCstring, false);
+						    		DataStores.getInstance(DataStores.dsDGGA).replaceObject(letturaStringa, false);
 									// Sending communication to AppMain
-								    if((!infoS.getInfoFileString(TrackingType).equalsIgnoreCase("SMS")) && (count >= infoS.getInfoFileInt(TrackingInterv))){
-								    	dsTrkRMC.replaceObject(RMCstring, false);
-								    	dsTrkGGA.replaceObject(letturaStringa, false);
-								    	mboxMAIN.write(msgFIXgprs);
+								    if((!InfoStato.getInstance().getInfoFileString(TrackingType).equalsIgnoreCase("SMS")) && (count >= InfoStato.getInstance().getInfoFileInt(TrackingInterv))){
+								    	DataStores.getInstance(DataStores.dsTRMC).replaceObject(RMCstring, false);
+								    	DataStores.getInstance(DataStores.dsTGGA).replaceObject(letturaStringa, false);
+								    	Mailboxes.getInstance(0).write(msgFIXgprs);
 								    	count = 0;
 									}
 					    		}
@@ -330,8 +317,8 @@ public class CommGPStrasparent extends ThreadCustom implements GlobCost {
 				    	
 				   	// variable for task verification
 				   	timer1++;
-					infoS.setTask1Timer(timer1);
-					infoS.setTickTask1WD();
+					InfoStato.getInstance().setTask1Timer(timer1);
+					InfoStato.getInstance().setTickTask1WD();
 				    
 				   	Thread.sleep(100);					
 				} //while

@@ -1,5 +1,6 @@
 package general;
 
+//#undefine TRIAL_AND_ERROR
 //#ifdef TRIAL_AND_ERROR
 //# import java.io.IOException;
 //# import java.io.InputStream;
@@ -24,6 +25,7 @@ import org.eclipse.paho.client.mqttv3.internal.MemoryPersistence;
 public class MQTTHandler implements MqttCallback {
 
     private MqttClient client;
+    private boolean firstConnect;
 
     private String clientId;
     private String brokerURL;
@@ -37,35 +39,49 @@ public class MQTTHandler implements MqttCallback {
     private boolean cleanSession;
     private String subscription;
     private int subscriptionQos;
-    private boolean firstConnect;
 
-    private SocketGPRStask view;
+    private MQTTHandler() {
+    }
 
-    public MQTTHandler(String clientId,
-            String brokerURL,
-            String userName,
-            String password,
-            String willTopic,
-            byte[] will,
-            int willQos,
-            boolean willRetain,
-            int keepAlive,
-            boolean cleanSession,
-            String subscription,
-            int subscriptionQos) {
-        this.clientId = clientId;
-        this.brokerURL = brokerURL;
-        this.userName = userName;
-        this.password = password;
-        this.willTopic = willTopic;
-        this.will = will;
-        this.willQos = willQos;
-        this.willRetain = willRetain;
-        this.keepAlive = keepAlive;
-        this.cleanSession = cleanSession;
-        this.subscription = subscription;
-        this.subscriptionQos = subscriptionQos;
-        this.firstConnect = true;
+    public static MQTTHandler getInstance() {
+        return MQTTHandlerHolder.INSTANCE;
+    }
+
+    private static class MQTTHandlerHolder {
+
+        private static final MQTTHandler INSTANCE = new MQTTHandler();
+    }
+
+    public void init(String aClientId,
+            String aBrokerURL,
+            String aUserName,
+            String aPassword,
+            String aWillTopic,
+            byte[] aWill,
+            int aWillQos,
+            boolean aWillRetain,
+            int aKeepAlive,
+            boolean aCleanSession,
+            String aSubscription,
+            int aSubscriptionQos) {
+        clientId = aClientId;
+        brokerURL = aBrokerURL;
+        userName = aUserName;
+        password = aPassword;
+        willTopic = aWillTopic;
+        will = aWill;
+        willQos = aWillQos;
+        willRetain = aWillRetain;
+        keepAlive = aKeepAlive;
+        cleanSession = aCleanSession;
+        subscription = aSubscription;
+        subscriptionQos = aSubscriptionQos;
+        firstConnect = true;
+        
+        if (client != null) {
+            disconnect();
+            client = null;
+        }
     }
 
     public synchronized void connectToBroker()
@@ -142,7 +158,7 @@ public class MQTTHandler implements MqttCallback {
         }
     }
 
-    public void publish(String topicName,
+    public synchronized void publish(String topicName,
             int qos,
             boolean retained,
             byte[] payload)
@@ -173,7 +189,7 @@ public class MQTTHandler implements MqttCallback {
         }
     }
 
-    public void subscribe(String topicName, int qos) throws MqttException {
+    public synchronized void subscribe(String topicName, int qos) throws MqttException {
         //#ifdef DEBUGGING
         System.out.println("subscribe " + topicName + " " + qos);
         //#endif
@@ -185,7 +201,7 @@ public class MQTTHandler implements MqttCallback {
         }
     }
 
-    public void disconnect() {
+    public synchronized void disconnect() {
         //#ifdef DEBUGGING
         System.out.println("disconnect");
         //#endif
@@ -195,7 +211,17 @@ public class MQTTHandler implements MqttCallback {
             e.printStackTrace();
         }
     }
+    
+    public boolean isConnected() {
+        if (client != null) {
+            return client.isConnected();
+        } else {
+            return false;
+        }
+    }
 
+    // Callbacks
+    
     public void connectionLost(Throwable cause) {
         //#ifdef DEBUGGING
         System.out.println("connectionLost");
@@ -210,15 +236,17 @@ public class MQTTHandler implements MqttCallback {
                 + message.getQos());
         System.out.println("Message: " + new String(message.getPayload()));
         //#endif
+        CommandProcessor commandProcessor = CommandProcessor.getInstance();
+        if (commandProcessor.execute(message.toString())) {
+            publish(topic.getName() + "/out", 0, false, ("ACK: " + commandProcessor.message).getBytes());
+        } else {
+            publish(topic.getName() + "/out", 0, false, ("NACK: " + commandProcessor.message).getBytes());
+        }                                                
     }
 
     public void deliveryComplete(MqttDeliveryToken token) {
         //#ifdef DEBUGGING
         System.out.println("deliveryComplete");
         //#endif
-    }
-
-    public void applyView(SocketGPRStask view) {
-        this.view = view;
     }
 }

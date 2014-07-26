@@ -9,7 +9,6 @@ public class Coda extends Vector implements GlobCost{
 	 */
 	private Object 	lastValidPOSQ= null;
 	private boolean isLastValidQ = false;
-	InfoStato infoS;
 	private String dsTypeQ;
 	private int ptr_in;
 	private int ptr_out;
@@ -21,28 +20,27 @@ public class Coda extends Vector implements GlobCost{
 	public Coda(String type, int capacity) {
 		dsTypeQ = type;
 		this.setSize(capacity);
-		infoS = new InfoStato();
 	}
 	
 	public void addElement(Object obj){
-		ptr_in = infoS.getInfoFileInt(TrkIN);
+		ptr_in = InfoStato.getInstance().getInfoFileInt(TrkIN);
 		removeElementAt(ptr_in);
 		insertElementAt(obj, ptr_in);
 		ptr_in++;
 		if(ptr_in > 99){
 			ptr_in = 0;
 		}
-		infoS.setInfoFileInt(TrkIN, Integer.toString(ptr_in));
+		InfoStato.getInstance().setInfoFileInt(TrkIN, Integer.toString(ptr_in));
 	}
 	
 	public Object returnElement(){
-		ptr_out = infoS.getInfoFileInt(TrkOUT);
+		ptr_out = InfoStato.getInstance().getInfoFileInt(TrkOUT);
 		element = elementAt(ptr_out);
 		ptr_out++;
 		if(ptr_out > 99){
 			ptr_out = 0;
 		}
-		infoS.setInfoFileInt(TrkOUT, Integer.toString(ptr_out));
+		InfoStato.getInstance().setInfoFileInt(TrkOUT, Integer.toString(ptr_out));
 		return element;
 	}
 	
@@ -63,12 +61,12 @@ public class Coda extends Vector implements GlobCost{
 /*		if (lastValidPOSQ!=null) return lastValidPOSQ;
 		else {
 			if (dsTypeQ.equalsIgnoreCase(dsCHORAL)) {
-				//System.out.println("Datastore *** return: "+infoS.getInfoFileString(LastGPSValid));
-				return infoS.getInfoFileString(LastGPSValid);
+				//System.out.println("Datastore *** return: "+InfoStato.getInstance().getInfoFileString(LastGPSValid));
+				return InfoStato.getInstance().getInfoFileString(LastGPSValid);
 			}
 			else {
-				//System.out.println("Datastore *** return: "+infoS.getInfoFileString(LastGPRMCValid));
-				return infoS.getInfoFileString(LastGPRMCValid);
+				//System.out.println("Datastore *** return: "+InfoStato.getInstance().getInfoFileString(LastGPRMCValid));
+				return InfoStato.getInstance().getInfoFileString(LastGPRMCValid);
 			}
 		}
 	}
@@ -81,16 +79,4 @@ public class Coda extends Vector implements GlobCost{
 		// otherwise return 'null'
 		else return null;
 	}
-	
-	/**
-	 *  Add reference to InfoStato data structure
-	 *  
-	 *  @param	is 	InfoStato object
-	 *  @return "OK,infoS"
-	 */
-	public synchronized String addInfoStato(InfoStato is) {	
-		infoS = is;
-		return "OK,infoS";
-	} //addInfoStato
-
 }

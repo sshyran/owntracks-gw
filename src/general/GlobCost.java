@@ -21,10 +21,11 @@ public interface GlobCost {
      */
     public static final boolean TESTenv = false;
     public static final boolean movsens = false;
+    
     boolean debug = false;
     boolean debugGSM = false;
     boolean debug_chiave = false;
-    boolean debug_main = false;
+    boolean debug_main = true;
     boolean debug_speed = false;
     boolean usbDebug = false;
 	//remember to modify empty string "defaultGPS" and "posusr" for tests
@@ -64,8 +65,8 @@ public interface GlobCost {
     //public static final String 	recordPOS 			= "Pos_Prova";
     public static final String fileName = "GWmqttSettings.txt";
 
-    public static final String revNumber = "0.1.8";
-    public static final String dataRev = "25/07/2014";
+    public static final String revNumber = "0.1.40";
+    public static final String dataRev = "26/07/2014";
     public static final String moduleCodeRev = "EGS5 rev. ";
 
     /**
@@ -276,14 +277,7 @@ public interface GlobCost {
     public static final String alarmIn2 = "ALARM IN2";
     public static final String alive = "ALIVE";
 
-    /**
-     * dataStore types
-     */
-    public static final String dsDRMC = "dsDRMC";
-    public static final String dsDGGA = "dsDGGA";
-    public static final String dsTRMC = "dsTRMC";
-    public static final String dsTGGA = "dsTGGA";
-
+   
     /**
      * Empty string
      */

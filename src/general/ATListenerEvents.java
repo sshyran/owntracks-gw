@@ -26,13 +26,12 @@ import com.cinterion.io.*;
  * @author 	alessioza
  * 
  */
-public class ATListenerEvents extends ATListenerCustom implements ATCommandListener {
+public class ATListenerEvents implements GlobCost, ATCommandListener {
 		
 	/* 
 	 * local variables
 	 */
 	private int SCPOLvalue;
-	Mailbox 	mboxMAIN;
 	int 		numThread;
 	
 	boolean 	isRicevitore;
@@ -42,9 +41,6 @@ public class ATListenerEvents extends ATListenerCustom implements ATCommandListe
 	 * constructors
 	 */
 	public ATListenerEvents() {
-		//System.out.println("ATListenerEvents: CREATED");
-		// Mailboxes creation
-		mboxMAIN = new Mailbox(20);
 	}
 	
 	
@@ -70,10 +66,10 @@ public class ATListenerEvents extends ATListenerCustom implements ATCommandListe
 		
 		if (event.indexOf("^SYSSTART AIRPLANE MODE") >=0) {
 			// AIRPLANE MODE to activate radio parts of the moduleo
-			infoS.setOpMode("AIRPLANE");
-			infoS.setTipoRisveglio(risveglioCala);
+			InfoStato.getInstance().setOpMode("AIRPLANE");
+			InfoStato.getInstance().setTipoRisveglio(risveglioCala);
 			// AIRPLANE MODE leaves out normal software procedure and implies module reboot
-			infoS.setCALA(true);
+			InfoStato.getInstance().setCALA(true);
 		} //^SYSSTART AIRPLANE MODE
 		
 		
@@ -82,15 +78,15 @@ public class ATListenerEvents extends ATListenerCustom implements ATCommandListe
 		 */
 		if (event.indexOf("+CALA") >=0) {
 			//System.out.println("ATListenerEvents: +CALA event ignored");
-			mboxMAIN.write(msgALIVE);
+			Mailboxes.getInstance(0).write(msgALIVE);
 		} //+CALA
 		
 		if (event.indexOf("+CGREG") >=0) {
-			infoS.setCGREG(event.substring((event.indexOf(": "))+2,(event.indexOf(": "))+3));
+			InfoStato.getInstance().setCGREG(event.substring((event.indexOf(": "))+2,(event.indexOf(": "))+3));
 		}
 		
 		if (event.indexOf("+CREG") >=0) {
-			infoS.setCREG(event.substring((event.indexOf(": "))+2,(event.indexOf(": "))+3));
+			InfoStato.getInstance().setCREG(event.substring((event.indexOf(": "))+2,(event.indexOf(": "))+3));
 		}
 		
 		/*
@@ -98,8 +94,8 @@ public class ATListenerEvents extends ATListenerCustom implements ATCommandListe
 		 */		
 		if (event.indexOf("^SCPOL: 6") >=0) {
 			SCPOLvalue = Integer.parseInt(event.substring(event.indexOf(",")+1,event.indexOf(",")+2));
-			infoS.setGPIOchiave(SCPOLvalue);
-			infoS.setDigitalIN(SCPOLvalue,0);
+			InfoStato.getInstance().setGPIOchiave(SCPOLvalue);
+			InfoStato.getInstance().setDigitalIN(SCPOLvalue,0);
 		} //GPIO7
 		
 		/*
@@ -109,15 +105,15 @@ public class ATListenerEvents extends ATListenerCustom implements ATCommandListe
 		// digital input 1 (GPIO1)
 		if (event.indexOf("^SCPOL: 0") >=0) {
 			SCPOLvalue = Integer.parseInt(event.substring(event.indexOf(",")+1,event.indexOf(",")+2));
-			infoS.setDigitalIN(SCPOLvalue,1);
-			//mboxMAIN.write(msgALR1);
+			InfoStato.getInstance().setDigitalIN(SCPOLvalue,1);
+			//Mailboxes.getInstance(0).write(msgALR1);
 		} //GPIO1
 		
 		// digital input 2 (GPIO3)
 		if (event.indexOf("^SCPOL: 2") >=0) {
 			SCPOLvalue = Integer.parseInt(event.substring(event.indexOf(",")+1,event.indexOf(",")+2));
-			infoS.setDigitalIN(SCPOLvalue,2);
-			//mboxMAIN.write(msgALR2);
+			InfoStato.getInstance().setDigitalIN(SCPOLvalue,2);
+			//Mailboxes.getInstance(0).write(msgALR2);
 		} //GPIO3
 		
 		
@@ -126,10 +122,10 @@ public class ATListenerEvents extends ATListenerCustom implements ATCommandListe
 		 */
 		if (event.indexOf("RING") >=0) {
 			//System.out.println("ATListenerEvents: incoming call waiting for answer...");
-			// send msg to mboxMAIN
-			//infoS.setCSDattivo(true);
+			// send msg to Mailboxes.getInstance(0)
+			//InfoStato.getInstance().setCSDattivo(true);
 			if(event.indexOf("REL ASYNC") > 0)
-				mboxMAIN.write(msgRING);
+				Mailboxes.getInstance(0).write(msgRING);
 			
 		} //RING
 		
@@ -139,7 +135,7 @@ public class ATListenerEvents extends ATListenerCustom implements ATCommandListe
 		 */
 		if (event.indexOf("^SBC: Undervoltage") >=0) {
 			// send msg to AppMain about low battery
-			mboxMAIN.write(msgBattScarica);
+			Mailboxes.getInstance(0).write(msgBattScarica);
 		} //^SBC: Undervoltage
 		
 		
@@ -147,16 +143,16 @@ public class ATListenerEvents extends ATListenerCustom implements ATCommandListe
 		 * +CMTI operations (new SMS received)
 		 */
 		if (event.indexOf("+CMTI") >=0) {
-			infoS.setResponseAT(event);
-			infoS.setNumSMS(1);
+			InfoStato.getInstance().setResponseAT(event);
+			InfoStato.getInstance().setNumSMS(1);
 		} //+CMTI
 		
 		if (event.indexOf("^SCKS") >=0) {
 			//System.out.println(event);
 			new LogError(event);
 			if (event.indexOf("2") >=0){
-				infoS.setReboot();
-				infoS.setInfoFileInt(UartNumTent,"1");
+				InfoStato.getInstance().setReboot();
+				InfoStato.getInstance().setInfoFileInt(UartNumTent,"1");
 			}
 		}
 		
@@ -166,30 +162,6 @@ public class ATListenerEvents extends ATListenerCustom implements ATCommandListe
 	public void RINGChanged(boolean SignalState) {}
 	public void DCDChanged(boolean SignalState) {}
 	public void DSRChanged(boolean SignalState) {}
-	
-	/**
-	 *  Pass to a thread a Mailbox object
-	 *  
-	 *  @param	mb		Mailbox	object
-	 *  @param 	nMbox	mailbox number
-	 *  @param 	nth		thread number
-	 *  @param	isRcv	mailbox-owner indication about thread
-	 *  @return "OK,<mailbox name>"
-	 */
-	public synchronized String addMailbox(Mailbox mb, int nMbox, int nth, boolean isRcv) {
-		// you can pass up to 10 (maximum) mailboxes for each Thread
-		switch (nMbox) {
-			case 0: {
-				mboxMAIN = new Mailbox(20);
-				mboxMAIN = mb;
-				numThread = nth;
-				isRicevitore = isRcv;
-				return "OK,mboxMAIN";
-			}
-			default: return "Error";
-		} //switch		
-	} //addMailbox
-
 	
 } //ATListenerEvents
 

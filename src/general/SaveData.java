@@ -26,7 +26,6 @@ public class SaveData implements GlobCost{
 	 * local variables 
 	 */
 	String fileStore = "store.txt";
-	InfoStato infoS;
 	int i = 0;
 	int z = 0;
 	/** Can be read a maximum of 1024 bytes */
@@ -37,8 +36,6 @@ public class SaveData implements GlobCost{
 	private int			init;
 		
 	public SaveData() {
-		
-		infoS = new InfoStato();
 	}
 
 	
@@ -67,7 +64,7 @@ public class SaveData implements GlobCost{
 	            
 	            while(!InfoStato.getCoda()){Thread.sleep(1);}
 				for(i = 0; i<codaSize; i++)
-		            os.write((infoS.getRecord(i) + "\r\n").getBytes());
+		            os.write((InfoStato.getInstance().getRecord(i) + "\r\n").getBytes());
 				InfoStato.freeCoda();
 	            os.flush();
 	            os.close();
@@ -118,7 +115,7 @@ public class SaveData implements GlobCost{
 				//System.out.println(init);
 				datoAttuale=letturaFile.substring(0,init);
 				//System.out.println(datoAttuale);
-				infoS.saveRecord(z, datoAttuale);
+				InfoStato.getInstance().saveRecord(z, datoAttuale);
 				if(z<(codaSize-1))
 					letturaFile = letturaFile.substring(init+2);
 				try {
@@ -127,7 +124,7 @@ public class SaveData implements GlobCost{
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				//System.out.println(z + " " + infoS.getRecord(z));
+				//System.out.println(z + " " + InfoStato.getInstance().getRecord(z));
 			}
 			
 			// Close connection to file
@@ -138,16 +135,4 @@ public class SaveData implements GlobCost{
 		} //catch
 		return ret;
 	}
-
-
-	/**
-	 *  Add reference to InfoStato data structure
-	 *  
-	 *  @param	is	InfoStato object
-	 *  @return "OK,infoS"
-	 */
-	public synchronized String addInfoStato(InfoStato is) {	
-		infoS = is;
-		return "OK,infoS";
-	} //addInfoStato
 }

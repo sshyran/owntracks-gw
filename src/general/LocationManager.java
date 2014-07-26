@@ -1,7 +1,6 @@
 package general;
 
 import java.util.Calendar;
-import java.util.Vector;
 
 //#define DEBUGGING
 /**
@@ -13,7 +12,8 @@ public class LocationManager {
     private Location firstLocation = null;
     private Location lastReportedLocation = null;
     private Location currentLocation = null;
-
+    private String reason = "";
+    
     private int minDistance = 0; // in meters
     private int maxInterval = 0; // in seconds
 
@@ -206,12 +206,15 @@ public class LocationManager {
                         if (dist < minDistance) {
                             return false;
                         } else {
+                            reason = "d";
                             return true;
                         }
                     } else {
+                        reason = "t";
                         return true;
                     }
                 } else {
+                    reason = "f";
                     return true;
                 }
             } else {
@@ -222,33 +225,59 @@ public class LocationManager {
         }
     }
 
-    public String getJSONString(Vector fields) {
+    private boolean isInStringArray(String string, String[] stringArray) {
+        for (int i = 0; i < stringArray.length; i++) {
+            if (string.equals(stringArray[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public String getJSONString(String[] fields) {
         if (currentLocation != null) {
+            lastReportedLocation = currentLocation;
+            currentLocation = null;
+            return JSONString(lastReportedLocation, fields, reason);
+        } else {
+            return null;
+        }
+    }
+    
+    public String getlastJSONString(String[] fields) {
+        if (currentLocation != null) {
+            return JSONString(currentLocation, fields, "m");
+        } else {
+            return JSONString(lastReportedLocation, fields, "m");
+        }
+    }
+    
+    private String JSONString(Location location, String[] fields, String reason) {
+        if (location != null) {
             String json;
             json = "{\"_type\":\"location\"";
-            json = json.concat(",\"tst\":\"" + (currentLocation.date.getTime() / 1000) + "\"");
-            json = json.concat(",\"lon\":\"" + currentLocation.longitude + "\"");
-            json = json.concat(",\"lat\":\"" + currentLocation.latitude + "\"");
+            json = json.concat(",\"t\":\"" + reason + "\"");
+            json = json.concat(",\"tst\":\"" + (location.date.getTime() / 1000) + "\"");
+            json = json.concat(",\"lon\":\"" + location.longitude + "\"");
+            json = json.concat(",\"lat\":\"" + location.latitude + "\"");
             
-            if (fields.indexOf("course") != -1) {
-                            json = json.concat(",\"crs\":\"" + currentLocation.course + "\"");
+            if (isInStringArray("course", fields)) {
+                            json = json.concat(",\"crs\":\"" + location.course + "\"");
             }
-            if (fields.indexOf("speed") != -1) {
-                            json = json.concat(",\"spd\":\"" + currentLocation.speed + "\"");
+            if (isInStringArray("speed", fields)) {
+                            json = json.concat(",\"spd\":\"" + location.speed + "\"");
             }
-            if (fields.indexOf("altitude") != -1) {
-                            json = json.concat(",\"alt\":\"" + currentLocation.altitude + "\"");
+            if (isInStringArray("altitude", fields)) {
+                            json = json.concat(",\"alt\":\"" + location.altitude + "\"");
             }
-            if (fields.indexOf("distance") != -1) {
-                            json = json.concat(",\"dist\":\"" + currentLocation.distance + "\"");
+            if (isInStringArray("distance", fields)) {
+                            json = json.concat(",\"dist\":\"" + location.distance + "\"");
             }
-            if (fields.indexOf("battery") != -1) {
-                            json = json.concat(",\"batt\":\"" + currentLocation.battery + "\"");
+            if (isInStringArray("battery", fields)) {
+                            json = json.concat(",\"batt\":\"" + location.battery + "\"");
             }
 
             json = json.concat("}");
-            lastReportedLocation = currentLocation;
-            currentLocation = null;
             return json;
         } else {
             return null;

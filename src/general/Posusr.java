@@ -9,7 +9,6 @@ public class Posusr implements GlobCost{
 	private String[] arrayMQTT;
 	private double tempDouble;
 	private double batt;
-	InfoStato infoS;
 
 
 	public Posusr(){
@@ -25,10 +24,7 @@ public class Posusr implements GlobCost{
 		// Final GPS string has 19 fields (without checksum, added after)
 		arrayGPS = new String[19];
 		//arrayGPS = new String[17];	// removed fields rotta[10] and distanza[13]
-		arrayMQTT = new String[21];
-
-		infoS = new InfoStato();
-		
+		arrayMQTT = new String[21];		
 	}
 	
 	public synchronized String set_posusr_old(String gps_rmc, String gps_gga){
@@ -66,10 +62,10 @@ public class Posusr implements GlobCost{
 					try {
 			    		if (!arrayRMC[1].equalsIgnoreCase(vuota)) {
 			    			arrayGPS[5]  = arrayRMC[1].substring(0,6);
-			    			infoS.setDataSMS(arrayRMC[1].substring(0,2)+":"+arrayRMC[1].substring(2,4)+":"+arrayRMC[1].substring(4,6), 2);
+			    			InfoStato.getInstance().setDataSMS(arrayRMC[1].substring(0,2)+":"+arrayRMC[1].substring(2,4)+":"+arrayRMC[1].substring(4,6), 2);
 			    		} else {
 			    			arrayGPS[5] = "000000";
-			    			infoS.setDataSMS("00:00:00", 2);
+			    			InfoStato.getInstance().setDataSMS("00:00:00", 2);
 			    		}
 					} catch (StringIndexOutOfBoundsException soobex) {
 						//System.out.println("Th*CommGPStrasparent: exception on time");
@@ -94,7 +90,7 @@ public class Posusr implements GlobCost{
 					} else arrayGPS[7] = "N";
 					// Data SMS
 					try {
-						infoS.setDataSMS(arrayGPS[6].substring(0,2)+" "+arrayGPS[6].substring(2,4)+"' "
+						InfoStato.getInstance().setDataSMS(arrayGPS[6].substring(0,2)+" "+arrayGPS[6].substring(2,4)+"' "
 							        	+arrayGPS[6].substring(5,7)+"\"."+arrayGPS[6].substring(7,9)+" "+arrayGPS[7], 3);
 					} catch (StringIndexOutOfBoundsException soobex) {
 						//System.out.println("Th*CommGPStrasparent: exception on latitude");
@@ -114,7 +110,7 @@ public class Posusr implements GlobCost{
 					
 					// Data SMS
 					try {
-						infoS.setDataSMS(arrayGPS[8].substring(1,3)+" "+arrayGPS[8].substring(3,5)+"' "
+						InfoStato.getInstance().setDataSMS(arrayGPS[8].substring(1,3)+" "+arrayGPS[8].substring(3,5)+"' "
 								        +arrayGPS[8].substring(6,8)+"\"."+arrayGPS[8].substring(8,10)+" "+arrayGPS[9], 4);
 					} catch (StringIndexOutOfBoundsException soobex) {
 						//System.out.println("Th*CommGPStrasparent: exception on longitude");
@@ -143,7 +139,7 @@ public class Posusr implements GlobCost{
 					
 					// Data SMS
 					try {
-						infoS.setDataSMS(Double.toString(tempDouble),7);
+						InfoStato.getInstance().setDataSMS(Double.toString(tempDouble),7);
 					} catch (StringIndexOutOfBoundsException soobex) {
 						//System.out.println("Th*CommGPStrasparent: exception on speed");
 					}
@@ -157,9 +153,9 @@ public class Posusr implements GlobCost{
 					// Data SMS
 					try {
 						if(arrayGPS[10].indexOf(".") > 0)
-							infoS.setDataSMS(arrayGPS[10].substring(0, arrayGPS[10].indexOf(".")),5);
+							InfoStato.getInstance().setDataSMS(arrayGPS[10].substring(0, arrayGPS[10].indexOf(".")),5);
 						else
-							infoS.setDataSMS(arrayGPS[10],5);
+							InfoStato.getInstance().setDataSMS(arrayGPS[10],5);
 					} catch (StringIndexOutOfBoundsException soobex) {
 						//System.out.println("Th*CommGPStrasparent: exception on route");
 					}	
@@ -169,10 +165,10 @@ public class Posusr implements GlobCost{
 					try{
 			    		if (arrayRMC[9].length()>3){
 			    			arrayGPS[4]  = arrayRMC[9].substring(4)+arrayRMC[9].substring(2,4)+arrayRMC[9].substring(0,2);
-			    			infoS.setDataSMS(arrayRMC[9].substring(0,2)+"-"+arrayRMC[9].substring(2,4)+"-"+arrayRMC[9].substring(4), 1);
+			    			InfoStato.getInstance().setDataSMS(arrayRMC[9].substring(0,2)+"-"+arrayRMC[9].substring(2,4)+"-"+arrayRMC[9].substring(4), 1);
 			    		} else {
 			    			arrayGPS[4] = "000000";
-			    			infoS.setDataSMS("00-00-00", 1);
+			    			InfoStato.getInstance().setDataSMS("00-00-00", 1);
 			    		}
 					} catch (StringIndexOutOfBoundsException soobex) {
 						//System.out.println("Th*CommGPStrasparent: exception on date");
@@ -207,10 +203,10 @@ public class Posusr implements GlobCost{
 					// NumSat
 					if (!arrayGGA[7].equalsIgnoreCase(vuota)) {
 						arrayGPS[3]  = arrayGGA[7];
-						infoS.setNumSat(arrayGGA[7]);
+						InfoStato.getInstance().setNumSat(arrayGGA[7]);
 					} else {
 						arrayGPS[3] = "00";
-						infoS.setNumSat("00");
+						InfoStato.getInstance().setNumSat("00");
 					}
 					break;
 				case 9:
@@ -228,30 +224,30 @@ public class Posusr implements GlobCost{
 		// Data SMS
 		try {
 			if(arrayGPS[11].indexOf(".") > 0)
-				infoS.setDataSMS(arrayGPS[11].substring(0, arrayGPS[11].indexOf(".")),6);
+				InfoStato.getInstance().setDataSMS(arrayGPS[11].substring(0, arrayGPS[11].indexOf(".")),6);
 			else
-				infoS.setDataSMS(arrayGPS[11],6);
+				InfoStato.getInstance().setDataSMS(arrayGPS[11],6);
 		} catch (StringIndexOutOfBoundsException soobex) {
 			//System.out.println("Th*CommGPStrasparent: exception on SMS-altitude");
 		} //catch
 		
 		// Fixed parameters on GPS string
-		arrayGPS[0]  = infoS.getInfoFileString(Header);
-		arrayGPS[1]  = infoS.getInfoFileString(IDtraker);
-		/*String tempD = Integer.toString((int)infoS.getDist());
+		arrayGPS[0]  = InfoStato.getInstance().getInfoFileString(Header);
+		arrayGPS[1]  = InfoStato.getInstance().getInfoFileString(IDtraker);
+		/*String tempD = Integer.toString((int)InfoStato.getInstance().getDist());
 		int lungh = tempD.length();
 		if(lungh < 6)
 			for(int x = 0; x < 6-lungh; x++)
 				tempD = "0"+tempD;
 		
 		arrayGPS[13] = tempD;*/
-		arrayGPS[12] = infoS.getBatteryVoltage();
-		/*if ((batt = Double.parseDouble(infoS.getBatteryVoltage())) > 4.3) {
+		arrayGPS[12] = InfoStato.getInstance().getBatteryVoltage();
+		/*if ((batt = Double.parseDouble(InfoStato.getInstance().getBatteryVoltage())) > 4.3) {
 			arrayGPS[15] = "E";		    // key activated = external power supply
 		} else arrayGPS[15] = "B";		// key not activated = battery power supply
 		*/
 		arrayGPS[13] = "E";
-		arrayGPS[14] = infoS.getDigitalIN();	// Digital Input
+		arrayGPS[14] = InfoStato.getInstance().getDigitalIN();	// Digital Input
 		arrayGPS[15] = "00";	// Digital Output
 		arrayGPS[16] = "00000000"; 
 		
@@ -303,10 +299,10 @@ public class Posusr implements GlobCost{
 					try {
 			    		if (!arrayRMC[1].equalsIgnoreCase(vuota)) {
 			    			arrayGPS[5]  = arrayRMC[1].substring(0,6);
-			    			infoS.setDataSMS(arrayRMC[1].substring(0,2)+":"+arrayRMC[1].substring(2,4)+":"+arrayRMC[1].substring(4,6), 2);
+			    			InfoStato.getInstance().setDataSMS(arrayRMC[1].substring(0,2)+":"+arrayRMC[1].substring(2,4)+":"+arrayRMC[1].substring(4,6), 2);
 			    		} else {
 			    			arrayGPS[5] = "000000";
-			    			infoS.setDataSMS("00:00:00", 2);
+			    			InfoStato.getInstance().setDataSMS("00:00:00", 2);
 			    		}
 					} catch (StringIndexOutOfBoundsException soobex) {
 						//System.out.println("Th*CommGPStrasparent: exception on time");
@@ -331,7 +327,7 @@ public class Posusr implements GlobCost{
 					} else arrayGPS[7] = "N";
 					// Data SMS
 					try {
-						infoS.setDataSMS(arrayGPS[6].substring(0,2)+" "+arrayGPS[6].substring(2,4)+"' "
+						InfoStato.getInstance().setDataSMS(arrayGPS[6].substring(0,2)+" "+arrayGPS[6].substring(2,4)+"' "
 							        	+arrayGPS[6].substring(5,7)+"\"."+arrayGPS[6].substring(7,9)+" "+arrayGPS[7], 3);
 					} catch (StringIndexOutOfBoundsException soobex) {
 						//System.out.println("Th*CommGPStrasparent: exception on latitude");
@@ -351,7 +347,7 @@ public class Posusr implements GlobCost{
 					
 					// Data SMS
 					try {
-						infoS.setDataSMS(arrayGPS[8].substring(1,3)+" "+arrayGPS[8].substring(3,5)+"' "
+						InfoStato.getInstance().setDataSMS(arrayGPS[8].substring(1,3)+" "+arrayGPS[8].substring(3,5)+"' "
 								        +arrayGPS[8].substring(6,8)+"\"."+arrayGPS[8].substring(8,10)+" "+arrayGPS[9], 4);
 					} catch (StringIndexOutOfBoundsException soobex) {
 						//System.out.println("Th*CommGPStrasparent: exception on longitude");
@@ -380,7 +376,7 @@ public class Posusr implements GlobCost{
 					
 					// Data SMS
 					try {
-						infoS.setDataSMS(Double.toString(tempDouble),7);
+						InfoStato.getInstance().setDataSMS(Double.toString(tempDouble),7);
 					} catch (StringIndexOutOfBoundsException soobex) {
 						//System.out.println("Th*CommGPStrasparent: exception on speed");
 					}
@@ -394,9 +390,9 @@ public class Posusr implements GlobCost{
 					// Data SMS
 					try {
 						if(arrayGPS[10].indexOf(".") > 0)
-							infoS.setDataSMS(arrayGPS[10].substring(0, arrayGPS[10].indexOf(".")),5);
+							InfoStato.getInstance().setDataSMS(arrayGPS[10].substring(0, arrayGPS[10].indexOf(".")),5);
 						else
-							infoS.setDataSMS(arrayGPS[10],5);
+							InfoStato.getInstance().setDataSMS(arrayGPS[10],5);
 					} catch (StringIndexOutOfBoundsException soobex) {
 						//System.out.println("Th*CommGPStrasparent: exception on route");
 					}	
@@ -406,10 +402,10 @@ public class Posusr implements GlobCost{
 					try{
 			    		if (arrayRMC[9].length()>3){
 			    			arrayGPS[4]  = arrayRMC[9].substring(4)+arrayRMC[9].substring(2,4)+arrayRMC[9].substring(0,2);
-			    			infoS.setDataSMS(arrayRMC[9].substring(0,2)+"-"+arrayRMC[9].substring(2,4)+"-"+arrayRMC[9].substring(4), 1);
+			    			InfoStato.getInstance().setDataSMS(arrayRMC[9].substring(0,2)+"-"+arrayRMC[9].substring(2,4)+"-"+arrayRMC[9].substring(4), 1);
 			    		} else {
 			    			arrayGPS[4] = "000000";
-			    			infoS.setDataSMS("00-00-00", 1);
+			    			InfoStato.getInstance().setDataSMS("00-00-00", 1);
 			    		}
 					} catch (StringIndexOutOfBoundsException soobex) {
 						//System.out.println("Th*CommGPStrasparent: exception on date");
@@ -444,10 +440,10 @@ public class Posusr implements GlobCost{
 					// NumSat
 					if (!arrayGGA[7].equalsIgnoreCase(vuota)) {
 						arrayGPS[3]  = arrayGGA[7];
-						infoS.setNumSat(arrayGGA[7]);
+						InfoStato.getInstance().setNumSat(arrayGGA[7]);
 					} else {
 						arrayGPS[3] = "00";
-						infoS.setNumSat("00");
+						InfoStato.getInstance().setNumSat("00");
 					}
 					break;
 				case 9:
@@ -465,30 +461,30 @@ public class Posusr implements GlobCost{
 		// Data SMS
 		try {
 			if(arrayGPS[12].indexOf(".") > 0)
-				infoS.setDataSMS(arrayGPS[12].substring(0, arrayGPS[12].indexOf(".")),6);
+				InfoStato.getInstance().setDataSMS(arrayGPS[12].substring(0, arrayGPS[12].indexOf(".")),6);
 			else
-				infoS.setDataSMS(arrayGPS[12],6);
+				InfoStato.getInstance().setDataSMS(arrayGPS[12],6);
 		} catch (StringIndexOutOfBoundsException soobex) {
 			//System.out.println("Th*CommGPStrasparent: exception on SMS-altitude");
 		} //catch
 		
 		// Fixed parameters on GPS string
-		arrayGPS[0]  = infoS.getInfoFileString(Header);
-		arrayGPS[1]  = infoS.getInfoFileString(IDtraker);
-		String tempD = Integer.toString((int)infoS.getDist());
+		arrayGPS[0]  = InfoStato.getInstance().getInfoFileString(Header);
+		arrayGPS[1]  = InfoStato.getInstance().getInfoFileString(IDtraker);
+		String tempD = Integer.toString((int)InfoStato.getInstance().getDist());
 		int lungh = tempD.length();
 		if(lungh < 6)
 			for(int x = 0; x < 6-lungh; x++)
 				tempD = "0"+tempD;
 		
 		arrayGPS[13] = tempD;
-		arrayGPS[14] = infoS.getBatteryVoltage();
-		/*if ((batt = Double.parseDouble(infoS.getBatteryVoltage())) > 4.3) {
+		arrayGPS[14] = InfoStato.getInstance().getBatteryVoltage();
+		/*if ((batt = Double.parseDouble(InfoStato.getInstance().getBatteryVoltage())) > 4.3) {
 			arrayGPS[15] = "E";		    // key activated = external power supply
 		} else arrayGPS[15] = "B";		// key not activated = battery power supply
 		*/
 		arrayGPS[15] = "E";
-		arrayGPS[16] = infoS.getDigitalIN();	// Digital Input
+		arrayGPS[16] = InfoStato.getInstance().getDigitalIN();	// Digital Input
 		arrayGPS[17] = "00";	// Digital Output
 		arrayGPS[18] = "00000000"; 
 		
@@ -541,10 +537,10 @@ public class Posusr implements GlobCost{
 					try {
 			    		if (!arrayRMC[1].equalsIgnoreCase(vuota)) {
 			    			arrayGPS[5]  = arrayRMC[1].substring(0,6);
-			    			infoS.setDataSMS(arrayRMC[1].substring(0,2)+":"+arrayRMC[1].substring(2,4)+":"+arrayRMC[1].substring(4,6), 2);
+			    			InfoStato.getInstance().setDataSMS(arrayRMC[1].substring(0,2)+":"+arrayRMC[1].substring(2,4)+":"+arrayRMC[1].substring(4,6), 2);
 			    		} else {
 			    			arrayGPS[5] = "000000";
-			    			infoS.setDataSMS("00:00:00", 2);
+			    			InfoStato.getInstance().setDataSMS("00:00:00", 2);
 			    		}
 					} catch (StringIndexOutOfBoundsException soobex) {
 						//System.out.println("Th*CommGPStrasparent: exception on time");
@@ -569,7 +565,7 @@ public class Posusr implements GlobCost{
 					} else arrayGPS[7] = "N";
 					// Data SMS
 					try {
-						infoS.setDataSMS(arrayGPS[6].substring(0,2)+" "+arrayGPS[6].substring(2,4)+"' "
+						InfoStato.getInstance().setDataSMS(arrayGPS[6].substring(0,2)+" "+arrayGPS[6].substring(2,4)+"' "
 							        	+arrayGPS[6].substring(5,7)+"\"."+arrayGPS[6].substring(7,9)+" "+arrayGPS[7], 3);
 					} catch (StringIndexOutOfBoundsException soobex) {
 						//System.out.println("Th*CommGPStrasparent: exception on latitude");
@@ -589,7 +585,7 @@ public class Posusr implements GlobCost{
 					
 					// Data SMS
 					try {
-						infoS.setDataSMS(arrayGPS[8].substring(1,3)+" "+arrayGPS[8].substring(3,5)+"' "
+						InfoStato.getInstance().setDataSMS(arrayGPS[8].substring(1,3)+" "+arrayGPS[8].substring(3,5)+"' "
 								        +arrayGPS[8].substring(6,8)+"\"."+arrayGPS[8].substring(8,10)+" "+arrayGPS[9], 4);
 					} catch (StringIndexOutOfBoundsException soobex) {
 						//System.out.println("Th*CommGPStrasparent: exception on longitude");
@@ -618,7 +614,7 @@ public class Posusr implements GlobCost{
 					
 					// Data SMS
 					try {
-						infoS.setDataSMS(Double.toString(tempDouble),7);
+						InfoStato.getInstance().setDataSMS(Double.toString(tempDouble),7);
 					} catch (StringIndexOutOfBoundsException soobex) {
 						//System.out.println("Th*CommGPStrasparent: exception on speed");
 					}
@@ -632,9 +628,9 @@ public class Posusr implements GlobCost{
 					// Data SMS
 					try {
 						if(arrayGPS[10].indexOf(".") > 0)
-							infoS.setDataSMS(arrayGPS[10].substring(0, arrayGPS[10].indexOf(".")),5);
+							InfoStato.getInstance().setDataSMS(arrayGPS[10].substring(0, arrayGPS[10].indexOf(".")),5);
 						else
-							infoS.setDataSMS(arrayGPS[10],5);
+							InfoStato.getInstance().setDataSMS(arrayGPS[10],5);
 					} catch (StringIndexOutOfBoundsException soobex) {
 						//System.out.println("Th*CommGPStrasparent: exception on route");
 					}	
@@ -644,10 +640,10 @@ public class Posusr implements GlobCost{
 					try{
 			    		if (arrayRMC[9].length()>3){
 			    			arrayGPS[4]  = arrayRMC[9].substring(4)+arrayRMC[9].substring(2,4)+arrayRMC[9].substring(0,2);
-			    			infoS.setDataSMS(arrayRMC[9].substring(0,2)+"-"+arrayRMC[9].substring(2,4)+"-"+arrayRMC[9].substring(4), 1);
+			    			InfoStato.getInstance().setDataSMS(arrayRMC[9].substring(0,2)+"-"+arrayRMC[9].substring(2,4)+"-"+arrayRMC[9].substring(4), 1);
 			    		} else {
 			    			arrayGPS[4] = "000000";
-			    			infoS.setDataSMS("00-00-00", 1);
+			    			InfoStato.getInstance().setDataSMS("00-00-00", 1);
 			    		}
 					} catch (StringIndexOutOfBoundsException soobex) {
 						//System.out.println("Th*CommGPStrasparent: exception on date");
@@ -682,10 +678,10 @@ public class Posusr implements GlobCost{
 					// NumSat
 					if (!arrayGGA[7].equalsIgnoreCase(vuota)) {
 						arrayGPS[3]  = arrayGGA[7];
-						infoS.setNumSat(arrayGGA[7]);
+						InfoStato.getInstance().setNumSat(arrayGGA[7]);
 					} else {
 						arrayGPS[3] = "00";
-						infoS.setNumSat("00");
+						InfoStato.getInstance().setNumSat("00");
 					}
 					break;
 				case 9:
@@ -703,30 +699,30 @@ public class Posusr implements GlobCost{
 		// Data SMS
 		try {
 			if(arrayGPS[12].indexOf(".") > 0)
-				infoS.setDataSMS(arrayGPS[12].substring(0, arrayGPS[12].indexOf(".")),6);
+				InfoStato.getInstance().setDataSMS(arrayGPS[12].substring(0, arrayGPS[12].indexOf(".")),6);
 			else
-				infoS.setDataSMS(arrayGPS[12],6);
+				InfoStato.getInstance().setDataSMS(arrayGPS[12],6);
 		} catch (StringIndexOutOfBoundsException soobex) {
 			//System.out.println("Th*CommGPStrasparent: exception on SMS-altitude");
 		} //catch
 
 		// Fixed parameters on GPS string
-		arrayGPS[0]  = infoS.getInfoFileString(Header);
-		arrayGPS[1]  = infoS.getInfoFileString(IDtraker);
-		String tempD = Integer.toString((int)infoS.getDist());
+		arrayGPS[0]  = InfoStato.getInstance().getInfoFileString(Header);
+		arrayGPS[1]  = InfoStato.getInstance().getInfoFileString(IDtraker);
+		String tempD = Integer.toString((int)InfoStato.getInstance().getDist());
 		int lungh = tempD.length();
 		if(lungh < 6)
 			for(int x = 0; x < 6-lungh; x++)
 				tempD = "0"+tempD;
 		
 		arrayGPS[13] = tempD;
-		arrayGPS[14] = infoS.getBatteryVoltage();
-		/*if ((batt = Double.parseDouble(infoS.getBatteryVoltage())) > 4.3) {
+		arrayGPS[14] = InfoStato.getInstance().getBatteryVoltage();
+		/*if ((batt = Double.parseDouble(InfoStato.getInstance().getBatteryVoltage())) > 4.3) {
 			arrayGPS[15] = "E";		    // key activated = external power supply
 		} else arrayGPS[15] = "B";		// key not activated = battery power supply
 		*/
 		arrayGPS[15] = "E";
-		arrayGPS[16] = infoS.getDigitalIN();	// Digital Input
+		arrayGPS[16] = InfoStato.getInstance().getDigitalIN();	// Digital Input
 		arrayGPS[17] = "00";	// Digital Output
 		arrayGPS[18] = "00000000"; 
 		
@@ -791,16 +787,4 @@ public class Posusr implements GlobCost{
 		return arrayMQTT;
 		
 	}
-
-	
-	/**
-	 *  Add reference to InfoStato data structure
-	 *  
-	 *  @param	is	InfoStato object
-	 *  @return "OK,infoS"
-	 */
-	public synchronized String addInfoStato(InfoStato is) {	
-		infoS = is;
-		return "OK,infoS";
-	} //addInfoStato
 }

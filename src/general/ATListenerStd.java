@@ -26,7 +26,7 @@ import com.cinterion.io.*;
  * @author 	alessioza
  * 
  */
-public class ATListenerStd extends ATListenerCustom implements ATCommandResponseListener {
+public class ATListenerStd implements GlobCost, ATCommandResponseListener {
 		
 	/*
 	 * local variables
@@ -34,11 +34,9 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 	private int 	SGIOvalue;
 	private double	supplyVoltage;
 	private String	Vbatt;
-	Mailbox 		mboxMAIN;
 	int 			numThread;
 	boolean			isRicevitore;
 	private String  temp, comandoGPRSCFG, dataGPRMC, oraGPRMC;
-	FlashFile 	file = new FlashFile();
 	int			countReg=0;
 	boolean leaveAT = false;
 	
@@ -47,9 +45,6 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 	 * constructors
 	 */
 	public ATListenerStd() {
-		//System.out.println("ATListenerStd: CREATED");
-		// mailboxes creation
-		mboxMAIN = new Mailbox(20);
 	}
 	
 	/* 
@@ -71,9 +66,9 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 		 * 
 		 */
 		if (response.indexOf("REVISION ") >=0) {
-			//infoS.setATexec(false);		// AT resource is free, no one AT command executing
+			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
 			response = response.substring(response.indexOf("REVISION ")+"REVISION ".length());
-			infoS.setREV(response.substring(0,response.indexOf("\r")));
+			InfoStato.getInstance().setREV(response.substring(0,response.indexOf("\r")));
 		} 
 		
 		/*
@@ -81,19 +76,19 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 		 */
 		if (response.indexOf("+CSQ") >=0) {
 			//System.out.println("ATListenerStd: AT+CSQ");
-			//infoS.setATexec(false);		// AT resource is free, no one AT command executing
-			infoS.setCSQ(response.substring(response.indexOf("+CSQ: ")+"+CSQ: ".length(), response.indexOf(",")));
+			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
+			InfoStato.getInstance().setCSQ(response.substring(response.indexOf("+CSQ: ")+"+CSQ: ".length(), response.indexOf(",")));
 		} //+CSQ
 		
 		if(response.indexOf("^SCFG: \"MEopMode/Airplane\",\"off\"") >= 0){
-			//infoS.setATexec(false);		// AT resource is free, no one AT command executing
+			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
 			//System.out.println("^SCFG: \"MEopMode/Airplane\",\"off\"");
-			file.setImpostazione(CloseMode, closeAIR);
-			// Write to file
+			FlashFile.getInstance().setImpostazione(CloseMode, closeAIR);
+			// Write to FlashFile.getInstance()
 			InfoStato.getFile();
-			file.writeSettings();
+			FlashFile.getInstance().writeSettings();
 			InfoStato.freeFile();
-			mboxMAIN.write(msgREBOOT);
+			Mailboxes.getInstance(0).write(msgREBOOT);
 			
 		}
 
@@ -102,8 +97,8 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 		 */ 
 		if (response.indexOf("CONNECT 9600/RLP") >=0) {
 			//System.out.println("ATListenerStd: CSD connection established!");
-			//infoS.setATexec(false);
-			infoS.setCSDconnect(true);
+			//InfoStato.getInstance().setATexec(false);
+			InfoStato.getInstance().setCSDconnect(true);
 		} //CONNECT
 		
 		
@@ -111,15 +106,15 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 		 * Answer to IMEI command
 		 */ 
 		if (response.indexOf("AT+CGSN") >=0) {
-			//infoS.setATexec(false);
-			infoS.setIMEI(response.substring(response.indexOf("+CGSN\r\r\n")+"+CGSN\r\r\n".length(), response.indexOf("OK")-4));
+			//InfoStato.getInstance().setATexec(false);
+			InfoStato.getInstance().setIMEI(response.substring(response.indexOf("+CGSN\r\r\n")+"+CGSN\r\r\n".length(), response.indexOf("OK")-4));
 		} //IMEI
 		
 		/*
 		 * Answer to read of GPIO key
 		 */
 		if (response.indexOf("^SGIO") >=0) {
-			//infoS.setATexec(false);		// AT resource is free, no one AT command executing
+			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
 			SGIOvalue = Integer.parseInt(response.substring(response.indexOf("^SGIO")+7,response.indexOf("^SGIO")+8));
 			
 			/*
@@ -127,19 +122,19 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 			 */
 			
 			// GPIO n.7
-			if (infoS.getGPIOnumberTEST()==7) {
+			if (InfoStato.getInstance().getGPIOnumberTEST()==7) {
 			
 				// if SGIOvalue = "0" -> key active -> set value
 				if (SGIOvalue==0) {
-					infoS.setGPIOchiave(0);
-					infoS.setDigitalIN(0,0);
-					infoS.setTipoRisveglio(risveglioChiave);
+					InfoStato.getInstance().setGPIOchiave(0);
+					InfoStato.getInstance().setDigitalIN(0,0);
+					InfoStato.getInstance().setTipoRisveglio(risveglioChiave);
 					//System.out.println("ATListenerStd: power up due to key activation!!");
 				}
 				// if SGIOvalue = "1" -> key not active -> no set value -> set '-1'
 				else {
-					infoS.setGPIOchiave(1);
-					infoS.setDigitalIN(1,0);
+					InfoStato.getInstance().setGPIOchiave(1);
+					InfoStato.getInstance().setDigitalIN(1,0);
 				}
 			
 			} //GPIO7
@@ -149,13 +144,13 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 			 */
 			
 			// Input 1 = GPIO n.1
-			if (infoS.getGPIOnumberTEST()==1) {
-				infoS.setDigitalIN(SGIOvalue,1);			
+			if (InfoStato.getInstance().getGPIOnumberTEST()==1) {
+				InfoStato.getInstance().setDigitalIN(SGIOvalue,1);			
 			} //Input 1
 			
 			// Input 2 = GPIO n.3
-			else if (infoS.getGPIOnumberTEST()==3) {
-				infoS.setDigitalIN(SGIOvalue,2);			
+			else if (InfoStato.getInstance().getGPIOnumberTEST()==3) {
+				InfoStato.getInstance().setDigitalIN(SGIOvalue,2);			
 			} //Input 2
 			
 		} //^SGIO
@@ -165,7 +160,7 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 		 * Operation on ^SBV (battery control)
 		 */
 		if (response.indexOf("^SBV") >=0) {
-			//infoS.setATexec(false);		// AT resource is free, no one AT command executing
+			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
 			//System.out.print("ATListenerStd: check battery voltage...");
 			// extract info about battery voltage
 			response = response.substring(response.indexOf("^SBV: "));
@@ -180,14 +175,14 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 			// check battery voltage
 			if (supplyVoltage <= VbattSoglia) {
 				// send msg to AppMain about battery undervoltage
-				mboxMAIN.write(msgBattScarica);	
+				Mailboxes.getInstance(0).write(msgBattScarica);	
 				if(debugGSM){
 					System.out.println("^SBC: UnderVoltage: " + Vbatt);
 				}
 			}
-			// insert battery info into file
+			// insert battery info into FlashFile.getInstance()
 			Vbatt = Vbatt.substring(0,1) + "." + Vbatt.substring(1,2) + "V";
-			infoS.setBatteryVoltage(Vbatt);
+			InfoStato.getInstance().setBatteryVoltage(Vbatt);
 			//System.out.println("ATListenerStd, Battery Voltage: " + Vbatt);
 		} //^SBV
 		
@@ -197,7 +192,7 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 		 */
 		if (response.indexOf("+CPMS: \"MT\"") >=0) {
 			
-			//infoS.setATexec(false);		// AT resource is free, no one AT command executing
+			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
 			if(debugGSM){
 				System.out.println(response);
 			}
@@ -210,14 +205,14 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 				temp = temp.substring(0, temp.indexOf(","));
 				//System.out.println("ATListenerStd, +CPMS: " + temp);
 				
-				infoS.setNumSMS(Integer.parseInt(temp));
-				//System.out.println("ATListenerStd, SMS number: " + infoS.getNumSMS());
+				InfoStato.getInstance().setNumSMS(Integer.parseInt(temp));
+				//System.out.println("ATListenerStd, SMS number: " + InfoStato.getInstance().getNumSMS());
 				
 				temp2 = temp2.substring(temp2.indexOf(",")+1);
 				
 				temp2 = temp2.substring(0, temp2.indexOf(","));
 				
-				infoS.setMaxNumSms(Integer.parseInt(temp2));
+				InfoStato.getInstance().setMaxNumSms(Integer.parseInt(temp2));
 				
 			}catch(NumberFormatException  e){
 				
@@ -234,7 +229,7 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 		 */
 		if (response.indexOf("+CMGL") >=0) {
 			
-			//infoS.setATexec(false);		// AT resource is free, no one AT command executing
+			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
 			try {
 				// Extract strng '+CMGL.....'
 				temp = response.substring(response.indexOf("+CMGL: "));
@@ -242,15 +237,15 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 				// Extract string '**,*'
 				temp = temp.substring(temp.indexOf("+CMGL: ") + "+CMGL: ".length(), temp.indexOf(","));
 				//System.out.println(temp);
-				infoS.setCodSMS(Integer.parseInt(temp));
+				InfoStato.getInstance().setCodSMS(Integer.parseInt(temp));
 			} catch (StringIndexOutOfBoundsException ex) {
 				if(debugGSM){
 					System.out.println("ATListenerStd, +CMGL: StringIndexOutOfBoundsException");
 				}
-				infoS.setCodSMS(-2);
+				InfoStato.getInstance().setCodSMS(-2);
 			} //catch
 			
-			//System.out.println("ATListenerStd, SMS code: " + infoS.getCodSMS());
+			//System.out.println("ATListenerStd, SMS code: " + InfoStato.getInstance().getCodSMS());
 			
 		} //+CMGL
 		
@@ -266,8 +261,8 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 			 * Check if present a particular string into SMS text
 			 */
 			if(response.indexOf("+CMGR: 0,,0") >= 0){
-				infoS.setSMSCommand("+CMGR: 0,,0");
-				infoS.setValidSMS(false);
+				InfoStato.getInstance().setSMSCommand("+CMGR: 0,,0");
+				InfoStato.getInstance().setValidSMS(false);
 			}
 			else{
 				try {
@@ -277,10 +272,10 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 					comandoGPRSCFG = comandoGPRSCFG.substring(comandoGPRSCFG.indexOf("GPRSCFG ")+"GPRSCFG ".length(), comandoGPRSCFG.indexOf(","));
 					//System.out.println("ATListenerStd, APN: " + comandoGPRSCFG);
 					
-					file.setImpostazione(ConnProfileGPRS, "bearer_type=GPRS;access_point="+comandoGPRSCFG);
-					file.setImpostazione(apn, comandoGPRSCFG);		    						
+					FlashFile.getInstance().setImpostazione(ConnProfileGPRS, "bearer_type=GPRS;access_point="+comandoGPRSCFG);
+					FlashFile.getInstance().setImpostazione(apn, comandoGPRSCFG);		    						
 					InfoStato.getFile();
-					file.writeSettings();
+					FlashFile.getInstance().writeSettings();
 					InfoStato.freeFile();
 					
 				} catch (StringIndexOutOfBoundsException ex) {
@@ -298,12 +293,12 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 				 */
 				try {
 					
-					temp = infoS.campo(response, 1, false);
+					temp = InfoStato.getInstance().campo(response, 1, false);
 					//System.out.println("ATListenerStd, extract number: " + temp);
 					
 					// Telephone number of sender
-					infoS.setNumTelSMS(temp);
-					//System.out.println("ATListenerStd, SMS sender number: " + infoS.getNumTelSMS());
+					InfoStato.getInstance().setNumTelSMS(temp);
+					//System.out.println("ATListenerStd, SMS sender number: " + InfoStato.getInstance().getNumTelSMS());
 					
 				} catch (StringIndexOutOfBoundsException ex) {
 					if(debug){
@@ -319,21 +314,21 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 				 * Check validity of command SMS
 				 */
 				if (response.indexOf(keySMS) >=0){
-					infoS.setSMSCommand(keySMS);
-					infoS.setValidSMS(true);
+					InfoStato.getInstance().setSMSCommand(keySMS);
+					InfoStato.getInstance().setValidSMS(true);
 				}
 				else{
 					if(response.indexOf(keySMS1) >=0){
-						infoS.setSMSCommand(keySMS1);
-						infoS.setValidSMS(true);
+						InfoStato.getInstance().setSMSCommand(keySMS1);
+						InfoStato.getInstance().setValidSMS(true);
 					}
 					else{
 						if(response.indexOf(keySMS2) >=0){
-							infoS.setSMSCommand(keySMS2);
-							infoS.setValidSMS(true);
+							InfoStato.getInstance().setSMSCommand(keySMS2);
+							InfoStato.getInstance().setValidSMS(true);
 						}
 						else
-						infoS.setValidSMS(false);
+						InfoStato.getInstance().setValidSMS(false);
 					}
 				}
 			}
@@ -348,7 +343,7 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 		} //>
 		
 		if (response.indexOf("+CMGS") >=0) {
-			//infoS.setATexec(false);		// AT resource is free, no one AT command executing
+			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
 			//System.out.println(response);
 		}
 		
@@ -356,7 +351,7 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 		 * Operations on +CCLK
 		 */
 		if (response.indexOf("+CCLK") >=0) {
-			//infoS.setATexec(false);		// AT resource is free, no one AT command executing
+			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
 			/* 
 			 * Extract strings oraGPRMC and dataGPRMC
 			 */
@@ -364,7 +359,7 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 			dataGPRMC = response.substring(response.indexOf("\"")+1, response.indexOf(","));
 			response = response.substring(response.indexOf(","));
 			oraGPRMC= response.substring(response.indexOf(",")+1, response.indexOf("\""));
-			infoS.setDataOraGPRMC(dataGPRMC, oraGPRMC);
+			InfoStato.getInstance().setDataOraGPRMC(dataGPRMC, oraGPRMC);
 			
 		} //+CCLK
 		
@@ -372,7 +367,7 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 		 * Operations on +COPS (SIM network registration)
 		 */
 		if (response.indexOf("^SMONG") >=0 || response.indexOf("^smong") >=0) {
-			//infoS.setATexec(false);		// AT resource is free, no one AT command executing
+			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
 			//System.out.println(response);
 			//new LogError(response);
 		} //^SMONG
@@ -381,7 +376,7 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 		 * Operations on +COPS (SIM network registration)
 		 */
 		if (response.indexOf("+COPS:") >=0) {
-			//infoS.setATexec(false);		// AT resource is free, no one AT command executing
+			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
 			if(response.indexOf(",") >= 0)
 				countReg = 0;
 			else
@@ -389,7 +384,7 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 			if(countReg>10){	
 				new LogError("NO NETWORK");
 				//System.out.println("NO NETWORK");
-				infoS.setReboot();
+				InfoStato.getInstance().setReboot();
 			}
 		} //+COPS
 		
@@ -402,7 +397,7 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 		// Execution OK
 		if (response.indexOf("OK") >=0) {
 			//System.out.println("ATListenerStd, AT command result 'OK'");
-			//infoS.setATexec(false);		// AT resource is free, no one AT command executing
+			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
 		} //OK
 		
 		// Execution ERROR
@@ -410,68 +405,31 @@ public class ATListenerStd extends ATListenerCustom implements ATCommandResponse
 			if(debugGSM){
 				System.out.println("ATListenerStd, AT command result 'ERROR'");
 			}
-			//infoS.setATexec(false);		// AT resource is free, no one AT command executing
+			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
 		} //ERROR
 		// Execution NO CARRIER
 		if (response.indexOf("NO CARRIER") >=0) {
 			
-			//infoS.setATexec(false);		// AT resource is free, no one AT command executing
+			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
 
 		} //NO CARRIER
 
 		// Execution BUSY
 		if (response.indexOf("BUSY") >=0) {
 			
-			//infoS.setATexec(false);		// AT resource is free, no one AT command executing
+			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
 		} //BUSY
 
 		// Execution NO DIALTONE
 		if (response.indexOf("NO DIALTONE") >=0) {
 			
-			//infoS.setATexec(false);		// AT resource is free, no one AT command executing
+			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
 		} //NO DIALTONE
 		
 		//if(!leaveAT)
-			infoS.setATexec(false);		// AT resource is free, no one AT command executing
+			InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
 		//System.out.println("EXIT LISTENER");
 			
-	} //ATResponse
-	
-	
-	/**
-	 *  Pass to a thread a Mailbox object
-	 *  
-	 *  @param	mb		Mailbox object
-	 *  @param 	nMbox	mailbox number
-	 *  @param 	nth		thread number
-	 *  @param	isRcv	mailbox-owner indication about thread
-	 *  @return "OK,<mailbox name>"
-	 */
-	public synchronized String addMailbox(Mailbox mb, int nMbox, int nth, boolean isRcv) {
-		// you can pass up to 10 (maximum) mailboxes for each Thread
-		switch (nMbox) {
-			case 0: {
-				mboxMAIN = new Mailbox(20);
-				mboxMAIN = mb;
-				numThread = nth;
-				isRicevitore = isRcv;
-				return "OK,mboxMAIN";
-			}
-			default: return "Error";
-		} //switch		
-	} //addMailbox
-
-
-	/**
-	 *  Add reference to FlashFile data structure
-     *  
-	 *  @param	ff	FlashFile object
-	 *  @return "OK,FlashFile"
-	 */	
-	public synchronized String addFlashFile(FlashFile ff) {	
-		file = ff;
-		return "OK,FlashFile";
-	} //addFlashFile
-	
+	} //ATResponse	
 } //ATListenerStd
 

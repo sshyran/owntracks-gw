@@ -26,7 +26,6 @@ public class DataStore extends Stack implements GlobCost {
 	 */
 	private Object 	lastValidPOS= null;
 	private boolean isLastValid = false;
-	InfoStato infoS;
 	private String dsType;
 
 	
@@ -36,7 +35,6 @@ public class DataStore extends Stack implements GlobCost {
 	public DataStore(String type) {
 		//System.out.println("DataStore: CREATED");
 		dsType = type;
-		infoS = new InfoStato();
 	}
 	
 	
@@ -124,7 +122,7 @@ public class DataStore extends Stack implements GlobCost {
 		if (lastValidPOS!=null) 
 			return lastValidPOS;
 		else
-			return infoS.getInfoFileString(LastGPRMCValid);
+			return InfoStato.getInstance().getInfoFileString(LastGPRMCValid);
 				
 	}
 	
@@ -167,17 +165,5 @@ public class DataStore extends Stack implements GlobCost {
 	 */
 	public synchronized boolean synEmpty() {
 		return this.empty();
-	}
-	
-	/**
-	 *  Add reference to InfoStato data structure
-	 *  
-	 *  @param	is	InfoStato object
-	 *  @return "OK,infoS"
-	 */
-	public synchronized String addInfoStato(InfoStato is) {	
-		infoS = is;
-		return "OK,infoS";
-	} //addInfoStato
-	
+	}	
 }

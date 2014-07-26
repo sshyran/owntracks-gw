@@ -41,24 +41,6 @@ public class GoToPowerDown extends ThreadCustom implements GlobCost {
 	
 	
 	/*
-	 * INHERITED RESOURCES from ThreadCustom and passed to AppMain 
-	 *
-	 * semaphore 'semAT', for the exclusive use of the AT resource
-	 * flag 	 'ATexec', indicates if AT resource is busy
-	 * flag		 'validFIXgprs', indicates if it has been completed sending
-	 *                           of GPS strings through GPRS
-	 * flag		 'FIXtimeoutExpired', indicates if FIXtimeout expires
-	 * flag		 'isFirstRun', indication for first application execution
-	 * Mailbox   'mboxMAIN', to send msg to AppMain
-	 * Mailbox   'mbox2', to send msg to th2 (ATsender)
-	 * Mailbox   'mbox4', to receive msg with this thread
-	 * DataStore 'dsData', to deposit GPS strings
-	 * FlashFile 'file', to save settings
-	 * FlashRecordStore 'flash', to save settings
-	 */
-
-
-	/*
 	 * constructors 
 	 */
 	public GoToPowerDown() {
@@ -100,16 +82,15 @@ public class GoToPowerDown extends ThreadCustom implements GlobCost {
 			 * 			 a) if actual string is valid, I use it
 			 * 			 b) if actual string is not valid, I use the last valid
 			 */
-			if (infoS.getValidFIX()==true){
+			if (InfoStato.getInstance().getValidFIX()==true){
 				
 				if(debug){
 					System.out.println("Th*GoToPowerDown: CASE n.1");
 				}
 				
 				Posusr msg = new Posusr();
-				msg.addInfoStato(infoS);
-				String tempRMC = (String)dsDataRMC.readOnlyIfObjectIsValid();
-				String tempGGA = (String)dsDataGGA.readOnlyIfObjectIsValid();
+				String tempRMC = (String)DataStores.getInstance(DataStores.dsDRMC).readOnlyIfObjectIsValid();
+				String tempGGA = (String)DataStores.getInstance(DataStores.dsDGGA).readOnlyIfObjectIsValid();
 				if(tempRMC!=null)
 					objGPRMC = msg.set_posusr(tempRMC, tempGGA);
 				else
@@ -124,8 +105,8 @@ public class GoToPowerDown extends ThreadCustom implements GlobCost {
 					/* if current string is not valid
 					 * then get the last valid
 					 */ 
-					tempRMC = (String)dsDataRMC.getLastValid();
-					tempGGA = (String)dsDataGGA.getLastValid();
+					tempRMC = (String)DataStores.getInstance(DataStores.dsDRMC).getLastValid();
+					tempGGA = (String)DataStores.getInstance(DataStores.dsDGGA).getLastValid();
 					if((tempRMC != null) && (!(tempRMC.equals(""))))
 						GPRMCorig = msg.set_posusr(tempRMC, tempGGA);
 					else
@@ -172,24 +153,24 @@ public class GoToPowerDown extends ThreadCustom implements GlobCost {
 				/* Please note: use satellite time */
 				
 				// SET RTC
-				semAT.getCoin(5);
+				SemAT.getInstance().getCoin(5);
 					if(debug){
 						System.out.println("Th*GoToPowerDown: Set RTC in progress...");
 					}
 				
 					// send 'at+cclk'
-					infoS.setATexec(true);
+					InfoStato.getInstance().setATexec(true);
 					if(debug){
-						System.out.println("Th*GoToPowerDown: ATexec = " + infoS.getATexec());
+						System.out.println("Th*GoToPowerDown: ATexec = " + InfoStato.getInstance().getATexec());
 					}
-						mbox2.write("at+cclk=\"" + dataGPRMC + "," + oraGPRMC + "\"\r");
+						Mailboxes.getInstance(2).write("at+cclk=\"" + dataGPRMC + "," + oraGPRMC + "\"\r");
 						if(debug){
 							System.out.println("Th*GoToPowerDown: sent message: at+cclk..");
 							System.out.println("Th*GoToPowerDown,at+cclk: wait for AT resource is free...");
 						}
-				    while(infoS.getATexec()) { Thread.sleep(whileSleep); }
+				    while(InfoStato.getInstance().getATexec()) { Thread.sleep(whileSleep); }
 				
-				semAT.putCoin();		
+				SemAT.getInstance().putCoin();		
 				
 			} //case 1
 			
@@ -197,32 +178,26 @@ public class GoToPowerDown extends ThreadCustom implements GlobCost {
 			 * CASE n.2: timeout expired, put module in Power Down
 			 * 			 recovering current time and date from RTC
 			 */
-			else if (infoS.getValidFIX()==false) {
+			else if (InfoStato.getInstance().getValidFIX()==false) {
 				
 				if(debug){
 					System.out.println("Th*GoToPowerDown: CASE n.2");
 				}
 				
 				// recover time and date from RTC through read command 'AT+CCLK?'
-				semAT.getCoin(5);
-				
+				SemAT.getInstance().getCoin(5);				
 				if(debug){
 					System.out.println("Th*GoToPowerDown: read RTC in progress...");
 				}
-				
-				// send 'at+cclk?'
-				infoS.setATexec(true);
-				mbox2.write("at+cclk?\r");
-				while(infoS.getATexec()) { Thread.sleep(whileSleep); }
-		
-				semAT.putCoin();	
+                                InfoStato.getInstance().writeATCommand("at+cclk?\r");				
+				SemAT.getInstance().putCoin();	
 					
 				// wait for answer
-				while(infoS.getDataGPRMC() == null || infoS.getOraGPRMC() == null) { Thread.sleep(whileSleep); }
+				while(InfoStato.getInstance().getDataGPRMC() == null || InfoStato.getInstance().getOraGPRMC() == null) { Thread.sleep(whileSleep); }
 
-				dataGPRMC = infoS.getDataGPRMC();
-				oraGPRMC = infoS.getOraGPRMC();
-				infoS.setDataOraGPRMC(null, null);
+				dataGPRMC = InfoStato.getInstance().getDataGPRMC();
+				oraGPRMC = InfoStato.getInstance().getOraGPRMC();
+				InfoStato.getInstance().setDataOraGPRMC(null, null);
 				GPRMCorig = "";
 				
 				if(debug){
@@ -238,8 +213,8 @@ public class GoToPowerDown extends ThreadCustom implements GlobCost {
 			else {
 				if(debug){
 					System.out.println("Case n.3");
-					System.out.println("Valid FIX GPRS: "+infoS.getValidFIXgprs());
-					System.out.println("FIX timeout EXPIRED: "+infoS.isFIXtimeoutExpired());
+					System.out.println("Valid FIX GPRS: "+InfoStato.getInstance().getValidFIXgprs());
+					System.out.println("FIX timeout EXPIRED: "+InfoStato.getInstance().isFIXtimeoutExpired());
 				}
 				GPRMCorig = "";
 			} //case 3
@@ -250,7 +225,7 @@ public class GoToPowerDown extends ThreadCustom implements GlobCost {
 			 * 
 			 * not to do incase of closure for battery low
 			 */
-			if (infoS.getSTATOexecApp().equalsIgnoreCase(execBATTSCARICA)) {
+			if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execBATTSCARICA)) {
 				/*
 				 * Don't set time of awakening
 				 */
@@ -268,21 +243,21 @@ public class GoToPowerDown extends ThreadCustom implements GlobCost {
 				timeSveglia = cs.setSveglia();
 				
 				if(!timeSveglia.equals("error")){
-					semAT.getCoin(5);
+					SemAT.getInstance().getCoin(5);
 						if(debug){
 							System.out.println("Th*GoToPowerDown: Set alarm time in progress...");
 						}
 	
 						// send 'at+cala'
-						infoS.setATexec(true);
-						//System.out.println("Th*GoToPowerDown: ATexec = " + infoS.getATexec());
-						mbox2.write("at+cala=\"" + timeSveglia + "\"\r");
+						InfoStato.getInstance().setATexec(true);
+						//System.out.println("Th*GoToPowerDown: ATexec = " + InfoStato.getInstance().getATexec());
+						Mailboxes.getInstance(2).write("at+cala=\"" + timeSveglia + "\"\r");
 						if(debug){
 							System.out.println("Th*GoToPowerDown: sent message 'at+cala'...");
 						}
 						//System.out.println("Th*GoToPowerDown: wait for AT resource is free...");
-						while(infoS.getATexec()) { Thread.sleep(whileSleep); }
-					semAT.putCoin();
+						while(InfoStato.getInstance().getATexec()) { Thread.sleep(whileSleep); }
+					SemAT.getInstance().putCoin();
 				}
 			}			
 			
@@ -299,13 +274,12 @@ public class GoToPowerDown extends ThreadCustom implements GlobCost {
 			 * 	- if FIX not done  --> maintain original one
 			 */
 			Posusr msg = new Posusr();
-			msg.addInfoStato(infoS);
-			String tempRMC = (String)dsDataRMC.getLastValid();
-			String tempGGA = (String)dsDataGGA.getLastValid();
+			String tempRMC = (String)DataStores.getInstance(DataStores.dsDRMC).getLastValid();
+			String tempGGA = (String)DataStores.getInstance(DataStores.dsDGGA).getLastValid();
 			if((tempRMC != null) && (!(tempRMC.equals(""))))
-				file.setImpostazione(LastGPSValid, msg.set_posusr(tempRMC, tempGGA));
+				FlashFile.getInstance().setImpostazione(LastGPSValid, msg.set_posusr(tempRMC, tempGGA));
 			else
-				file.setImpostazione(LastGPSValid, "");
+				FlashFile.getInstance().setImpostazione(LastGPSValid, "");
 
 			/* 
 			 * Saving application closure mode
@@ -315,89 +289,89 @@ public class GoToPowerDown extends ThreadCustom implements GlobCost {
 			 * FIRST EXECUTION
 			 * (only if I find KEY not active at the first time that I observe it)
 			 */
-			if (infoS.getSTATOexecApp().equalsIgnoreCase(execFIRST)) {
+			if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execFIRST)) {
 			
 				if(debug){
 					System.out.println("Th*GoToPowerDown, closure from status :" + execFIRST);
 				}
 				
 				// Key deactivation FIRST
-				file.setImpostazione(CloseMode, closeAppDisattivChiaveFIRST);
+				FlashFile.getInstance().setImpostazione(CloseMode, closeAppDisattivChiaveFIRST);
 				// pay attention, MODIFY FOR DEBUG
-				//file.setImpostazione(CloseMode, closeAppFactory);
+				//FlashFile.getInstance().setImpostazione(CloseMode, closeAppFactory);
 				
 			}
 			// NORMAL EXECUTION
-			else if (infoS.getSTATOexecApp().equalsIgnoreCase(execNORMALE)) {
+			else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execNORMALE)) {
 				
 				if(debug){
 					System.out.println("Th*GoToPowerDown, closure from status :" + execNORMALE);
 				}
 				
 				// Normal OK
-				if (infoS.getValidFIXgprs()==true) {
-					file.setImpostazione(CloseMode, closeAppNormaleOK);
+				if (InfoStato.getInstance().getValidFIXgprs()==true) {
+					FlashFile.getInstance().setImpostazione(CloseMode, closeAppNormaleOK);
 				}
 				// Normal Timeout EXPIRED
-				else if (infoS.getValidFIXgprs()==false) {
-					file.setImpostazione(CloseMode, closeAppNormaleTimeout);
+				else if (InfoStato.getInstance().getValidFIXgprs()==false) {
+					FlashFile.getInstance().setImpostazione(CloseMode, closeAppNormaleTimeout);
 				}
 
 			}
 			// KEY DEACTIVATED
-			else if (infoS.getSTATOexecApp().equalsIgnoreCase(execCHIAVEdisattivata)) {
+			else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execCHIAVEdisattivata)) {
 			
 				if(debug){
 					System.out.println("Th*GoToPowerDown, closure from status :" + execCHIAVEdisattivata);
 				}
 				
 				// Key deactivation OK
-				if (infoS.getValidFIXgprs()==true) {
-					file.setImpostazione(CloseMode, closeAppDisattivChiaveOK);
+				if (InfoStato.getInstance().getValidFIXgprs()==true) {
+					FlashFile.getInstance().setImpostazione(CloseMode, closeAppDisattivChiaveOK);
 				}
 				// Key deactivation Timeout EXPIRED
-				else if (infoS.getValidFIXgprs()==false) {
-					file.setImpostazione(CloseMode, closeAppDisattivChiaveTimeout);
+				else if (InfoStato.getInstance().getValidFIXgprs()==false) {
+					FlashFile.getInstance().setImpostazione(CloseMode, closeAppDisattivChiaveTimeout);
 				}
 				
 			}
 			// MOVEMENT
-			else if (infoS.getSTATOexecApp().equalsIgnoreCase(execMOVIMENTO)) {
+			else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execMOVIMENTO)) {
 			
 				if(debug){
 					System.out.println("Th*GoToPowerDown, closure from status :" + execMOVIMENTO);
 				}
 				
 				// Movement OK
-				file.setImpostazione(CloseMode, closeAppMovimentoOK);
+				FlashFile.getInstance().setImpostazione(CloseMode, closeAppMovimentoOK);
 				
 			}
 			// AFTER RESET
-			else if (infoS.getSTATOexecApp().equalsIgnoreCase(execPOSTRESET)) {
+			else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execPOSTRESET)) {
 					
 				if(debug){
 					System.out.println("Th*GoToPowerDown, closure from status :" + execPOSTRESET);
 				}
 				
 				// Key deactivation after RESET
-				file.setImpostazione(CloseMode, closeAppPostReset);
+				FlashFile.getInstance().setImpostazione(CloseMode, closeAppPostReset);
 				
 			}
 			// BATTERY LOW
-			else if (infoS.getSTATOexecApp().equalsIgnoreCase(execBATTSCARICA)) {
+			else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execBATTSCARICA)) {
 					
 				if(debug){
 					System.out.println("Th*GoToPowerDown, closure from status :" + execBATTSCARICA);
 				}
 								
 				// Battery Low
-				file.setImpostazione(CloseMode, closeAppBatteriaScarica );
+				FlashFile.getInstance().setImpostazione(CloseMode, closeAppBatteriaScarica );
 				
 			}			
 		
 			// Write on file  	
 			InfoStato.getFile();
-			file.writeSettings();
+			FlashFile.getInstance().writeSettings();
 			InfoStato.freeFile();
 			
 
@@ -413,7 +387,7 @@ public class GoToPowerDown extends ThreadCustom implements GlobCost {
 								
 				// Modify record
 				try {
-					String appt = (String)dsDataRMC.getLastValid();
+					String appt = (String)DataStores.getInstance(DataStores.dsDRMC).getLastValid();
 					//System.out.println("FlashRecordStore: get: "+appt);
 					byte data[] = appt.getBytes();
 					//System.out.println("FlashRecordStore: converted in bytes: "+appt);
@@ -422,7 +396,7 @@ public class GoToPowerDown extends ThreadCustom implements GlobCost {
 				} catch (RecordStoreException rse) {
 					//System.out.println("FlashRecordStore: RecordStoreException");
 					// add record because not exists
-					String newappt = (String)dsDataRMC.getLastValid();
+					String newappt = (String)DataStores.getInstance(DataStores.dsDRMC).getLastValid();
 					byte newdata[] = newappt.getBytes();
 					rs.addRecord(newdata,0,newdata.length);
 					//System.out.println("FlashRecordStore: saved: "+newappt);
@@ -449,7 +423,7 @@ public class GoToPowerDown extends ThreadCustom implements GlobCost {
 			/* 
 			 * Notify to AppMain to close application
 			 */
-			mboxMAIN.write(msgClose);
+			Mailboxes.getInstance(0).write(msgClose);
 			if(debug){
 				System.out.println("Th*GoToPowerDown: sent message: "+msgClose);
 			}
@@ -538,16 +512,16 @@ public class GoToPowerDown extends ThreadCustom implements GlobCost {
 					System.out.println("CalcolaSveglia: set time of awakening in progress...");
 				}
 				addH = 0;
-				mm = mm + infoS.getInfoFileInt(MinPowerDownOK);
+				mm = mm + InfoStato.getInstance().getInfoFileInt(MinPowerDownOK);
 				if (mm>59) {
 					addH = 1; 	/* go to next hour */
 					mm = mm-60;	/* update minutes */
 				} //if
 				/* update total numer of hours, hSleep >= 0 */
 				if (addH==0) {
-					hh = hh + infoS.getInfoFileInt(OrePowerDownOK);
+					hh = hh + InfoStato.getInstance().getInfoFileInt(OrePowerDownOK);
 				} else { /* addH=1 */
-					hh = hh + infoS.getInfoFileInt(OrePowerDownOK) + 1;
+					hh = hh + InfoStato.getInstance().getInfoFileInt(OrePowerDownOK) + 1;
 				} //if
 				/* UPDATE TIME and ev. DATE */
 				/* Check leap year:
