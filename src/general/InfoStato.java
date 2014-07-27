@@ -2077,6 +2077,11 @@ public class InfoStato implements GlobCost {
 
     }
     
+    /*
+    More or less a Macro used 100s of times throughout the code
+    
+    ! Note it is NOT synchronized, otherwise it would block forever !
+    */
     public void writeATCommand(String command) {
         setATexec(true);
         Mailboxes.getInstance(2).write(command);
