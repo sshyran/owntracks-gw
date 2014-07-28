@@ -5,7 +5,7 @@ Code Analysis and OwnTracks Enhancements
 
 * MQTTHandler.java
 Auto reconnecting and subscribing
-TODO get TLS to work!!!
+TLS works now with correct API authorizations
 
 * Seriale.java - input from serial line and command processing "#"-commands
 Added Commandprocessor for "$"-commands
