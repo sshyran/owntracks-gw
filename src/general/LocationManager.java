@@ -51,16 +51,6 @@ public class LocationManager {
         maxInterval = max;
     }
 
-    static double acos(double a) {
-        final double epsilon = 1.0E-7;
-        double x = a;
-        do {
-            x -= (Math.sin(x) - a) / Math.cos(x);
-        } while (Math.abs(Math.sin(x) - a) > epsilon);
-
-        return -1 * (x - Math.PI / 2);
-    }
-
     public boolean handleNMEAString(String nmea) {
         /*
          NMEA string example:
@@ -181,29 +171,8 @@ public class LocationManager {
                 }
 
                 if (lastReportedLocation != null) {
-                     //#ifdef DEBUGGING
-//#                      System.out.println("maxInterval " + maxInterval 
-//#                      + " currentLocation.date " + currentLocation.date.getTime() / 1000
-//#                      + " lastReportedLocation.date " +lastReportedLocation.date.getTime() / 1000);
-                    //#endif
-
                     if (currentLocation.date.getTime() / 1000 - lastReportedLocation.date.getTime() / 1000 < maxInterval) {
-
-                        double lambdaA = Math.toRadians(lastReportedLocation.longitude);
-                        double lambdaB = Math.toRadians(currentLocation.longitude);
-                        double phiA = Math.toRadians(lastReportedLocation.latitude);
-                        double phiB = Math.toRadians(currentLocation.latitude);
-
-                        double dist = acos((Math.sin(phiA) * Math.sin(phiB) + Math.cos(phiA) * Math.cos(phiB) * Math.cos(lambdaB - lambdaA))) * 6370;
-
-                        //#ifdef DEBUGGING
-//#                          System.out.println("lastReported " + lastReportedLocation.longitude + " " + lastReportedLocation.latitude);
-//#                          System.out.println("lastReported " + currentLocation.longitude + " " + currentLocation.latitude);
-//# 
-//#                          System.out.println("minDistance " + minDistance + " distance " + dist);
-                        //#endif
-                         
-                        if (dist < minDistance) {
+                        if (currentLocation.distance(lastReportedLocation) < minDistance) {
                             return false;
                         } else {
                             reason = "d";
