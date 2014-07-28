@@ -183,14 +183,10 @@ public class AppMain extends MIDlet implements GlobCost {
         }
 
         settings = Settings.getInstance();
-        settings.setfileURL("file:///a:/file/OwnTracks.properties");
-        
+        settings.setfileURL("file:///a:/file/OwnTracks.properties");     
         semAT = SemAT.getInstance();
-        
         infoS = InfoStato.getInstance();
-        
         mailboxes = Mailboxes.getInstance();
-        
         flashFile = FlashFile.getInstance();
 
 		// Status info strcture creation
@@ -445,21 +441,9 @@ public class AppMain extends MIDlet implements GlobCost {
                  *	SET SIM PIN
                  */
                 SemAT.getInstance().getCoin(5);
-                if (debug) {
-                    System.out.println("AppMain: got Coin");
-                }
                 InfoStato.getInstance().writeATCommand("at+cpin=5555\r");
-                if (debug) {
-                    System.out.println("AppMain: wrote ATCommand");
-                }
                 SemAT.getInstance().putCoin();
-                if (debug) {
-                    System.out.println("AppMain: put Coin");
-                }
 
-                if (debug) {
-                    System.out.println("AppMain: SIM PIN set");
-                }
                 /*
                  * [4] START OF BATTERY LEVEL CONTROL
                  * 
@@ -471,11 +455,6 @@ public class AppMain extends MIDlet implements GlobCost {
                 regTimer = new Timer();
                 regTimeoutTask = new TimeoutTask(RegTimeout);
                 regTimer.scheduleAtFixedRate(regTimeoutTask, 0, regTOvalue * 1000);
-
-                if (debug) {
-                    System.out.println("AppMain: Timer started");
-                }
-
 
                 /*
                  * [5] RECOVER DATA FROM FLASH

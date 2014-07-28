@@ -15,7 +15,7 @@ import choral.io.InfoMicro;
  * @author alessioza
  *
  */
-public class CheckSMS extends ThreadCustom implements GlobCost {
+public class CheckSMS extends Thread implements GlobCost {
 
     /* 
      * local variables

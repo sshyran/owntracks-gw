@@ -22,7 +22,7 @@ import javax.microedition.io.Connector;
 import com.cinterion.io.file.FileConnection;
 import java.util.Enumeration;
 
-public class Seriale extends ThreadCustom implements GlobCost {
+public class Seriale extends Thread implements GlobCost {
 
     // Seriale
     OutputStream serialOut;

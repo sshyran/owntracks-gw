@@ -20,7 +20,7 @@ import com.cinterion.io.file.FileConnection;
  * must be requested calling 'SemAT.getInstance().getCoin(prio)' and released
  * calling 'SemAT.getInstance().putCoin()' when finish to use.
  * <br>
- * When a thred can use AT resource, it must wait for complete execution of ANY
+ * When a thread can use AT resource, it must wait for complete execution of ANY
  * PREVIOUS AT COMMAND before send another to module. To do this, set
  * 'ATexec=true' before sending ANY AT COMMAND to 'Mailboxes.getInstance(2)' and
  * wait for command execution using this code:
@@ -33,7 +33,7 @@ import com.cinterion.io.file.FileConnection;
  * @author alessioza
  *
  */
-public class ATsender extends ThreadCustom implements GlobCost {
+public class ATsender extends Thread implements GlobCost {
 
     /* 
      * local variables

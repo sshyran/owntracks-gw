@@ -25,7 +25,7 @@ public interface GlobCost {
     boolean debug = false;
     boolean debugGSM = false;
     boolean debug_chiave = false;
-    boolean debug_main = true;
+    boolean debug_main = false;
     boolean debug_speed = false;
     boolean usbDebug = false;
 	//remember to modify empty string "defaultGPS" and "posusr" for tests

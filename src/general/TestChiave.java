@@ -14,7 +14,7 @@ package general;
  * @author matteobo
  *
  */
-public class TestChiave extends ThreadCustom implements GlobCost {
+public class TestChiave extends Thread implements GlobCost {
 
     /* 
      * constructors

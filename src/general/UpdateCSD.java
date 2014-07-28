@@ -16,7 +16,7 @@ import java.util.Timer;
  * @author alessioza
  *
  */
-public class UpdateCSD extends ThreadCustom implements GlobCost {
+public class UpdateCSD extends Thread implements GlobCost {
 
     /* 
      * local variables

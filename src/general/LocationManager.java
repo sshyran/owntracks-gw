@@ -2,7 +2,7 @@ package general;
 
 import java.util.Calendar;
 
-//#define DEBUGGING
+//#undefine DEBUGGING
 /**
  *
  * @author christoph krey
@@ -91,12 +91,12 @@ public class LocationManager {
          */
 
         //#ifdef DEBUGGING
-        System.out.println(nmea);
+//#         System.out.println(nmea);
         //#endif
 
         String[] parts = StringSplitter.split(nmea, ",");
         //#ifdef DEBUGGING
-        System.out.println("parts " + parts.length);
+//#         System.out.println("parts " + parts.length);
         //#endif
         if (parts.length == 19) {
             if (parts[2].equalsIgnoreCase("A")) {
@@ -182,9 +182,9 @@ public class LocationManager {
 
                 if (lastReportedLocation != null) {
                      //#ifdef DEBUGGING
-                     System.out.println("maxInterval " + maxInterval 
-                     + " currentLocation.date " + currentLocation.date.getTime() / 1000
-                     + " lastReportedLocation.date " +lastReportedLocation.date.getTime() / 1000);
+//#                      System.out.println("maxInterval " + maxInterval 
+//#                      + " currentLocation.date " + currentLocation.date.getTime() / 1000
+//#                      + " lastReportedLocation.date " +lastReportedLocation.date.getTime() / 1000);
                     //#endif
 
                     if (currentLocation.date.getTime() / 1000 - lastReportedLocation.date.getTime() / 1000 < maxInterval) {
@@ -197,10 +197,10 @@ public class LocationManager {
                         double dist = acos((Math.sin(phiA) * Math.sin(phiB) + Math.cos(phiA) * Math.cos(phiB) * Math.cos(lambdaB - lambdaA))) * 6370;
 
                         //#ifdef DEBUGGING
-                         System.out.println("lastReported " + lastReportedLocation.longitude + " " + lastReportedLocation.latitude);
-                         System.out.println("lastReported " + currentLocation.longitude + " " + currentLocation.latitude);
-
-                         System.out.println("minDistance " + minDistance + " distance " + dist);
+//#                          System.out.println("lastReported " + lastReportedLocation.longitude + " " + lastReportedLocation.latitude);
+//#                          System.out.println("lastReported " + currentLocation.longitude + " " + currentLocation.latitude);
+//# 
+//#                          System.out.println("minDistance " + minDistance + " distance " + dist);
                         //#endif
                          
                         if (dist < minDistance) {

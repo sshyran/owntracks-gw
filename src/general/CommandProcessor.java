@@ -1,6 +1,6 @@
 package general;
 
-//#define DEBUGGING
+//#undefine DEBUGGING
 
 import java.util.Date;
 import java.util.Enumeration;
@@ -43,14 +43,14 @@ public class CommandProcessor implements GlobCost {
         final String[] authorizedCommands = {"set", "reboot", "logout"};
 
         //#ifdef DEBUGGING
-        System.out.println("execute " + (commandLine != null ? commandLine : "<null>"));
+//#         System.out.println("execute " + (commandLine != null ? commandLine : "<null>"));
         //#endif
         if (commandLine != null && commandLine.length() > 0) {
             String[] words = StringSplitter.split(commandLine, " ");
             //#ifdef DEBUGGING
-            for (int i = 0; i < words.length; i++) {
-                System.out.println("words[" + i + "]=" + words[i]);                
-            }
+//#             for (int i = 0; i < words.length; i++) {
+//#                 System.out.println("words[" + i + "]=" + words[i]);                
+//#             }
             //#endif
             if (words.length >= 1) {
                 Settings settings = Settings.getInstance();
@@ -97,7 +97,7 @@ public class CommandProcessor implements GlobCost {
     private boolean perform(String command, String[] parameters) {
         Settings settings = Settings.getInstance();
         //#ifdef DEBUGGING
-        System.out.println("perform " + command);
+//#         System.out.println("perform " + command);
         //#endif
         
         if (command.equals("gps")) {

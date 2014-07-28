@@ -17,7 +17,7 @@ import com.cinterion.io.*;
  * @author alessioza
  *
  */
-public class TrackingGPRS extends ThreadCustom implements GlobCost {
+public class TrackingGPRS extends Thread implements GlobCost {
 
     /* 
      * local variables
@@ -345,5 +345,28 @@ public class TrackingGPRS extends ThreadCustom implements GlobCost {
         return dato;
 
     }
+    
+    public String getChecksum(String sentence) {
+        String checksum;
+
+        try {
+            int[] intSentence = new int[sentence.length()];
+            intSentence[0] = sentence.charAt(0);
+
+            for (int i = 1; i < sentence.length(); i++) {
+                intSentence[i] = intSentence[i - 1] ^ sentence.charAt(i);
+            }
+
+            checksum = Integer.toHexString(intSentence[sentence.length() - 1]);
+            if (checksum.length() < 2) {
+                return "0" + checksum;
+            } else {
+                return checksum;
+            }
+        } catch (IndexOutOfBoundsException e) {
+            return "00";
+        }
+    }
+
 } //TrackingGPRS
 

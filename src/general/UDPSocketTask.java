@@ -20,7 +20,7 @@ import com.cinterion.io.BearerControl;
  * @author matteobo
  *
  */
-public class UDPSocketTask extends ThreadCustom implements GlobCost {
+public class UDPSocketTask extends Thread implements GlobCost {
     /* 
      * local variables
      */

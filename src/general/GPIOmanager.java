@@ -21,7 +21,7 @@ import choral.io.UserLed;
  * @author alessioza
  *
  */
-public class GPIOmanager extends ThreadCustom implements GlobCost {
+public class GPIOmanager extends Thread implements GlobCost {
 
     /* 
      * local variables

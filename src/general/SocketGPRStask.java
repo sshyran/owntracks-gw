@@ -23,7 +23,7 @@ import java.util.Date;
  * @author alessioza
  *
  */
-public class SocketGPRStask extends ThreadCustom implements GlobCost {
+public class SocketGPRStask extends Thread implements GlobCost {
     /* 
      * local variables
      */
