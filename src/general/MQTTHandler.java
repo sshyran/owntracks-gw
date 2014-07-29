@@ -128,9 +128,9 @@ public class MQTTHandler implements MqttCallback {
             try {
                 connectToBroker();
             } catch (MqttSecurityException mse) {
-                //
+                mse.printStackTrace();
             } catch (MqttException me) {
-                //
+                me.printStackTrace();
             }
         }
 
@@ -140,7 +140,11 @@ public class MQTTHandler implements MqttCallback {
             message.setQos(qos);
             message.setRetained(retained);
 
-            MqttDeliveryToken token = topic.publish(message);
+            try {
+                MqttDeliveryToken token = topic.publish(message);
+            } catch (MqttException me) {
+                throw me;
+            }
         } else {
             throw new MqttException(MqttException.REASON_CODE_CLIENT_NOT_CONNECTED);
         }
@@ -151,7 +155,11 @@ public class MQTTHandler implements MqttCallback {
             System.out.println("subscribe " + topicName + " " + qos);
         }
         if (client.isConnected()) {
-            client.subscribe(topicName, qos);
+            try {
+                client.subscribe(topicName, qos);
+            } catch (MqttException me) {
+                me.printStackTrace();
+            }
         } else {
             throw new MqttException(MqttException.REASON_CODE_CLIENT_NOT_CONNECTED);
         }

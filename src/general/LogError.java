@@ -27,7 +27,9 @@ public class LogError implements GlobCost {
     String fileOLD = "logOLD.txt";
 
     public LogError(String error) {
-
+        if (debug) {
+            System.out.println("LogError: " + error);
+        }
         try {
             while (!InfoStato.getLogSemaphore()) {
                 Thread.sleep(1);
@@ -47,7 +49,7 @@ public class LogError implements GlobCost {
      * @return
      */
     public synchronized String writeError(String error) {
-
+        
 		//System.out.println("FreeMem: " + Runtime.getRuntime().freeMemory());
         //System.out.println("TotalMem: " + Runtime.getRuntime().totalMemory());
         try {

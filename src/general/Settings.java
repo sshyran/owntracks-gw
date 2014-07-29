@@ -36,7 +36,7 @@ public class Settings {
         fileURL = url;
     }
     
-    public synchronized void setSetting(String key, String value) {
+    private synchronized void set(String key, String value, boolean write) {
         //System.out.println("setSetting " + key + " " + ((value == null) ? value : "null"));
         if (hashTable == null) {
             loadSettings();
@@ -46,10 +46,18 @@ public class Settings {
             hashTable.remove(key);
         } else {
             hashTable.put(key, value);
+        }        
+        if (write) {
+            writeSettings();            
         }
+    }
+    
+    public void setSettingNoWrite(String key, String value) {
+        set(key, value, false);
+    }
 
-        //System.out.println(hashTable.toString());
-        writeSettings();
+    public void setSetting(String key, String value) {
+        set(key, value, true);
     }
 
     public synchronized String getSetting(String key, String defaultValue) {
@@ -199,7 +207,7 @@ public class Settings {
                 //System.out.println("fconn.openOutputStream");
 
                 os.write(("# " + fileURL + " written: " + new Date() + "\n").getBytes("UTF-8"));
-
+                
                 for (Enumeration e = hashTable.keys(); e.hasMoreElements();) {
                     String key = (String) e.nextElement();
                     os.write((key + "=" + hashTable.get(key) + "\n").getBytes("UTF-8"));

@@ -159,8 +159,11 @@ public class CommGPStrasparent extends Thread implements GlobCost {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-				    	//System.out.println("****" + letturaStringa);
-                        //System.out.flush();				    	
+                        
+                        if (debug) {
+                            System.out.println("****" + letturaStringa);
+                            System.out.flush();
+                        }
 
                         /*
                          * STRING $GPRMC
@@ -283,7 +286,12 @@ public class CommGPStrasparent extends Thread implements GlobCost {
                                     } else {
 
                                         InfoStato.getInstance().setValidFIX(true);
-                                        // Sending communication to AppMain
+                                        if (debug) {
+                                            System.out.println("Valid Fix");
+                                            System.out.println("TrackingType" + InfoStato.getInstance().getInfoFileString(TrackingType));
+                                            System.out.println("count" + count);
+                                            System.out.println("TrackingInterv" + InfoStato.getInstance().getInfoFileInt(TrackingInterv));
+                                        }
                                         if ((!InfoStato.getInstance().getInfoFileString(TrackingType).equalsIgnoreCase("SMS")) && (count >= InfoStato.getInstance().getInfoFileInt(TrackingInterv))) {
                                             //System.out.println("SAVED STRING: " + stringaGPS + " " + count);
                                             DataStores.getInstance(DataStores.dsTRMC).replaceObject(RMCstring, true);
@@ -297,6 +305,12 @@ public class CommGPStrasparent extends Thread implements GlobCost {
                                     DataStores.getInstance(DataStores.dsDRMC).replaceObject(RMCstring, false);
                                     DataStores.getInstance(DataStores.dsDGGA).replaceObject(letturaStringa, false);
                                     // Sending communication to AppMain
+                                    if (debug) {
+                                        System.out.println("First Fix");
+                                        System.out.println("TrackingType" + InfoStato.getInstance().getInfoFileString(TrackingType));
+                                        System.out.println("count" + count);
+                                        System.out.println("TrackingInterv" + InfoStato.getInstance().getInfoFileInt(TrackingInterv));
+                                    }
                                     if ((!InfoStato.getInstance().getInfoFileString(TrackingType).equalsIgnoreCase("SMS")) && (count >= InfoStato.getInstance().getInfoFileInt(TrackingInterv))) {
                                         DataStores.getInstance(DataStores.dsTRMC).replaceObject(RMCstring, false);
                                         DataStores.getInstance(DataStores.dsTGGA).replaceObject(letturaStringa, false);

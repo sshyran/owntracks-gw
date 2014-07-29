@@ -73,7 +73,6 @@ public class Seriale extends Thread implements GlobCost {
                 while (true) {
 
                     try {
-
                         if (false) {
                             /*
                              * READ COMMAND
@@ -442,7 +441,6 @@ public class Seriale extends Thread implements GlobCost {
                                         serialOut.write(NACK.getBytes());
                                     }
                                 }
-
                             } // #POSUSR						
                             else if (comando.indexOf(POSUSR) >= 0 && auth == true) {
                                 if (debug) {

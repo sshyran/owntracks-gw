@@ -67,13 +67,13 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
          * CSQ
          */
         if (response.indexOf("+CSQ") >= 0) {
-			//System.out.println("ATListenerStd: AT+CSQ");
+            //System.out.println("ATListenerStd: AT+CSQ");
             //InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
             InfoStato.getInstance().setCSQ(response.substring(response.indexOf("+CSQ: ") + "+CSQ: ".length(), response.indexOf(",")));
         } //+CSQ
 
         if (response.indexOf("^SCFG: \"MEopMode/Airplane\",\"off\"") >= 0) {
-			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
+            //InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
             //System.out.println("^SCFG: \"MEopMode/Airplane\",\"off\"");
             FlashFile.getInstance().setImpostazione(CloseMode, closeAIR);
             // Write to FlashFile.getInstance()
@@ -88,7 +88,7 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
          * Answer to CSD call
          */
         if (response.indexOf("CONNECT 9600/RLP") >= 0) {
-			//System.out.println("ATListenerStd: CSD connection established!");
+            //System.out.println("ATListenerStd: CSD connection established!");
             //InfoStato.getInstance().setATexec(false);
             InfoStato.getInstance().setCSDconnect(true);
         } //CONNECT
@@ -146,7 +146,7 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
          * Operation on ^SBV (battery control)
          */
         if (response.indexOf("^SBV") >= 0) {
-			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
+            //InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
             //System.out.print("ATListenerStd: check battery voltage...");
             // extract info about battery voltage
             response = response.substring(response.indexOf("^SBV: "));
@@ -157,7 +157,7 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
             }
             //new LogError("Vbatt:" + Vbatt);
             supplyVoltage = Double.parseDouble(Vbatt);
-			//System.out.println("SupplyVoltage:"+supplyVoltage+"mV");
+            //System.out.println("SupplyVoltage:"+supplyVoltage+"mV");
             // check battery voltage
             if (supplyVoltage <= VbattSoglia) {
                 // send msg to AppMain about battery undervoltage
@@ -183,15 +183,15 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
             }
             try {
                 temp = response.substring(response.indexOf("\"MT\",") + "\"MT\",".length());
-				//System.out.println("ATListenerStd, +CPMS: " + temp);
+                //System.out.println("ATListenerStd, +CPMS: " + temp);
 
                 String temp2 = temp;
 
                 temp = temp.substring(0, temp.indexOf(","));
-				//System.out.println("ATListenerStd, +CPMS: " + temp);
+                //System.out.println("ATListenerStd, +CPMS: " + temp);
 
                 InfoStato.getInstance().setNumSMS(Integer.parseInt(temp));
-				//System.out.println("ATListenerStd, SMS number: " + InfoStato.getInstance().getNumSMS());
+                //System.out.println("ATListenerStd, SMS number: " + InfoStato.getInstance().getNumSMS());
 
                 temp2 = temp2.substring(temp2.indexOf(",") + 1);
 
@@ -217,7 +217,7 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
             try {
                 // Extract strng '+CMGL.....'
                 temp = response.substring(response.indexOf("+CMGL: "));
-				//System.out.println(temp);
+                //System.out.println(temp);
                 // Extract string '**,*'
                 temp = temp.substring(temp.indexOf("+CMGL: ") + "+CMGL: ".length(), temp.indexOf(","));
                 //System.out.println(temp);
@@ -229,7 +229,7 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
                 InfoStato.getInstance().setCodSMS(-2);
             } //catch
 
-			//System.out.println("ATListenerStd, SMS code: " + InfoStato.getInstance().getCodSMS());
+            //System.out.println("ATListenerStd, SMS code: " + InfoStato.getInstance().getCodSMS());
         } //+CMGL
 
         if (response.indexOf("+CMGD") >= 0) {
@@ -252,7 +252,7 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
                     comandoGPRSCFG = response.substring(response.indexOf("GPRSCFG "));
                     //System.out.println("ATListenerStd, comando1: " + comandoGPRSCFG);
                     comandoGPRSCFG = comandoGPRSCFG.substring(comandoGPRSCFG.indexOf("GPRSCFG ") + "GPRSCFG ".length(), comandoGPRSCFG.indexOf(","));
-					//System.out.println("ATListenerStd, APN: " + comandoGPRSCFG);
+                    //System.out.println("ATListenerStd, APN: " + comandoGPRSCFG);
 
                     FlashFile.getInstance().setImpostazione(ConnProfileGPRS, "bearer_type=GPRS;access_point=" + comandoGPRSCFG);
                     FlashFile.getInstance().setImpostazione(apn, comandoGPRSCFG);
@@ -280,7 +280,7 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
 
                     // Telephone number of sender
                     InfoStato.getInstance().setNumTelSMS(temp);
-					//System.out.println("ATListenerStd, SMS sender number: " + InfoStato.getInstance().getNumTelSMS());
+                    //System.out.println("ATListenerStd, SMS sender number: " + InfoStato.getInstance().getNumTelSMS());
 
                 } catch (StringIndexOutOfBoundsException ex) {
                     if (debug) {
@@ -322,7 +322,7 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
         } //>
 
         if (response.indexOf("+CMGS") >= 0) {
-			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
+            //InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
             //System.out.println(response);
         }
 
@@ -346,7 +346,7 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
          * Operations on +COPS (SIM network registration)
          */
         if (response.indexOf("^SMONG") >= 0 || response.indexOf("^smong") >= 0) {
-			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
+            //InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
             //System.out.println(response);
             //new LogError(response);
         } //^SMONG
@@ -373,7 +373,7 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
          */
         // Execution OK
         if (response.indexOf("OK") >= 0) {
-			//System.out.println("ATListenerStd, AT command result 'OK'");
+            //System.out.println("ATListenerStd, AT command result 'OK'");
             //InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
         } //OK
 
@@ -387,7 +387,7 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
         // Execution NO CARRIER
         if (response.indexOf("NO CARRIER") >= 0) {
 
-			//InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
+            //InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
         } //NO CARRIER
 
         // Execution BUSY

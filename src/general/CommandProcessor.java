@@ -10,11 +10,11 @@ import org.eclipse.paho.client.mqttv3.MqttException;
  * @author christoph krey
  */
 public class CommandProcessor implements GlobCost {
-    
+
     final private String CRLF = "\r\n";
     private long authorizedSince = 0;
     public String message = null;
-        
+
     private boolean isInStringArray(String string, String[] stringArray) {
         for (int i = 0; i < stringArray.length; i++) {
             if (string.equals(stringArray[i])) {
@@ -23,22 +23,22 @@ public class CommandProcessor implements GlobCost {
         }
         return false;
     }
-    
+
     private CommandProcessor() {
     }
-    
+
     public static CommandProcessor getInstance() {
         return CommandProcessorHolder.INSTANCE;
     }
-    
+
     private static class CommandProcessorHolder {
 
         private static final CommandProcessor INSTANCE = new CommandProcessor();
     }
-    
+
     public synchronized boolean execute(String commandLine) {
         final String[] unauthorizedCommands = {"login", "gps"};
-        final String[] authorizedCommands = {"set", "reboot", "logout"};
+        final String[] authorizedCommands = {"set", "reboot", "dump", "logout"};
 
         if (Settings.getInstance().getSetting("debug", false)) {
             System.out.println("execute " + (commandLine != null ? commandLine : "<null>"));
@@ -48,19 +48,13 @@ public class CommandProcessor implements GlobCost {
             if (words.length >= 1) {
                 Settings settings = Settings.getInstance();
                 message = "command: \"" + commandLine + "\"" + CRLF;
-                if (    
-                        (isInStringArray(words[0], unauthorizedCommands)) ||
-                        (
-                            (isInStringArray(words[0], authorizedCommands)) &&
-                            (authorizedSince + settings.getSetting("loginTimeout", 30) > new Date().getTime()/1000)
-                        )
-                    ) {
+                if ((isInStringArray(words[0], unauthorizedCommands))
+                        || ((isInStringArray(words[0], authorizedCommands))
+                        && (authorizedSince + settings.getSetting("loginTimeout", 30) > new Date().getTime() / 1000))) {
                     if (words[0].equals("login")) {
-                        if (
-                                (words.length == 2) &&
-                                (words[1].equals(settings.getSetting("secret", "1234567890")))
-                           ) {
-                            authorizedSince = new Date().getTime()/1000;
+                        if ((words.length == 2)
+                                && (words[1].equals(settings.getSetting("secret", "1234567890")))) {
+                            authorizedSince = new Date().getTime() / 1000;
                             message = message.concat("login accepted");
                             return true;
                         } else {
@@ -68,8 +62,8 @@ public class CommandProcessor implements GlobCost {
                             return false;
                         }
                     } else if (words[0].equals("logout")) {
-                            message = message.concat("logged out");
-                            return true;                        
+                        message = message.concat("logged out");
+                        return true;
                     } else {
                         return perform(words[0], words);
                     }
@@ -86,13 +80,13 @@ public class CommandProcessor implements GlobCost {
             return false;
         }
     }
-    
+
     private boolean perform(String command, String[] parameters) {
         Settings settings = Settings.getInstance();
         if (command.equals("gps")) {
             LocationManager locationManager = LocationManager.getInstance();
             String[] fields = StringSplitter.split(
-                settings.getSetting("fields", "course,speed,altitude,distance,battery"), ",");
+                    settings.getSetting("fields", "course,speed,altitude,distance,battery"), ",");
             String json = locationManager.getlastJSONString(fields);
             if (json == null) {
                 message = message.concat("no location available");
@@ -112,12 +106,12 @@ public class CommandProcessor implements GlobCost {
                 }
                 return true;
             }
-            
+
         } else if (command.equals("reboot")) {
             if (parameters.length == 1) {
                 message = message.concat("rebooting");
                 SemAT.getInstance().getCoin(5);
-                InfoStato.getInstance().writeATCommand("AT+CFUN=1,1\r");				
+                InfoStato.getInstance().writeATCommand("AT+CFUN=1,1\r");
                 SemAT.getInstance().putCoin();
 
                 return true;
@@ -125,7 +119,7 @@ public class CommandProcessor implements GlobCost {
                 message = message.concat("usage reboot");
                 return false;
             }
-            
+
         } else if (command.equals("set")) {
             if (parameters.length == 1) {
                 for (Enumeration e = settings.keys(); e.hasMoreElements();) {
@@ -158,6 +152,57 @@ public class CommandProcessor implements GlobCost {
                 }
             } else {
                 message = message.concat("usage set [<key>[=[<value>]]]");
+                return false;
+            }
+
+        } else if (command.equals("dump")) {
+            if (parameters.length == 1) {
+                for (Enumeration e = settings.keys(); e.hasMoreElements();) {
+                    String key = (String) e.nextElement();
+                    message = message.concat(key + "=" + settings.getSetting(key, null) + CRLF);
+                }
+                message = message.concat(moduleCodeRev + InfoStato.getInstance().getREV() + CRLF);
+                message = message.concat("IMEI: " + InfoStato.getInstance().getIMEI() + CRLF);
+                message = message.concat(SETID + ": " + InfoStato.getInstance().getInfoFileString(IDtraker) + CRLF);
+                message = message.concat(SNOP + ": " + InfoStato.getInstance().getInfoFileString(Operatore) + CRLF);
+                //message = message.concat((ACTOP + CRLF);
+                message = message.concat(GPRSCFG + ": "
+                        + InfoStato.getInstance().getInfoFileString(apn) + ","
+                        + InfoStato.getInstance().getInfoFileString(GPRSProtocol) + ","
+                        + InfoStato.getInstance().getInfoFileString(DestHost) + ","
+                        + InfoStato.getInstance().getInfoFileString(DestPort) + CRLF);
+                message = message.concat(TRKCFG + ": "
+                        + InfoStato.getInstance().getInfoFileString(TrackingType) + ","
+                        + InfoStato.getInstance().getInfoFileString(TrackingProt) + ","
+                        + InfoStato.getInstance().getInfoFileString(Header)
+                        + "," + InfoStato.getInstance().getInfoFileString(Ackn)
+                        + "," + InfoStato.getInstance().getInfoFileString(GprsOnTime) + CRLF);
+                message = message.concat(TRKTM + ": " + InfoStato.getInstance().getInfoFileString(TrackingInterv) + CRLF);
+                message = message.concat(TRK + ": " + InfoStato.getInstance().getInfoFileString(TrkState) + CRLF);
+                message = message.concat(PUBTOPIC + ": " + InfoStato.getInstance().getInfoFileString(PublishTopic) + CRLF);
+                message = message.concat(SLPTM + ": " + InfoStato.getInstance().getInfoFileInt(OrePowerDownOK) + CRLF);
+                message = message.concat(SLP + ": " + InfoStato.getInstance().getInfoFileString(SlpState) + CRLF);
+                message = message.concat(STILLTM + ": " + InfoStato.getInstance().getInfoFileInt(StillTime) + CRLF);
+                message = message.concat(MOVSENS + ": " + InfoStato.getInstance().getInfoFileString(MovState) + CRLF);
+                message = message.concat(IGNCFG + ": " + InfoStato.getInstance().getInfoFileString(IgnState) + CRLF);
+                message = message.concat(UARTCFG + ": "
+                        + InfoStato.getInstance().getInfoFileInt(UartSpeed) + ","
+                        + InfoStato.getInstance().getInfoFileString(UartGateway) + ","
+                        + InfoStato.getInstance().getInfoFileString(UartHeaderRS) + ","
+                        + InfoStato.getInstance().getInfoFileString(UartEndOfMessage) + ","
+                        + InfoStato.getInstance().getInfoFileInt(UartAnswerTimeOut) + ","
+                        + InfoStato.getInstance().getInfoFileInt(UartNumTent) + ","
+                        + InfoStato.getInstance().getInfoFileString(UartEndOfMessageIP) + ","
+                        + InfoStato.getInstance().getInfoFileString(UartIDdisp) + ","
+                        + InfoStato.getInstance().getInfoFileInt(UartTXtimeOut) + CRLF);
+                message = message.concat(SIG + ": "
+                        + InfoStato.getInstance().getCSQ() + ","
+                        + InfoStato.getInstance().getNumSat() + CRLF);
+                message = message.concat(VBAT + ": " + InfoStato.getInstance().getBatteryVoltage() + CRLF);
+
+                return true;
+            } else {
+                message = message.concat("usage dump");
                 return false;
             }
         } else {

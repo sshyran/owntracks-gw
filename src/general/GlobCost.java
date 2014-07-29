@@ -64,7 +64,7 @@ public interface GlobCost {
     public static final String recordPOS = "Pos_RS";
     //public static final String 	recordPOS 			= "Pos_Prova";
     public static final String fileName = "GWmqttSettings.txt";
-
+ 
     public static final String revNumber = "0.1.40";
     public static final String dataRev = "26/07/2014";
     public static final String moduleCodeRev = "EGS5 rev. ";
@@ -135,6 +135,47 @@ public interface GlobCost {
     public static final String CHIAVEtimeout = "TimeoutDisabilitazioneChiave";
     public static final String trackTimeout = "TimeoutTrackingCHIAVE";
 
+    /* File key constants */
+    public static final String IDtraker = "DeviceID";
+    public static final String PasswordCSD = "PasswordCSD";
+    public static final String AppName = "AppName";
+    public static final String CloseMode = "CloseMode";
+    public static final String LastGPSValid = "LastGPSValid";
+    public static final String TrackingInterv = "TrackingInterval";
+    public static final String Operatore = "Operatore";
+    public static final String TrackingType = "TrackingType";
+    public static final String TrackingProt = "TrackingProt";
+    public static final String Header = "Header";
+    public static final String Ackn = "Ackn";
+    public static final String GprsOnTime = "GprsOnTime";
+    public static final String TrkState = "TrkState";
+    public static final String PublishTopic = "PublishTopic";
+    public static final String SlpState = "SlpState";
+    public static final String StillTime = "StillTime";
+    public static final String MovState = "MovState";
+    public static final String IgnState = "IgnState";
+    public static final String UartSpeed = "UartSpeed";
+    public static final String UartGateway = "UartGateWay";
+    public static final String UartHeaderRS = "UartHeaderRS";
+    public static final String UartEndOfMessage = "UartEndOfMessage";
+    public static final String UartAnswerTimeOut = "UartAnswerTimeOut";
+    public static final String UartNumTent = "UartNumTent";
+    public static final String UartEndOfMessageIP = "UartEndOfMessageIP";
+    public static final String UartIDdisp = "UartIDdisp";
+    public static final String UartTXtimeOut = "UartTXtimeOut";
+    public static final String OrePowerDownOK = "HoursPowerDownOK";
+    public static final String MinPowerDownOK = "MinPowerDownOK";
+    public static final String OrePowerDownTOexpired = "HoursPowerDownTOexpired";
+    public static final String MinPowerDownTOexpired = "MinPowerDownTOexpired";
+    public static final String DestHost = "DestHost";
+    public static final String DestPort = "DestPort";
+    public static final String ConnProfileGPRS = "ConnProfileGPRS";
+    public static final String apn = "apn";
+    public static final String GPRSProtocol = "GPRSProtocol";
+    public static final String TrkIN = "TrkIN";
+    public static final String TrkOUT = "TrkOUT";
+    public static final String InsensibilitaGPS = "InsensibilitaGPS";
+
     /**
      * Inhibition KEY duration after GPRS request (in seconds)
      */
@@ -176,50 +217,6 @@ public interface GlobCost {
     //otherwise
     public static final String defaultGPS = ",V,00,000000,000000,0000.00000,N,00000.00000,E,0.0,0.0,00.0,000000,4.3V,B,00,00,00000000";
 
-    /**
-     * ALIAS for file settings
-     */
-    public static final String IDtraker = "DeviceID";
-    public static final String PasswordCSD = "PasswordCSD";
-    public static final String AppName = "AppName";
-    public static final String CloseMode = "CloseMode";
-    public static final String LastGPSValid = "LastGPSValid";
-    public static final String TrackingInterv = "TrackingInterval";
-    public static final String Operatore = "Operatore";
-    public static final String TrackingType = "TrackingType";
-    public static final String TrackingProt = "TrackingProt";
-    public static final String Header = "Header";
-    public static final String Ackn = "Ackn";
-    public static final String GprsOnTime = "GprsOnTime";
-    public static final String TrkState = "TrkState";
-    public static final String PublishTopic = "PublishTopic";
-    public static final String SlpState = "SlpState";
-    public static final String StillTime = "StillTime";
-    public static final String MovState = "MovState";
-    public static final String IgnState = "IgnState";
-    public static final String UartSpeed = "UartSpeed";
-    public static final String UartGateway = "UartGateWay";
-    public static final String UartHeaderRS = "UartHeaderRS";
-    public static final String UartEndOfMessage = "UartEndOfMessage";
-    public static final String UartAnswerTimeOut = "UartAnswerTimeOut";
-    public static final String UartNumTent = "UartNumTent";
-    public static final String UartEndOfMessageIP = "UartEndOfMessageIP";
-    public static final String UartIDdisp = "UartIDdisp";
-    public static final String UartTXtimeOut = "UartTXtimeOut";
-    public static final String OrePowerDownOK = "HoursPowerDownOK";
-    public static final String MinPowerDownOK = "MinPowerDownOK";
-    public static final String OrePowerDownTOexpired = "HoursPowerDownTOexpired";
-    public static final String MinPowerDownTOexpired = "MinPowerDownTOexpired";
-    public static final String DestHost = "DestHost";
-    public static final String DestPort = "DestPort";
-    public static final String ConnProfileGPRS = "ConnProfileGPRS";
-    public static final String apn = "apn";
-    public static final String GPRSProtocol = "GPRSProtocol";
-    public static final String TrkIN = "TrkIN";
-    public static final String TrkOUT = "TrkOUT";
-    //DFS our Alias
-    public static final String InsensibilitaGPS = "InsensibilitaGPS";
-	//Fine **
 
     /**
      * ALIAS for flash settings

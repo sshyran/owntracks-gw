@@ -175,17 +175,26 @@ public class AppMain extends MIDlet implements GlobCost {
      * constructors 
      */
     public AppMain() {
-
+        
         CheckUpgrade fw = new CheckUpgrade("");
 
         if (debug) {
             System.out.println("AppMain: starting...");
         }
 
-        System.out.println("Running Greenwich OwnTracks Edition");
-        
         settings = Settings.getInstance();
-        settings.setfileURL("file:///a:/file/OwnTracks.properties");     
+        settings.setfileURL("file:///a:/file/OwnTracks.properties");
+
+        settings.setSettingNoWrite("MIDlet-Name", getAppProperty("MIDlet-Name"));
+        settings.setSettingNoWrite("MIDlet-Vendor", getAppProperty("MIDlet-Vendor"));
+        settings.setSetting("MIDlet-Version", getAppProperty("MIDlet-Version"));
+
+        System.out.println(
+            "Running " + settings.getSetting("MIDlet-Name", "")
+            + " " + settings.getSetting("MIDlet-Vendor", "")
+            + " " + settings.getSetting("MIDlet-Version", "")
+        );
+       
         semAT = SemAT.getInstance();
         infoS = InfoStato.getInstance();
         mailboxes = Mailboxes.getInstance();
@@ -445,7 +454,7 @@ public class AppMain extends MIDlet implements GlobCost {
                 SemAT.getInstance().getCoin(5);
                 InfoStato.getInstance().writeATCommand("at+cpin=5555\r");
                 SemAT.getInstance().putCoin();
-
+                
                 /*
                  * [4] START OF BATTERY LEVEL CONTROL
                  * 
