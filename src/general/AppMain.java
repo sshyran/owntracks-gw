@@ -186,21 +186,7 @@ public class AppMain extends MIDlet implements GlobCost {
 
         
     //#ifdef DEBUGGING
-        Location Tokio = new Location();
-        Location Berlin = new Location();
-        
-        Tokio.longitude = 139.767;
-        Tokio.latitude = 35.7;
-        
-        Berlin.longitude = 13.4;
-        Berlin.latitude = 52.517;
-
-        System.out.println("Tokio " + Tokio.latitude + " " + Tokio.longitude);
-        System.out.println("Berlin " + Berlin.latitude + " " + Berlin.longitude);
-        
-        System.out.println("Expected result = 8918 km http://de.wikipedia.org/wiki/Orthodrome");
-        System.out.println("Distance Tokio(Berlin)= " + Tokio.distance(Berlin) + " km");
-        System.out.println("Distance Berlin(Tokio)= " + Berlin.distance(Tokio) + " km");
+        System.out.println("Running Greenwich OwnTracks Edition");
     //#endif
 
         

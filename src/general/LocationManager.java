@@ -2,7 +2,7 @@ package general;
 
 import java.util.Calendar;
 
-//#undefine DEBUGGING
+//#define DEBUGGING
 /**
  *
  * @author christoph krey
@@ -81,12 +81,12 @@ public class LocationManager {
          */
 
         //#ifdef DEBUGGING
-//#         System.out.println(nmea);
+        System.out.println(nmea);
         //#endif
 
         String[] parts = StringSplitter.split(nmea, ",");
         //#ifdef DEBUGGING
-//#         System.out.println("parts " + parts.length);
+        System.out.println("parts " + parts.length);
         //#endif
         if (parts.length == 19) {
             if (parts[2].equalsIgnoreCase("A")) {
