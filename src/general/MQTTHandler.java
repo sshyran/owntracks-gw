@@ -1,16 +1,5 @@
 package general;
 
-//#undefine TRIAL_AND_ERROR
-//#ifdef TRIAL_AND_ERROR
-//# import java.io.IOException;
-//# import java.io.InputStream;
-//# import java.io.OutputStream;
-//# import javax.microedition.io.Connector;
-//# import javax.microedition.io.SecureConnection;
-//# import javax.microedition.io.SecurityInfo;
-//# import javax.microedition.io.SocketConnection;
-//#endif
-
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -86,63 +75,6 @@ public class MQTTHandler implements MqttCallback {
 
     public synchronized void connectToBroker()
             throws MqttSecurityException, MqttException {
-        //#ifdef TRIAL_AND_ERROR
-//#         String url;
-//#         url= "ssl://fzvtoshindhfdqqo.myfritz.net:443";
-//#         System.out.println("SecureConnection to " + url);
-//# 
-//#         try {
-//#             SecureConnection sc = (SecureConnection) Connector.open(url);
-//#             SecurityInfo info = sc.getSecurityInfo();
-//#             System.out.println("getProtocolName " + info.getProtocolName());
-//# 
-//#             sc.setSocketOption(SocketConnection.LINGER, 5);
-//# 
-//#             InputStream is = sc.openInputStream();
-//#             OutputStream os = sc.openOutputStream();
-//# 
-//#             os.write("GET /owntracks HTTP/1.0\r\n".getBytes());
-//#             int ch = 0;
-//#             while (ch != -1) {
-//#                 ch = is.read();
-//#             }
-//# 
-//#             is.close();
-//#             os.close();
-//#             sc.close();
-//#             System.out.println("SecureConnection closed");
-//# 
-//#         } catch (IOException ioe) {
-//#             ioe.printStackTrace();
-//#         }
-//#         url= "ssl://fzvtoshindhfdqqo.myfritz.net:8886";
-//#         System.out.println("SecureConnection to " + url);
-//# 
-//#         try {
-//#             SecureConnection sc = (SecureConnection) Connector.open(url);
-//#             SecurityInfo info = sc.getSecurityInfo();
-//#             System.out.println("getProtocolName " + info.getProtocolName());
-//# 
-//#             sc.setSocketOption(SocketConnection.LINGER, 5);
-//# 
-//#             InputStream is = sc.openInputStream();
-//#             OutputStream os = sc.openOutputStream();
-//# 
-//#             os.write("GET /owntracks HTTP/1.0\r\n".getBytes());
-//#             int ch = 0;
-//#             while (ch != -1) {
-//#                 ch = is.read();
-//#             }
-//# 
-//#             is.close();
-//#             os.close();
-//#             sc.close();
-//#             System.out.println("SecureConnection closed");
-//# 
-//#         } catch (IOException ioe) {
-//#             ioe.printStackTrace();
-//#         }
-        //#endif
 
         //#ifdef DEBUGGING
         System.out.println("connectToBroker " + brokerURL + " as " + clientId);
