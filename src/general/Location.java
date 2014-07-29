@@ -24,7 +24,7 @@ public class Location {
     public String battery;
     
     
-    static double acos(double a) {
+    double acos(double a) {
         final double epsilon = 1.0E-7;
         double x = a;
         do {

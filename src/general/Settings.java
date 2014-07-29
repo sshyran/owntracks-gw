@@ -15,8 +15,6 @@ import com.cinterion.io.file.FileConnection;
  * @author christoph krey
  */
 
-//#undefine DEBUGGING
-
 public class Settings {
 
     private String fileURL = "file:///a:/file/settings.properties";
@@ -39,14 +37,10 @@ public class Settings {
     }
     
     public synchronized void setSetting(String key, String value) {
-        //#ifdef DEBUGGING
-//#         System.out.println("setSetting " + key + " " + ((value == null) ? value : "null"));
-        //#endif
+        //System.out.println("setSetting " + key + " " + ((value == null) ? value : "null"));
         if (hashTable == null) {
             loadSettings();
-            //#ifdef DEBUGGING
-//#             System.out.println("loaded");
-            //#endif
+            //System.out.println("loaded");
         }
         if (value == null || value.length() == 0) {
             hashTable.remove(key);
@@ -54,35 +48,25 @@ public class Settings {
             hashTable.put(key, value);
         }
 
-        //#ifdef DEBUGGING
-//#         System.out.println(hashTable.toString());
-        //#endif
+        //System.out.println(hashTable.toString());
         writeSettings();
     }
 
     public synchronized String getSetting(String key, String defaultValue) {
-        //#ifdef DEBUGGING
-//#         System.out.println("getSetting " + key);
-        //#endif
+        //System.out.println("getSetting " + key);
         if (hashTable == null) {
             loadSettings();
-            //#ifdef DEBUGGING
-//#             System.out.println("loaded");
-            //#endif
+            //System.out.println("loaded");
         }
 
         String value;
         value = (String) hashTable.get(key);
 
-        //#ifdef DEBUGGING
-//#         System.out.println("getSetting found" + ((value == null) ? value : "null"));
-        //#endif
+        //System.out.println("getSetting found" + ((value == null) ? value : "null"));
         if (value == null) {
             value = defaultValue;
         }
-        //#ifdef DEBUGGING
-//#         System.out.println("getSetting returns " + value);
-        //#endif
+        //System.out.println("getSetting returns " + value);
         return value;
     }
 
@@ -117,35 +101,25 @@ public class Settings {
     }
 
     public synchronized void loadSettings() {
-        //#ifdef DEBUGGING
-//#         System.out.println("loadSettings");
-        //#endif
+        //System.out.println("loadSettings");
         if (hashTable == null) {
             hashTable = new Hashtable();
-            //#ifdef DEBUGGING
-//#             System.out.println("new HashTable");
-            //#endif
+            //System.out.println("new HashTable");
         }
 
         try {
             FileConnection fconn = (FileConnection) Connector.open(fileURL);
-            //#ifdef DEBUGGING
-//#             System.out.println("Connector.open");
-            //#endif
+            //System.out.println("Connector.open");
             if (!fconn.exists()) {
                 fconn.create();
                 fconn.setReadable(true);
                 fconn.setWritable(true);
-                //#ifdef DEBUGGING
-//#                 System.out.println("fconn.create");
-                //#endif
+                //System.out.println("fconn.create");
             }
 
             InputStream is = fconn.openInputStream();
-            //#ifdef DEBUGGING
-//#             System.out.println("fconn.openInputStream");
-            //#endif
-
+            //System.out.println("fconn.openInputStream");
+            
             String line = null;
 
             do {
@@ -167,10 +141,8 @@ public class Settings {
                     }
 
                     if (i == '\n') {
-                        //#ifdef DEBUGGING
-//#                         System.out.println("line " + line);
-                        //#endif
-                        if (line.charAt(0) == '#') {
+                        //System.out.println("line " + line);
+                        if (line.length() == 0 || line.charAt(0) == '#') {
                             // comment
                         } else {
                             int equal = line.indexOf('=');
@@ -190,32 +162,25 @@ public class Settings {
                 } while (i != -1);
             } while (line != null);
 
-            System.out.println(hashTable.toString());
-
+            //System.out.println(hashTable.toString());
             is.close();
-            //#ifdef DEBUGGING
-//#             System.out.println("is.close");
-            //#endif
+            //System.out.println("is.close");
 
             fconn.close();
-            //#ifdef DEBUGGING
-//#             System.out.println("fconn.close");
-            //#endif
-
+            //System.out.println("fconn.close");
+        
         } catch (IOException ioe) {
             ioe.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public synchronized void writeSettings() {
-        //#ifdef DEBUGGING
-//#         System.out.println("writeSettings");
-        //#endif
+        //System.out.println("writeSettings");
         if (hashTable == null) {
             loadSettings();
-            //#ifdef DEBUGGING
-//#             System.out.println("loaded");
-            //#endif
+            //System.out.println("loaded");
         }
 
         try {
@@ -224,16 +189,14 @@ public class Settings {
                 fconn.create();
                 fconn.setReadable(true);
                 fconn.setWritable(true);
+            } else {
+                fconn.truncate(0);
             }
-            //#ifdef DEBUGGING
-//#             System.out.println("Connector.open");
-            //#endif
-
+            //System.out.println("Connector.open");
+        
             try {
                 OutputStream os = fconn.openOutputStream();
-                //#ifdef DEBUGGING
-//#                 System.out.println("fconn.openOutputStream");
-                //#endif
+                //System.out.println("fconn.openOutputStream");
 
                 os.write(("# " + fileURL + " written: " + new Date() + "\n").getBytes("UTF-8"));
 
@@ -246,18 +209,16 @@ public class Settings {
 
                 os.flush();
                 os.close();
-                //#ifdef DEBUGGING
-//#                 System.out.println("os.close");
-                //#endif
+                //System.out.println("os.close");
             } catch (IOException ioe) {
                 ioe.printStackTrace();
             }
             fconn.close();
-            //#ifdef DEBUGGING
-//#             System.out.println("fconn.close");
-            //#endif
+            //System.out.println("fconn.close");
         } catch (IOException ioe) {
             ioe.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

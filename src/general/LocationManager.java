@@ -2,7 +2,6 @@ package general;
 
 import java.util.Calendar;
 
-//#define DEBUGGING
 /**
  *
  * @author christoph krey
@@ -80,14 +79,11 @@ public class LocationManager {
          18c Checksum        76 NMEA standard checksum 2 chars
          */
 
-        //#ifdef DEBUGGING
-        System.out.println(nmea);
-        //#endif
+        if (Settings.getInstance().getSetting("debug", false)) {
+            System.out.println("LocationManager.handleNMEAString: " + nmea);
+        }
 
         String[] parts = StringSplitter.split(nmea, ",");
-        //#ifdef DEBUGGING
-        System.out.println("parts " + parts.length);
-        //#endif
         if (parts.length == 19) {
             if (parts[2].equalsIgnoreCase("A")) {
                 try {

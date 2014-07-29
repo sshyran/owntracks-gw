@@ -5,8 +5,6 @@
  */
 package general;
 
-//#define DEBUGGING
-
 import javax.microedition.midlet.*;
 import javax.microedition.rms.*;
 
@@ -184,11 +182,7 @@ public class AppMain extends MIDlet implements GlobCost {
             System.out.println("AppMain: starting...");
         }
 
-        
-    //#ifdef DEBUGGING
         System.out.println("Running Greenwich OwnTracks Edition");
-    //#endif
-
         
         settings = Settings.getInstance();
         settings.setfileURL("file:///a:/file/OwnTracks.properties");     

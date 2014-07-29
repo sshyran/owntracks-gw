@@ -10,7 +10,6 @@ import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.MqttTopic;
 import org.eclipse.paho.client.mqttv3.internal.MemoryPersistence;
 
-//#define DEBUGGING
 public class MQTTHandler implements MqttCallback {
 
     private MqttClient client;
@@ -66,7 +65,7 @@ public class MQTTHandler implements MqttCallback {
         subscription = aSubscription;
         subscriptionQos = aSubscriptionQos;
         firstConnect = true;
-        
+
         if (client != null) {
             disconnect();
             client = null;
@@ -75,10 +74,9 @@ public class MQTTHandler implements MqttCallback {
 
     public synchronized void connectToBroker()
             throws MqttSecurityException, MqttException {
-
-        //#ifdef DEBUGGING
-        System.out.println("connectToBroker " + brokerURL + " as " + clientId);
-        //#endif
+        if (Settings.getInstance().getSetting("debug", false)) {
+            System.out.println("connectToBroker " + brokerURL + " as " + clientId);
+        }
         if (client == null) {
             try {
                 client = new MqttClient(brokerURL, clientId, new MemoryPersistence());
@@ -123,10 +121,9 @@ public class MQTTHandler implements MqttCallback {
             boolean retained,
             byte[] payload)
             throws MqttException {
-        //#ifdef DEBUGGING
-        System.out.println("publish");
-        //#endif
-
+        if (Settings.getInstance().getSetting("debug", false)) {
+            System.out.println("publish");
+        }
         if (!client.isConnected()) {
             try {
                 connectToBroker();
@@ -150,10 +147,9 @@ public class MQTTHandler implements MqttCallback {
     }
 
     public synchronized void subscribe(String topicName, int qos) throws MqttException {
-        //#ifdef DEBUGGING
-        System.out.println("subscribe " + topicName + " " + qos);
-        //#endif
-
+        if (Settings.getInstance().getSetting("debug", false)) {
+            System.out.println("subscribe " + topicName + " " + qos);
+        }
         if (client.isConnected()) {
             client.subscribe(topicName, qos);
         } else {
@@ -162,16 +158,16 @@ public class MQTTHandler implements MqttCallback {
     }
 
     public synchronized void disconnect() {
-        //#ifdef DEBUGGING
-        System.out.println("disconnect");
-        //#endif
+        if (Settings.getInstance().getSetting("debug", false)) {
+            System.out.println("disconnect");
+        }
         try {
             client.disconnect(0);
         } catch (MqttException e) {
             e.printStackTrace();
         }
     }
-    
+
     public boolean isConnected() {
         if (client != null) {
             return client.isConnected();
@@ -181,32 +177,31 @@ public class MQTTHandler implements MqttCallback {
     }
 
     // Callbacks
-    
     public void connectionLost(Throwable cause) {
-        //#ifdef DEBUGGING
-        System.out.println("connectionLost");
-        //#endif
+        if (Settings.getInstance().getSetting("debug", false)) {
+            System.out.println("connectionLost");
+        }
     }
 
     public void messageArrived(MqttTopic topic, MqttMessage message)
             throws Exception {
-        //#ifdef DEBUGGING
-        System.out.println("Msg arrived!");
-        System.out.println("Topic: " + topic.getName() + " QoS: "
+        if (Settings.getInstance().getSetting("debug", false)) {
+            System.out.println("Msg arrived!");
+            System.out.println("Topic: " + topic.getName() + " QoS: "
                 + message.getQos());
-        System.out.println("Message: " + new String(message.getPayload()));
-        //#endif
+            System.out.println("Message: " + new String(message.getPayload()));
+        }
         CommandProcessor commandProcessor = CommandProcessor.getInstance();
         if (commandProcessor.execute(message.toString())) {
             publish(topic.getName() + "/out", 0, false, ("ACK: " + commandProcessor.message).getBytes());
         } else {
             publish(topic.getName() + "/out", 0, false, ("NACK: " + commandProcessor.message).getBytes());
-        }                                                
+        }
     }
 
     public void deliveryComplete(MqttDeliveryToken token) {
-        //#ifdef DEBUGGING
-        System.out.println("deliveryComplete");
-        //#endif
+        if (Settings.getInstance().getSetting("debug", false)) {
+            System.out.println("deliveryComplete");
+        }
     }
 }

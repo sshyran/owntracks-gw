@@ -130,7 +130,7 @@ public class SocketGPRStask extends Thread implements GlobCost {
                             //System.out.println("TT*SocketGPRStask: data from RAM");
                             outText = InfoStato.getInstance().getDataRAM();
 							//outTextMqtt = InfoStato.getInstance().getDataMqttRAM();
-                            //System.out.println("data from RAM");
+                            //.out.println("data from RAM");
 							/*for(int ind = 0; ind < outTextMqtt.length; ind++)
                              System.out.println(outTextMqtt[ind]);*/
                             //System.out.println("data: "+ outText);
@@ -231,6 +231,8 @@ public class SocketGPRStask extends Thread implements GlobCost {
                         }
 
                         //new LogError("Transmission status: " + InfoStato.getInstance().gettrasmetti());
+                        //System.out.println("Transmission status: " + InfoStato.getInstance().gettrasmetti());
+
                         if (InfoStato.getInstance().gettrasmetti() == true) {
 
                             InfoStato.getInstance().settrasmetti(false);
@@ -304,6 +306,7 @@ public class SocketGPRStask extends Thread implements GlobCost {
                                 SemAT.getInstance().putCoin();
                             }
 
+                            //System.out.println("sending outText");
                             LocationManager locationManager = LocationManager.getInstance();
                             locationManager.setMinDistance(settings.getSetting("minDistance", 500));
                             locationManager.setMaxInterval(settings.getSetting("maxInterval", 180));
@@ -330,8 +333,7 @@ public class SocketGPRStask extends Thread implements GlobCost {
                             if (InfoStato.getInstance().getChiudiGPRS() == true) {
 
                                 InfoStato.getInstance().setTRKstate(false);
-                                //System.out.println("CLOSE GPRS");
-                                // Close GPRS Channel
+                                System.out.println("CLOSE GPRS");
                                 SemAT.getInstance().getCoin(5);
                                 MQTTHandler.getInstance().disconnect();
                                 SemAT.getInstance().putCoin();
@@ -381,6 +383,7 @@ public class SocketGPRStask extends Thread implements GlobCost {
                             InfoStato.getInstance().setChiudiGPRS(false);
                         }
                     } catch (Exception e) {
+                        e.printStackTrace();
                         close = true;
                         String msgExcept = e.getMessage();
                         //System.out.println("TT*SocketGPRStask, exception: "+msgExcept);
@@ -393,6 +396,7 @@ public class SocketGPRStask extends Thread implements GlobCost {
                     } //catch
 
                 } catch (Exception e) {
+                    e.printStackTrace();
                     close = true;
                     //new LogError("SocketGPRSTask generic Exception");
                     InfoStato.getInstance().setIfsocketAttivo(false);
