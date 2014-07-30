@@ -33,6 +33,19 @@ Commands are:
 
 commands marked with + require login
 
+For example, assume your Greenwich is publishing to `owntracks/GWBUS-ak`, I can publish the following:
+
+```
+mosquitto_pub ... -t owntracks/GWBUS-ak/cmd -m "gps"
+```
+
+and the device will respond with:
+
+```
+owntracks/GWBUS-ak {"_type":"location","t":"m", ... }
+owntracks/GWBUS-ak/cmd/out ACK: command: "gps" {"_type":"location","t":"m", ...}
+```
+
 login expires after "loginTimeout" (settings) seconds
 "secret" is stored in settings, too (see below)
 
