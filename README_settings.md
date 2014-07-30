@@ -82,5 +82,5 @@ gps returns and publishes the last known location
 * clientID, used as MQTT connect client id and is appended to base publish topic, default IMEI of device
 
 
-
+`$set clientID=<id>` sets the MQTT clientID for the publish (default is the device's IMEI number). This identifier is also appended to `$set publish=<basetopic>`, default owntracks/gw
 
