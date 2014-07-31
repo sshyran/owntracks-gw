@@ -106,7 +106,7 @@ public class GPIOmanager extends Thread implements GlobCost {
 
                     } //DisattivaSensore
 
-                    if (Settings.getInstance().getSetting("movState", "OFF").equals("GPSOFF")) {
+                    if (!Settings.getInstance().getSetting("movState", "OFF").equals("GPSOFF")) {
                         if (gpsLedState != InfoStato.getInstance().getGpsLed()) {
                             gpsLedState = InfoStato.getInstance().getGpsLed();
                             try {
