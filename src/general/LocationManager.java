@@ -227,10 +227,10 @@ public class LocationManager {
             json = json.concat(",\"lat\":\"" + location.latitude + "\"");
             
             if (isInStringArray("course", fields)) {
-                            json = json.concat(",\"crs\":\"" + location.course + "\"");
+                            json = json.concat(",\"cog\":\"" + location.course + "\"");
             }
             if (isInStringArray("speed", fields)) {
-                            json = json.concat(",\"spd\":\"" + location.speed + "\"");
+                            json = json.concat(",\"vel\":\"" + location.speed + "\"");
             }
             if (isInStringArray("altitude", fields)) {
                             json = json.concat(",\"alt\":\"" + location.altitude + "\"");

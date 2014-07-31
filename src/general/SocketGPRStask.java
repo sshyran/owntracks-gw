@@ -147,11 +147,11 @@ public class SocketGPRStask extends Thread implements GlobCost {
 
         }// while
     } //run
-    
+
     void doTrackingOn() {
         try {
 
-                    // Indication about SOCKET TASK ACTIVE
+            // Indication about SOCKET TASK ACTIVE
             //System.out.println("TT*SocketGPRStask: START");
             InfoStato.getInstance().setIfsocketAttivo(true);
 					//destAddressTCP = "socket://" + InfoStato.getInstance().getInfoFileString(DestHost) + ":" + InfoStato.getInstance().getInfoFileString(DestPort) + ";" + InfoStato.getInstance().getInfoFileString(ConnProfileGPRS) + ";timeout=0";
@@ -228,7 +228,7 @@ public class SocketGPRStask extends Thread implements GlobCost {
 
                     } else {
                         if ((outText.indexOf("ALARM") > 0) || (outText.indexOf("ALIVE") > 0) || (outText.indexOf("COD<") > 0) || (outText.indexOf("URC SIM") > 0)) {
-                                    //if((outTextMqtt[ALR_IND].indexOf("ALARM")>0) || (outTextMqtt[ALR_IND].indexOf("ALIVE")>0) || (outTextMqtt[ALR_IND].indexOf("COD<")>0) || (outTextMqtt[ALR_IND].indexOf("URC SIM")>0)){
+                            //if((outTextMqtt[ALR_IND].indexOf("ALARM")>0) || (outTextMqtt[ALR_IND].indexOf("ALIVE")>0) || (outTextMqtt[ALR_IND].indexOf("COD<")>0) || (outTextMqtt[ALR_IND].indexOf("URC SIM")>0)){
                             //System.out.println("Alarm");
                             InfoStato.getInstance().settrasmetti(true);
                             InfoStato.getInstance().setApriGPRS(true);
@@ -272,7 +272,7 @@ public class SocketGPRStask extends Thread implements GlobCost {
                     InfoStato.getInstance().setChiudiGPRS(false);
                 }
 
-                        //new LogError("Transmission status: " + InfoStato.getInstance().gettrasmetti());
+                //new LogError("Transmission status: " + InfoStato.getInstance().gettrasmetti());
                 //System.out.println("Transmission status: " + InfoStato.getInstance().gettrasmetti());
                 if (InfoStato.getInstance().gettrasmetti() == true) {
 
@@ -289,13 +289,12 @@ public class SocketGPRStask extends Thread implements GlobCost {
                         } catch (Exception e) {
                         }
 
-                                // Open GPRS Channel
+                        // Open GPRS Channel
                         // connect to MQTT broker
                         Settings settings = Settings.getInstance();
 
-                        SemAT.getInstance().getCoin(5);
-
                         if (!MQTTHandler.getInstance().isConnected()) {
+                            SemAT.getInstance().getCoin(5);
                             Date date = new Date();
                             MQTTHandler.getInstance().init(
                                     settings.getSetting("clientID", InfoStato.getInstance().getIMEI()),
@@ -316,15 +315,9 @@ public class SocketGPRStask extends Thread implements GlobCost {
                                             + settings.getSetting("clientID", InfoStato.getInstance().getIMEI()) + "/cmd"),
                                     settings.getSetting("subscriptionQos", 1)
                             );
-                        }
-                        try {
                             MQTTHandler.getInstance().connectToBroker();
-                        } catch (MqttSecurityException mse) {
-                            mse.printStackTrace();
-                        } catch (MqttException me) {
-                            me.printStackTrace();
+                            SemAT.getInstance().putCoin();
                         }
-                        SemAT.getInstance().putCoin();
 
                         InfoStato.getInstance().setApriGPRS(false);
                     }
@@ -334,17 +327,14 @@ public class SocketGPRStask extends Thread implements GlobCost {
 
                     if (settings.getSetting("raw", true)) {
                         SemAT.getInstance().getCoin(5);
-                        try {
-                            MQTTHandler.getInstance().publish(settings.getSetting("publish", "owntracks/gw/")
-                                    + settings.getSetting("clientID", InfoStato.getInstance().getIMEI())
-                                    + "/raw",
-                                    settings.getSetting("qos", 1),
-                                    settings.getSetting("retain", true),
-                                    outText.getBytes());
-                        } catch (MqttException e) {
-                            e.printStackTrace();
-                        }
+                        MQTTHandler.getInstance().publish(settings.getSetting("publish", "owntracks/gw/")
+                                + settings.getSetting("clientID", InfoStato.getInstance().getIMEI())
+                                + "/raw",
+                                settings.getSetting("qos", 1),
+                                settings.getSetting("retain", true),
+                                outText.getBytes());
                         SemAT.getInstance().putCoin();
+
                     }
 
                     LocationManager locationManager = LocationManager.getInstance();
@@ -357,15 +347,11 @@ public class SocketGPRStask extends Thread implements GlobCost {
                         String json = locationManager.getJSONString(fields);
                         if (json != null) {
                             SemAT.getInstance().getCoin(5);
-                            try {
-                                MQTTHandler.getInstance().publish(settings.getSetting("publish", "owntracks/gw/")
-                                        + settings.getSetting("clientID", InfoStato.getInstance().getIMEI()),
-                                        settings.getSetting("qos", 1),
-                                        settings.getSetting("retain", true),
-                                        json.getBytes("UTF-8"));
-                            } catch (MqttException e) {
-                                e.printStackTrace();
-                            }
+                            MQTTHandler.getInstance().publish(settings.getSetting("publish", "owntracks/gw/")
+                                    + settings.getSetting("clientID", InfoStato.getInstance().getIMEI()),
+                                    settings.getSetting("qos", 1),
+                                    settings.getSetting("retain", true),
+                                    json.getBytes("UTF-8"));
                             SemAT.getInstance().putCoin();
                         }
                     }
@@ -394,7 +380,7 @@ public class SocketGPRStask extends Thread implements GlobCost {
                 if (ram) {
                     if (!errorSent) {
                         InfoStato.getInstance().setDataRAM("");
-                                //System.out.println("DELETE DATA FROM RAM");
+                        //System.out.println("DELETE DATA FROM RAM");
                         //InfoStato.getInstance().setDataMqttRAM(null);
                     }
                 } else {
@@ -462,7 +448,7 @@ public class SocketGPRStask extends Thread implements GlobCost {
                 InfoStato.getInstance().setEnableCSD(true);
 
                 SemAT.getInstance().getCoin(5);
-                        // Close GPRS channel
+                // Close GPRS channel
                 //System.out.println("SocketGPRSTask: KILL GPRS");
                 InfoStato.getInstance().writeATCommand("at+cgatt=0\r");
                 SemAT.getInstance().putCoin();

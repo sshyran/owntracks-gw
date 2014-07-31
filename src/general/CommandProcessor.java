@@ -1,11 +1,20 @@
 package general;
 
-import com.cinterion.io.ATCommandFailedException;
+import com.cinterion.imp.io.tls.SSLStreamConnection;
 import com.cinterion.io.ATCommand;
+import com.cinterion.io.ATCommandFailedException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.Enumeration;
-import java.io.UnsupportedEncodingException;
+import javax.microedition.io.Connector;
+import javax.microedition.io.SecureConnection;
+import javax.microedition.io.SecurityInfo;
+import javax.microedition.io.SocketConnection;
+import javax.microedition.io.StreamConnection;
+import javax.microedition.pki.CertificateException;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 /**
@@ -22,10 +31,11 @@ public class CommandProcessor implements GlobCost {
     private final String reboot = "reboot";
     private final String close = "close";
     private final String reconnect = "reconnect";
+    private final String secure = "secure";
     private final String log = "log";
     private final String dump = "dump";
 
-    private final String[] unauthorizedCommands = {login, gps, state, close};
+    private final String[] unauthorizedCommands = {login, gps, state, close, secure};
     private final String[] authorizedCommands = {set, reboot, reconnect, dump, log, logout};
 
     private final String CRLF = "\r\n";
@@ -157,6 +167,9 @@ public class CommandProcessor implements GlobCost {
         } else if (command.equalsIgnoreCase(set)) {
             return setCommand(parameters);
 
+        } else if (command.equalsIgnoreCase(secure)) {
+            return secureCommand(parameters);
+
         } else if (command.equalsIgnoreCase(dump)) {
             String combined;
 
@@ -277,4 +290,63 @@ public class CommandProcessor implements GlobCost {
 //#                                                 dataOut.write(InfoStato.getInstance().getRecord(indice).getBytes());
 //#                                             }
 //#endif 
+
+    boolean secureCommand(String[] parameters) {
+        if (parameters.length == 3) {
+            try {
+                SecureConnection secc;
+                InputStream is;
+                OutputStream os;
+
+                message = "Opening a SecureConnection to " + parameters[1] + CRLF;
+                secc = (SecureConnection) Connector.open(parameters[1]);
+                SecurityInfo info = secc.getSecurityInfo();
+                message = message.concat("ProtocolName " + info.getProtocolName() + CRLF);
+                message = message.concat("ProtocolVersion " + info.getProtocolVersion() + CRLF);
+                message = message.concat("CipherSuite " + info.getCipherSuite() + CRLF);
+
+                message = message.concat("Issuer " + info.getServerCertificate().getIssuer() + CRLF);
+                message = message.concat("Serial " + info.getServerCertificate().getSerialNumber() + CRLF);
+                message = message.concat("SigAlgName " + info.getServerCertificate().getSigAlgName() + CRLF);
+                message = message.concat("Subject " + info.getServerCertificate().getSubject() + CRLF);
+                message = message.concat("Type " + info.getServerCertificate().getType() + CRLF);
+                message = message.concat("Version " + info.getServerCertificate().getVersion() + CRLF);
+
+                secc.setSocketOption(SocketConnection.LINGER, 5);
+
+                is = secc.openInputStream();
+                os = secc.openOutputStream();
+                String request = parameters[2].replace('_', ' ');
+                message = message.concat("Request: " + request + CRLF);
+                os.write((request + "\r\n\r\n").getBytes());
+
+                int ch = 0;
+                StringBuffer buffer = new StringBuffer();
+                while (ch != -1) {
+                    buffer.append((char) is.read());
+                    if (buffer.length() > 200) {
+                        break;
+                    }
+                }
+
+                message = message.concat("Response " + CRLF + buffer.toString() + CRLF);
+
+                is.close();
+                os.close();
+                secc.close();
+
+            } catch (IllegalArgumentException iae) {
+                message = message.concat("IllegalArgumentException " + iae.getMessage());
+            } catch (CertificateException ce) {
+                message = message.concat("CertificateException " + ce.getMessage());
+            } catch (IOException ex) {
+                message = message.concat("IOException " + ex.getMessage());
+            }
+            return true;
+
+        } else {
+            message = "usage " + secure + " url message";
+            return false;
+        }
+    }
 }

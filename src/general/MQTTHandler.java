@@ -72,17 +72,20 @@ public class MQTTHandler implements MqttCallback {
         }
     }
 
-    public synchronized void connectToBroker()
-            throws MqttSecurityException, MqttException {
+    public synchronized void connectToBroker() {
         if (Settings.getInstance().getSetting("debug", false)) {
-            System.out.println("connectToBroker " + brokerURL + " as " + clientId);
+            System.out.println("connectToBroker " + brokerURL
+                    + " as " + clientId
+                    + "(c" + cleanSession
+                    + " k" + keepAlive
+                    + " u" + ((userName == null) ? "<null>" : userName) + ")");
         }
         if (client == null) {
             try {
                 client = new MqttClient(brokerURL, clientId, new MemoryPersistence());
                 client.setCallback(this);
             } catch (MqttException e) {
-                throw e;
+                System.err.println("Error setCallback: " + e.getReasonCode());
             }
         }
 
@@ -101,17 +104,25 @@ public class MQTTHandler implements MqttCallback {
                     options.setWill(client.getTopic(willTopic),
                             will, willQos, willRetain);
                 }
+                if (Settings.getInstance().getSetting("debug", false)) {
+                    System.out.println("connect w/ options");
+                }
+
                 client.connect(options);
                 if (subscription != null) {
                     if (cleanSession || firstConnect) {
+                        if (Settings.getInstance().getSetting("debug", false)) {
+                            System.out.println("subscribe");
+                        }
+
                         client.subscribe(subscription, subscriptionQos);
                         firstConnect = false;
                     }
                 }
-            } catch (MqttSecurityException se) {
-                throw se;
+            } catch (MqttSecurityException e) {
+                System.err.println("Security Error connectToBroker: " + e.getReasonCode());
             } catch (MqttException e) {
-                throw e;
+                System.err.println("Error connectToBroker: " + e.getReasonCode());
             }
         }
     }
@@ -119,19 +130,12 @@ public class MQTTHandler implements MqttCallback {
     public synchronized void publish(String topicName,
             int qos,
             boolean retained,
-            byte[] payload)
-            throws MqttException {
+            byte[] payload) {
         if (Settings.getInstance().getSetting("debug", false)) {
             System.out.println("publish");
         }
         if (!client.isConnected()) {
-            try {
-                connectToBroker();
-            } catch (MqttSecurityException mse) {
-                mse.printStackTrace();
-            } catch (MqttException me) {
-                me.printStackTrace();
-            }
+            connectToBroker();
         }
 
         if (client.isConnected()) {
@@ -142,26 +146,26 @@ public class MQTTHandler implements MqttCallback {
 
             try {
                 MqttDeliveryToken token = topic.publish(message);
-            } catch (MqttException me) {
-                throw me;
+            } catch (MqttException e) {
+                System.err.println("Error publish: " + e.getReasonCode());
             }
         } else {
-            throw new MqttException(MqttException.REASON_CODE_CLIENT_NOT_CONNECTED);
+            // not connected
         }
     }
 
-    public synchronized void subscribe(String topicName, int qos) throws MqttException {
+    public synchronized void subscribe(String topicName, int qos) {
         if (Settings.getInstance().getSetting("debug", false)) {
             System.out.println("subscribe " + topicName + " " + qos);
         }
         if (client.isConnected()) {
             try {
                 client.subscribe(topicName, qos);
-            } catch (MqttException me) {
-                me.printStackTrace();
+            } catch (MqttException e) {
+                System.err.println("Error subscribe: " + e.getReasonCode());
             }
         } else {
-            throw new MqttException(MqttException.REASON_CODE_CLIENT_NOT_CONNECTED);
+            // not connected
         }
     }
 
@@ -172,7 +176,7 @@ public class MQTTHandler implements MqttCallback {
         try {
             client.disconnect(0);
         } catch (MqttException e) {
-            e.printStackTrace();
+            System.err.println("Error disconnect: " + e.getReasonCode());
         }
     }
 
