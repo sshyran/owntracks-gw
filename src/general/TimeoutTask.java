@@ -47,7 +47,7 @@ public class TimeoutTask extends TimerTask implements GlobCost {
      * </ul>
      */
     public void run() {
-        if (debug) {
+        if (Settings.getInstance().getSetting("generalDebug", false)) {
             System.out.println("TimeoutTask: " + timeoutType);
         }
 
@@ -64,13 +64,13 @@ public class TimeoutTask extends TimerTask implements GlobCost {
                  */
                 if (InfoStato.getInstance().getValidFIX() == true) {
 
-                    if (debug) {
+                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                         System.out.println("TimeoutTask, FIXgpsTimeout: FIXtimeout EXPIRED but FIX found");
                     }
 
                 } else {
 
-                    if (debug) {
+                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                         System.out.println("TimeoutTask, FIXgpsTimeout: FIXtimeout EXPIRED");
                     }
 
@@ -86,7 +86,7 @@ public class TimeoutTask extends TimerTask implements GlobCost {
              */
             if (timeoutType.equalsIgnoreCase(FIXgprsTimeout)) {
 
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("TimeoutTask, FIXgprsTimeout: FIXgprsTimeout EXPIRED");
                 }
 

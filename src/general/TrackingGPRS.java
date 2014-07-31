@@ -112,7 +112,7 @@ public class TrackingGPRS extends Thread implements GlobCost {
 					// *** FINISHED to SEND strings through GPRS	
                 if (msgRicevuto.equalsIgnoreCase(invioCompletato)) {
 
-                    if (debug) {
+                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                         System.out.println("Th*TrackingGPRS: Tracking finished!!");
                     }
                     // reset timer and task, and enable CSD
@@ -125,7 +125,7 @@ public class TrackingGPRS extends Thread implements GlobCost {
 
                     InfoStato.getInstance().setEnableCSD(true);
 
-                    if (debug) {
+                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                         System.out.println("Th*TrackingGPRS: Reset socket task e timer completed");
                     }
 
@@ -144,7 +144,7 @@ public class TrackingGPRS extends Thread implements GlobCost {
 
                     String datoToSend;
                     //if (GPRSposFormat == CHORAL) {
-                    if (InfoStato.getInstance().getInfoFileString(TrackingProt).equals("USR")) {
+                    if (Settings.getInstance().getSetting("format", "USR").equals("USR")) {
                         infoGps = null;
                         Posusr msg = new Posusr();
                         String tempRMC = (String) DataStores.getInstance(DataStores.dsDRMC).getLastValid();
@@ -161,7 +161,9 @@ public class TrackingGPRS extends Thread implements GlobCost {
                         if ((tempRMC != null) && (!(tempRMC.equals("")))) {
                             infoGps = msg.set_posusr(tempRMC, tempGGA);
                         } else {
-                            infoGps = InfoStato.getInstance().getInfoFileString(Header) + "," + InfoStato.getInstance().getInfoFileString(IDtraker) + defaultGPS;
+                            infoGps = Settings.getInstance().getSetting("header", "$")
+                                    + "," + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI())
+                                    + defaultGPS;
                         }
                         datoToSend = infoGps;
                     } else {
@@ -169,15 +171,17 @@ public class TrackingGPRS extends Thread implements GlobCost {
                     }
 
                     if ((datoToSend == null) || (datoToSend.indexOf("null") >= 0)) {
-                        if (InfoStato.getInstance().getInfoFileString(TrackingProt).equals("USR")) {
-                            datoToSend = InfoStato.getInstance().getInfoFileString(Header) + "," + InfoStato.getInstance().getInfoFileString(IDtraker) + defaultGPS + ",<ERROR>*00";
+                        if (Settings.getInstance().getSetting("format", "USR").equals("USR")) {
+                            datoToSend = Settings.getInstance().getSetting("header", "$")
+                                    + "," + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI())
+                                    + defaultGPS + ",<ERROR>*00";
                         }
                         /*else{
                          datoToSend = defaultGpsNMEA;
                          }*/
 
                     }
-                    if (InfoStato.getInstance().getInfoFileString(TrackingProt).equals("USR")) {
+                    if (Settings.getInstance().getSetting("format", "USR").equals("USR")) {
                         if (msgRicevuto.equalsIgnoreCase(trackMovimento)) {
                             datoToSend = datoToSend + ",ALR<" + alarmMovimento + ">";
                         } else if (msgRicevuto.equalsIgnoreCase(trackAttivChiave)) {
@@ -199,11 +203,11 @@ public class TrackingGPRS extends Thread implements GlobCost {
                         } else;
                     }
 
-                    if (InfoStato.getInstance().getInfoFileString(TrackingProt).equals("USR")) {
+                    if (Settings.getInstance().getSetting("format", "USR").equals("USR")) {
                         datoToSend = datoToSend + "*" + this.getChecksum(datoToSend).toUpperCase();
                     }
 
-                    if (debug) {
+                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                         System.out.println(datoToSend);
                     }
                     new LogError("Trk " + datoToSend);
@@ -212,17 +216,13 @@ public class TrackingGPRS extends Thread implements GlobCost {
                     //System.out.println("RAM DATA: " + InfoStato.getInstance().getDataRAM());
                     // Aggiunto il 29/12/2011 [MB]
                     ctrlSpeed = InfoStato.getInstance().getSpeedDFS();
-                    if (debug_speed) {
+                    if (Settings.getInstance().getSetting("speedDebug", false)) {
                         ctrlSpeed = InfoStato.getInstance().getSpeedGree();
                         //System.out.println("SPEED " + ctrlSpeed);
                     }
 
                     InfoStato.getInstance().setSpeedForTrk(ctrlSpeed);
-                    try {
-                        val_insensibgps = Integer.parseInt(InfoStato.getInstance().getInfoFileString(InsensibilitaGPS));
-                    } catch (NumberFormatException e) {
-                        val_insensibgps = 0;
-                    }
+                        val_insensibgps = Settings.getInstance().getSetting("minSpeed", 0);
 
                     if (msgRicevuto.equalsIgnoreCase(trackNormale)) {
 
@@ -257,7 +257,7 @@ public class TrackingGPRS extends Thread implements GlobCost {
 
                         if ((InfoStato.getInstance().getDataRAM()).equals("")) {
                             InfoStato.getInstance().setDataRAM(datoToSend);
-                            if (debug) {
+                            if (Settings.getInstance().getSetting("generalDebug", false)) {
                                 System.out.println(datoToSend);
                             }
                         } else {
@@ -268,7 +268,7 @@ public class TrackingGPRS extends Thread implements GlobCost {
                             /*
                              * Save data to send
                              */
-                            int temp = InfoStato.getInstance().getInfoFileInt(TrkIN);
+                            int temp = InfoStato.getInstance().getTrkIN();
                             //System.out.println("Th*TrackingGPRS: pointer in - " + temp);
                             if ((temp >= codaSize) || (temp < 0)) {
                                 temp = 0;
@@ -279,11 +279,7 @@ public class TrackingGPRS extends Thread implements GlobCost {
                             if ((temp >= codaSize) || (temp < 0)) {
                                 temp = 0;
                             }
-                            InfoStato.getInstance().setInfoFileInt(TrkIN, "" + temp);
-                            FlashFile.getInstance().setImpostazione(TrkIN, "" + temp);
-                            InfoStato.getFile();
-                            FlashFile.getInstance().writeSettings();
-                            InfoStato.freeFile();
+                            InfoStato.getInstance().setTrkIN(temp);
 
                             invia_to_socket = false;
                         }
@@ -301,7 +297,7 @@ public class TrackingGPRS extends Thread implements GlobCost {
                  * (of some sort) while loop is stopped
                  */
                 msgRicevuto = (String) Mailboxes.getInstance(3).read();
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*TrackingGPRS: Received message: " + msgRicevuto);
                 }
 
@@ -312,7 +308,7 @@ public class TrackingGPRS extends Thread implements GlobCost {
 
             } //while(true)		
 
-            if (debug) {
+            if (Settings.getInstance().getSetting("generalDebug", false)) {
                 System.out.println("Th*TrackingGPRS: END");
             }
             InfoStato.getInstance().setTrackingAttivo(false);

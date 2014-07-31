@@ -35,7 +35,7 @@ public class UpdateCSD extends Thread implements GlobCost {
      * constructors
      */
     public UpdateCSD() {
-        if (debug) {
+        if (Settings.getInstance().getSetting("generalDebug", false)) {
             System.out.println("Th*UpdateCSD: CREATED");
         }
     }
@@ -56,7 +56,7 @@ public class UpdateCSD extends Thread implements GlobCost {
      */
     public void run() {
 
-        if (debug) {
+        if (Settings.getInstance().getSetting("generalDebug", false)) {
             System.out.println("Th*UpdateCSD: STARTED");
         }
 
@@ -93,7 +93,7 @@ public class UpdateCSD extends Thread implements GlobCost {
                 /*
                  * Answer to CSD call
                  */
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*UpdateCSD: I'm responding to the CSD call");
                 }
                 InfoStato.getInstance().setATexec(true);
@@ -119,19 +119,19 @@ public class UpdateCSD extends Thread implements GlobCost {
                 InfoStato.getInstance().setATexec(true);
 
                 // With CSD connection, start input and output streams
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*UpdateCSD: Open CSD stream");
                 }
                 Mailboxes.getInstance(2).write(csdOpen);
 
                 // Write on output stream
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*UpdateCSD: Write on output stream");
                 }
                 Mailboxes.getInstance(2).write(csdWrite + "\n\rGreenwich Connected\n\r");
 
                 // Read from input stream
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*UpdateCSD: Read from input stream");
                 }
                 Mailboxes.getInstance(2).write(csdRead);
@@ -152,7 +152,7 @@ public class UpdateCSD extends Thread implements GlobCost {
                 CSDTimer.schedule(CSDTimeoutTask, CSDTOvalue * 1000);
 
                 // Close CSD call
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*UpdateCSD: I'm releasing CSD call");
                 }
                 InfoStato.getInstance().setATexec(true);
@@ -181,11 +181,9 @@ public class UpdateCSD extends Thread implements GlobCost {
         InfoStato.getInstance().setInibizioneChiave(false);
         InfoStato.getInstance().setCSDattivo(false);
 
-        if (debug) {
+        if (Settings.getInstance().getSetting("generalDebug", false)) {
             System.out.println("Th*UpdateCSD: END");
         }
-
-    } //run
-
-} //UpdateCSD
+    }
+}
 

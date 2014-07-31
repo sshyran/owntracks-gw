@@ -250,8 +250,8 @@ public class Posusr implements GlobCost {
         } //catch
 
         // Fixed parameters on GPS string
-        arrayGPS[0] = InfoStato.getInstance().getInfoFileString(Header);
-        arrayGPS[1] = InfoStato.getInstance().getInfoFileString(IDtraker);
+        arrayGPS[0] = Settings.getInstance().getSetting("header", "$");
+        arrayGPS[1] = Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI());
         /*String tempD = Integer.toString((int)InfoStato.getInstance().getDist());
          int lungh = tempD.length();
          if(lungh < 6)
@@ -508,8 +508,8 @@ public class Posusr implements GlobCost {
         } //catch
 
         // Fixed parameters on GPS string
-        arrayGPS[0] = InfoStato.getInstance().getInfoFileString(Header);
-        arrayGPS[1] = InfoStato.getInstance().getInfoFileString(IDtraker);
+        arrayGPS[0] = Settings.getInstance().getSetting("header", "$");
+        arrayGPS[1] = Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI());
         String tempD = Integer.toString((int) InfoStato.getInstance().getDist());
         int lungh = tempD.length();
         if (lungh < 6) {
@@ -769,8 +769,8 @@ public class Posusr implements GlobCost {
         } //catch
 
         // Fixed parameters on GPS string
-        arrayGPS[0] = InfoStato.getInstance().getInfoFileString(Header);
-        arrayGPS[1] = InfoStato.getInstance().getInfoFileString(IDtraker);
+        arrayGPS[0] = Settings.getInstance().getSetting("header", "$");
+        arrayGPS[1] = Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI());
         String tempD = Integer.toString((int) InfoStato.getInstance().getDist());
         int lungh = tempD.length();
         if (lungh < 6) {

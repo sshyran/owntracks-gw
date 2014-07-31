@@ -127,7 +127,7 @@ public class CommGPStrasparent extends Thread implements GlobCost {
 
 						//System.out.println("InfoStato.getInstance().getGpsState() " + InfoStato.getInstance().getGpsState());
                     //System.out.println("pre_gps_state " + pre_gps_state);
-                    if ((InfoStato.getInstance().getInfoFileString(MovState)).indexOf("GPSOFF") >= 0) {
+                    if (Settings.getInstance().getSetting("movState", "OFF").equals("GPSOFF")) {
                         if (pre_gps_state) {
                             sleep_GPS(outStreamgps);
                             pre_gps_state = false;
@@ -160,7 +160,7 @@ public class CommGPStrasparent extends Thread implements GlobCost {
                             e.printStackTrace();
                         }
                         
-                        if (debug) {
+                        if (Settings.getInstance().getSetting("generalDebug", false)) {
                             System.out.println("****" + letturaStringa);
                             System.out.flush();
                         }
@@ -172,7 +172,7 @@ public class CommGPStrasparent extends Thread implements GlobCost {
 
                             // RMC String: $GPRMC,hhmmss,status,latitude,N,longitude,E,spd,cog,ddmmyy,mv,mvE,mode*cs<CR><LF>
                             RMCstring = letturaStringa;
-                            if (InfoStato.getInstance().getUartTraspGPS()) {
+                            if (Settings.getInstance().getSetting("display", false)) {
                                 System.out.println(RMCstring);
                                 go = true;
                             } else {
@@ -191,7 +191,7 @@ public class CommGPStrasparent extends Thread implements GlobCost {
                                 if (go) {
                                     System.out.println(letturaStringa + "\r\n");
                                 }
-                                if (InfoStato.getInstance().getCSDTraspGPS()) {
+                                if (Settings.getInstance().getSetting("display", false)) {
                                     InfoStato.getInstance().setRMCTrasp(RMCstring);
                                     InfoStato.getInstance().setRMCTrasp(letturaStringa + "\r\n");
                                 }
@@ -229,7 +229,7 @@ public class CommGPStrasparent extends Thread implements GlobCost {
                                                 case 6:
                                                     try {
                                                         // Speed
-                                                        if (debug) {
+                                                        if (Settings.getInstance().getSetting("generalDebug", false)) {
                                                             System.out.println("Velocità precedente: " + DFSSpeed);
                                                         }
                                                         InfoStato.getInstance().setPreSpeedDFS(DFSSpeed);
@@ -286,13 +286,14 @@ public class CommGPStrasparent extends Thread implements GlobCost {
                                     } else {
 
                                         InfoStato.getInstance().setValidFIX(true);
-                                        if (debug) {
+                                        if (Settings.getInstance().getSetting("generalDebug", false)) {
                                             System.out.println("Valid Fix");
-                                            System.out.println("TrackingType" + InfoStato.getInstance().getInfoFileString(TrackingType));
+                                            System.out.println("output" + Settings.getInstance().getSetting("output", "IP"));
                                             System.out.println("count" + count);
-                                            System.out.println("TrackingInterv" + InfoStato.getInstance().getInfoFileInt(TrackingInterv));
+                                            System.out.println("maxInterval" + Settings.getInstance().getSetting("maxInterval", 0));
                                         }
-                                        if ((!InfoStato.getInstance().getInfoFileString(TrackingType).equalsIgnoreCase("SMS")) && (count >= InfoStato.getInstance().getInfoFileInt(TrackingInterv))) {
+                                        if ((!Settings.getInstance().getSetting("output", "IP").equalsIgnoreCase("SMS")) &&
+                                                (count >= Settings.getInstance().getSetting("maxInterval", 0))) {
                                             //System.out.println("SAVED STRING: " + stringaGPS + " " + count);
                                             DataStores.getInstance(DataStores.dsTRMC).replaceObject(RMCstring, true);
                                             DataStores.getInstance(DataStores.dsTGGA).replaceObject(letturaStringa, true);
@@ -305,13 +306,14 @@ public class CommGPStrasparent extends Thread implements GlobCost {
                                     DataStores.getInstance(DataStores.dsDRMC).replaceObject(RMCstring, false);
                                     DataStores.getInstance(DataStores.dsDGGA).replaceObject(letturaStringa, false);
                                     // Sending communication to AppMain
-                                    if (debug) {
+                                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                                         System.out.println("First Fix");
-                                        System.out.println("TrackingType" + InfoStato.getInstance().getInfoFileString(TrackingType));
+                                        System.out.println("output" + Settings.getInstance().getSetting("output", "IP"));
                                         System.out.println("count" + count);
-                                        System.out.println("TrackingInterv" + InfoStato.getInstance().getInfoFileInt(TrackingInterv));
+                                        System.out.println("maxInterval" + Settings.getInstance().getSetting("maxInterval", 0));
                                     }
-                                    if ((!InfoStato.getInstance().getInfoFileString(TrackingType).equalsIgnoreCase("SMS")) && (count >= InfoStato.getInstance().getInfoFileInt(TrackingInterv))) {
+                                    if ((!Settings.getInstance().getSetting("output", "IP").equalsIgnoreCase("SMS")) &&
+                                            (count >= Settings.getInstance().getSetting("maxInterval", 0))) {
                                         DataStores.getInstance(DataStores.dsTRMC).replaceObject(RMCstring, false);
                                         DataStores.getInstance(DataStores.dsTGGA).replaceObject(letturaStringa, false);
                                         Mailboxes.getInstance(0).write(msgFIXgprs);

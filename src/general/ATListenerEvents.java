@@ -42,7 +42,7 @@ public class ATListenerEvents implements GlobCost, ATCommandListener {
      */
     public void ATEvent(String event) {
 
-        if (debugGSM) {
+        if (Settings.getInstance().getSetting("gsmDebug", false)) {
             System.out.println("ATListenerEvents: " + event);
         }
 
@@ -137,7 +137,7 @@ public class ATListenerEvents implements GlobCost, ATCommandListener {
             new LogError(event);
             if (event.indexOf("2") >= 0) {
                 InfoStato.getInstance().setReboot();
-                InfoStato.getInstance().setInfoFileInt(UartNumTent, "1");
+                //InfoStato.getInstance().setInfoFileInt(UartNumTent, "1");
             }
         }
 

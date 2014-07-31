@@ -65,9 +65,6 @@ Just removed the global references
 Just removed the global references
 TODO understand what it does, why there are 4 instances?
 
-* FlashFile.java
-Changed to singleton class, simple access from everywhere
-TODO might be redundant, use Settings.java instead
 
 * GlobCost.java - global Co(n)stants
 Just the program version and debug indicators
@@ -109,7 +106,6 @@ Just removed the global references
 Just removed the global references
 
 ## Unchanged Files
-* Coda.java - Low level Queue (Coda) implementation
 * Monitor.java - Low level thread synchronisation
 * PrioSem.java - Low level prioritized semaphore
 * SemaforoEV.java - Low level semaphore
@@ -117,7 +113,11 @@ Just removed the global references
 * CountSem.java - Low level counting semaphore
 * BCListener.java - Bearer Control events processing
 * InvalidThreadException.java - Low Level threading exception definition
-
+* Coda.java - Low level Queue (Coda) implementation
 
 ## unused Classes
-FlashRecordStore.java
+* FlashRecordStore.java
+* FlashFile.java
+Changed to singleton class, simple access from everywhere
+TODO might be redundant, use Settings.java instead
+

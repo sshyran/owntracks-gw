@@ -41,7 +41,7 @@ public class GoToPowerDown extends Thread implements GlobCost {
      * constructors 
      */
     public GoToPowerDown() {
-        if (debug) {
+        if (Settings.getInstance().getSetting("generalDebug", false)) {
             System.out.println("Th*GoToPowerDown: CREATED");
         }
         // Final GPS string has 19 chars (without checksum, added after)
@@ -52,7 +52,7 @@ public class GoToPowerDown extends Thread implements GlobCost {
      * methods
      */
     public void run() {
-        if (debug) {
+        if (Settings.getInstance().getSetting("generalDebug", false)) {
             System.out.println("Th*GoToPowerDown: STARTED");
         }
         /* 
@@ -79,7 +79,7 @@ public class GoToPowerDown extends Thread implements GlobCost {
              */
             if (InfoStato.getInstance().getValidFIX() == true) {
 
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*GoToPowerDown: CASE n.1");
                 }
 
@@ -111,7 +111,7 @@ public class GoToPowerDown extends Thread implements GlobCost {
                 }
                 // I create a local copy for subsequent processing
                 GPRMCmod = GPRMCorig;
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*GoToPowerDown: Letta la stringa: " + GPRMCorig);
                 }
 
@@ -157,17 +157,17 @@ public class GoToPowerDown extends Thread implements GlobCost {
 
                 // SET RTC
                 SemAT.getInstance().getCoin(5);
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*GoToPowerDown: Set RTC in progress...");
                 }
 
                 // send 'at+cclk'
                 InfoStato.getInstance().setATexec(true);
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*GoToPowerDown: ATexec = " + InfoStato.getInstance().getATexec());
                 }
                 Mailboxes.getInstance(2).write("at+cclk=\"" + dataGPRMC + "," + oraGPRMC + "\"\r");
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*GoToPowerDown: sent message: at+cclk..");
                     System.out.println("Th*GoToPowerDown,at+cclk: wait for AT resource is free...");
                 }
@@ -183,13 +183,13 @@ public class GoToPowerDown extends Thread implements GlobCost {
              * 			 recovering current time and date from RTC
              */ else if (InfoStato.getInstance().getValidFIX() == false) {
 
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*GoToPowerDown: CASE n.2");
                 }
 
                 // recover time and date from RTC through read command 'AT+CCLK?'
                 SemAT.getInstance().getCoin(5);
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*GoToPowerDown: read RTC in progress...");
                 }
                 InfoStato.getInstance().writeATCommand("at+cclk?\r");
@@ -205,7 +205,7 @@ public class GoToPowerDown extends Thread implements GlobCost {
                 InfoStato.getInstance().setDataOraGPRMC(null, null);
                 GPRMCorig = "";
 
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("date GPRMC: " + dataGPRMC);
                     System.out.println("time GPRMC: " + oraGPRMC);
                 }
@@ -214,7 +214,7 @@ public class GoToPowerDown extends Thread implements GlobCost {
             /*
              * CASE n.3: other
              */ else {
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Case n.3");
                     System.out.println("Valid FIX GPRS: " + InfoStato.getInstance().getValidFIXgprs());
                     System.out.println("FIX timeout EXPIRED: " + InfoStato.getInstance().isFIXtimeoutExpired());
@@ -231,14 +231,14 @@ public class GoToPowerDown extends Thread implements GlobCost {
                 /*
                  * Don't set time of awakening
                  */
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*GoToPowerDown: not set time of awakening!");
                 }
 
             } else {
                 // Calculate new time of awakening
                 CalcolaSveglia cs = new CalcolaSveglia();
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*GoToPowerDown: calculation of new time of awakening...");
                 }
                 cs.putTime(dataGPRMC, oraGPRMC);
@@ -246,7 +246,7 @@ public class GoToPowerDown extends Thread implements GlobCost {
 
                 if (!timeSveglia.equals("error")) {
                     SemAT.getInstance().getCoin(5);
-                    if (debug) {
+                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                         System.out.println("Th*GoToPowerDown: Set alarm time in progress...");
                     }
 
@@ -254,7 +254,7 @@ public class GoToPowerDown extends Thread implements GlobCost {
                     InfoStato.getInstance().setATexec(true);
                     //System.out.println("Th*GoToPowerDown: ATexec = " + InfoStato.getInstance().getATexec());
                     Mailboxes.getInstance(2).write("at+cala=\"" + timeSveglia + "\"\r");
-                    if (debug) {
+                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                         System.out.println("Th*GoToPowerDown: sent message 'at+cala'...");
                     }
                     //System.out.println("Th*GoToPowerDown: wait for AT resource is free...");
@@ -268,7 +268,7 @@ public class GoToPowerDown extends Thread implements GlobCost {
             /* 
              * [3] SAVE SYSTEM SETTINGS to file
              */
-            if (debug) {
+            if (Settings.getInstance().getSetting("generalDebug", false)) {
                 System.out.println("Th*GoToPowerDown: saving system settings to FILE in progress...");
             }
 
@@ -280,9 +280,11 @@ public class GoToPowerDown extends Thread implements GlobCost {
             String tempRMC = (String) DataStores.getInstance(DataStores.dsDRMC).getLastValid();
             String tempGGA = (String) DataStores.getInstance(DataStores.dsDGGA).getLastValid();
             if ((tempRMC != null) && (!(tempRMC.equals("")))) {
-                FlashFile.getInstance().setImpostazione(LastGPSValid, msg.set_posusr(tempRMC, tempGGA));
+                Settings.getInstance().setSetting("lastGPSValid", msg.set_posusr(tempRMC, tempGGA));
+                //FlashFile.getInstance().setImpostazione(LastGPSValid, msg.set_posusr(tempRMC, tempGGA));
             } else {
-                FlashFile.getInstance().setImpostazione(LastGPSValid, "");
+                Settings.getInstance().setSetting("lastGPSValid", "");
+                //FlashFile.getInstance().setImpostazione(LastGPSValid, "");
             }
 
             /* 
@@ -294,87 +296,98 @@ public class GoToPowerDown extends Thread implements GlobCost {
              */
             if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execFIRST)) {
 
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*GoToPowerDown, closure from status :" + execFIRST);
                 }
 
                 // Key deactivation FIRST
-                FlashFile.getInstance().setImpostazione(CloseMode, closeAppDisattivChiaveFIRST);
-				// pay attention, MODIFY FOR DEBUG
+                Settings.getInstance().setSetting("closeMode", closeAppDisattivChiaveFIRST);
+                //FlashFile.getInstance().setImpostazione(CloseMode, closeAppDisattivChiaveFIRST);
+                // pay attention, MODIFY FOR DEBUG
                 //FlashFile.getInstance().setImpostazione(CloseMode, closeAppFactory);
 
             } // NORMAL EXECUTION
             else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execNORMALE)) {
 
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*GoToPowerDown, closure from status :" + execNORMALE);
                 }
 
                 // Normal OK
                 if (InfoStato.getInstance().getValidFIXgprs() == true) {
-                    FlashFile.getInstance().setImpostazione(CloseMode, closeAppNormaleOK);
+                    Settings.getInstance().setSetting("closeMode", closeAppNormaleOK);
+
+                    //FlashFile.getInstance().setImpostazione(CloseMode, closeAppNormaleOK);
                 } // Normal Timeout EXPIRED
                 else if (InfoStato.getInstance().getValidFIXgprs() == false) {
-                    FlashFile.getInstance().setImpostazione(CloseMode, closeAppNormaleTimeout);
+                    Settings.getInstance().setSetting("closeMode", closeAppNormaleTimeout);
+                    //FlashFile.getInstance().setImpostazione(CloseMode, closeAppNormaleTimeout);
                 }
 
             } // KEY DEACTIVATED
             else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execCHIAVEdisattivata)) {
 
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*GoToPowerDown, closure from status :" + execCHIAVEdisattivata);
                 }
 
                 // Key deactivation OK
                 if (InfoStato.getInstance().getValidFIXgprs() == true) {
-                    FlashFile.getInstance().setImpostazione(CloseMode, closeAppDisattivChiaveOK);
+                    Settings.getInstance().setSetting("closeMode", closeAppDisattivChiaveOK);
+                    //FlashFile.getInstance().setImpostazione(CloseMode, closeAppDisattivChiaveOK);
                 } // Key deactivation Timeout EXPIRED
                 else if (InfoStato.getInstance().getValidFIXgprs() == false) {
-                    FlashFile.getInstance().setImpostazione(CloseMode, closeAppDisattivChiaveTimeout);
+                    Settings.getInstance().setSetting("closeMode", closeAppDisattivChiaveTimeout);
+
+                    //FlashFile.getInstance().setImpostazione(CloseMode, closeAppDisattivChiaveTimeout);
                 }
 
             } // MOVEMENT
             else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execMOVIMENTO)) {
 
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*GoToPowerDown, closure from status :" + execMOVIMENTO);
                 }
 
                 // Movement OK
-                FlashFile.getInstance().setImpostazione(CloseMode, closeAppMovimentoOK);
+                Settings.getInstance().setSetting("closeMode", closeAppMovimentoOK);
 
+                //FlashFile.getInstance().setImpostazione(CloseMode, closeAppMovimentoOK);
             } // AFTER RESET
             else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execPOSTRESET)) {
 
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*GoToPowerDown, closure from status :" + execPOSTRESET);
                 }
 
                 // Key deactivation after RESET
-                FlashFile.getInstance().setImpostazione(CloseMode, closeAppPostReset);
+                Settings.getInstance().setSetting("closeMode", closeAppPostReset);
 
+                //FlashFile.getInstance().setImpostazione(CloseMode, closeAppPostReset);
             } // BATTERY LOW
             else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execBATTSCARICA)) {
 
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*GoToPowerDown, closure from status :" + execBATTSCARICA);
                 }
 
                 // Battery Low
-                FlashFile.getInstance().setImpostazione(CloseMode, closeAppBatteriaScarica);
+                Settings.getInstance().setSetting("closeMode", closeAppBatteriaScarica);
+
+                //FlashFile.getInstance().setImpostazione(CloseMode, closeAppBatteriaScarica);
 
             }
 
             // Write on file  	
-            InfoStato.getFile();
-            FlashFile.getInstance().writeSettings();
-            InfoStato.freeFile();
+            //InfoStato.getFile();
+            //FlashFile.getInstance().writeSettings();
+            //InfoStato.freeFile();
 
 
             /*
              * [4] SAVING DATA on RecordStore
              */
-            if (debug) {
+            if (Settings.getInstance().getSetting("generalDebug", false)) {
                 System.out.println("Th*GoToPowerDown: Saving data on RecordStore in progress...");
             }
             try {
@@ -390,7 +403,7 @@ public class GoToPowerDown extends Thread implements GlobCost {
                     rs.setRecord(1, data, 0, data.length);
                     //System.out.println("FlashRecordStore: saved: "+appt);
                 } catch (RecordStoreException rse) {
-					//System.out.println("FlashRecordStore: RecordStoreException");
+                    //System.out.println("FlashRecordStore: RecordStoreException");
                     // add record because not exists
                     String newappt = (String) DataStores.getInstance(DataStores.dsDRMC).getLastValid();
                     byte newdata[] = newappt.getBytes();
@@ -419,7 +432,7 @@ public class GoToPowerDown extends Thread implements GlobCost {
              * Notify to AppMain to close application
              */
             Mailboxes.getInstance(0).write(msgClose);
-            if (debug) {
+            if (Settings.getInstance().getSetting("generalDebug", false)) {
                 System.out.println("Th*GoToPowerDown: sent message: " + msgClose);
             }
 
@@ -480,7 +493,7 @@ public class GoToPowerDown extends Thread implements GlobCost {
                 YY = Integer.parseInt(data.substring(0, 2));
                 MM = Integer.parseInt(data.substring(3, 5));
                 DD = Integer.parseInt(data.substring(6));
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("putTime\r\nhh:" + hh + " mm:" + mm + " ss:" + ss + "\r\nYY:" + YY + " MM:" + MM + " DD: " + DD);
                 }
             } catch (NumberFormatException e) {
@@ -500,11 +513,11 @@ public class GoToPowerDown extends Thread implements GlobCost {
                 /* UPDATE MINUTES AND HOURS */
                 /* Update minutes
                  * Please note: mSleep must be between 0 and 59 minutes */
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("CalcolaSveglia: set time of awakening in progress...");
                 }
                 addH = 0;
-                mm = mm + InfoStato.getInstance().getInfoFileInt(MinPowerDownOK);
+                mm = mm + Settings.getInstance().getSetting("sleepMin", 5);
                 if (mm > 59) {
                     addH = 1; 	/* go to next hour */
 
@@ -513,10 +526,10 @@ public class GoToPowerDown extends Thread implements GlobCost {
                 } //if
 				/* update total numer of hours, hSleep >= 0 */
                 if (addH == 0) {
-                    hh = hh + InfoStato.getInstance().getInfoFileInt(OrePowerDownOK);
+                    hh = hh + Settings.getInstance().getSetting("sleepOK", 0);
                 } else { /* addH=1 */
 
-                    hh = hh + InfoStato.getInstance().getInfoFileInt(OrePowerDownOK) + 1;
+                    hh = hh + Settings.getInstance().getSetting("sleepOK", 0) + 1;
                 } //if
 				/* UPDATE TIME and ev. DATE */
                 /* Check leap year:
@@ -675,7 +688,7 @@ public class GoToPowerDown extends Thread implements GlobCost {
                     } //changeMM
                 } //while
                 // verify correct alarm setting
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("set alarm:\r\nhh:" + hh + " mm:" + mm + " ss:" + ss + "\r\nYY:" + YY + " MM:" + MM + " DD:" + DD);
                 }
                 /* Convert from number to strings,
@@ -706,7 +719,7 @@ public class GoToPowerDown extends Thread implements GlobCost {
                 }
                 /* create string */
                 ris = YYs + "/" + MMs + "/" + DDs + "," + hhS + ":" + mmS + ":" + ssS;
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Result in string: " + ris);
                 }
                 return ris;

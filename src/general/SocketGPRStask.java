@@ -62,7 +62,7 @@ public class SocketGPRStask extends Thread implements GlobCost {
      * constructors
      */
     public SocketGPRStask() {
-        if (debug) {
+        if (Settings.getInstance().getSetting("generalDebug", false)) {
             System.out.println("TT*SocketGPRStask: CREATED");
         }
         thisTask = this;
@@ -83,7 +83,7 @@ public class SocketGPRStask extends Thread implements GlobCost {
      */
     public void run() {
 
-        GPRSConnectOptions.getConnectOptions().setAPN(InfoStato.getInstance().getInfoFileString(apn));
+        GPRSConnectOptions.getConnectOptions().setAPN(Settings.getInstance().getSetting("apn", "internet"));
         GPRSConnectOptions.getConnectOptions().setBearerType("gprs");
 
         list = new BCListenerCustom();
@@ -91,37 +91,36 @@ public class SocketGPRStask extends Thread implements GlobCost {
 
         while (!InfoStato.getInstance().isCloseTCPSocketTask()) {
 
-            if (debug) {
+            if (Settings.getInstance().getSetting("generalDebug", false)) {
                 System.out.println("SOCKET TASK ACTIVE");
-                System.out.println("TrkState" + InfoStato.getInstance().getInfoFileString(TrkState));
-                System.out.println("GPRSProtocol" + InfoStato.getInstance().getInfoFileString(GPRSProtocol));
-                System.out.println("TrkIN" + InfoStato.getInstance().getInfoFileInt(TrkIN));
-                System.out.println("TrkOUT" + InfoStato.getInstance().getInfoFileInt(TrkOUT));
+                System.out.println("tracking" + Settings.getInstance().getSetting("tracking", false));
+                System.out.println("protocol" + Settings.getInstance().getSetting("protocol", "TCP").equals("TCP"));
+                System.out.println("TrkIN" + InfoStato.getInstance().getTrkIN());
+                System.out.println("TrkOUT" + InfoStato.getInstance().getTrkOUT());
                 System.out.println("DataRAM" + InfoStato.getInstance().getDataRAM());
             }
-            if ((InfoStato.getInstance().getInfoFileString(TrkState).equals("ON")
-                    || (InfoStato.getInstance().getInfoFileString(TrkState)).equalsIgnoreCase("ON,FMS"))
-                    && InfoStato.getInstance().getInfoFileString(GPRSProtocol).equals("TCP")
-                    && ((InfoStato.getInstance().getInfoFileInt(TrkIN) != InfoStato.getInstance().getInfoFileInt(TrkOUT))
+            if (Settings.getInstance().getSetting("tracking", false)
+                    && Settings.getInstance().getSetting("protocol", "TCP").equals("TCP")
+                    && ((InfoStato.getInstance().getTrkIN() != InfoStato.getInstance().getTrkOUT())
                     || !InfoStato.getInstance().getDataRAM().equals(""))) {
 
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("In TRK ON");
                 }
                 doTrackingOn();
             } else {
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("In no TRK ON");
                 }
                 try {
-                    if (InfoStato.getInstance().getInfoFileString(TrkState).equals("OFF")) {
+                    if (!Settings.getInstance().getSetting("tracking", false)) {
 
                         if (!firstTime) {
                             SemAT.getInstance().getCoin(5);
                             MQTTHandler.getInstance().disconnect();
                             SemAT.getInstance().putCoin();
                         }
-                        if (debug) {
+                        if (Settings.getInstance().getSetting("generalDebug", false)) {
                             System.out.println("In TRK OFF");
                         }
 
@@ -174,7 +173,7 @@ public class SocketGPRStask extends Thread implements GlobCost {
                 }
 
                 // Verify if data are in RAM or FLASH	
-                if (InfoStato.getInstance().getInfoFileInt(TrkIN) == InfoStato.getInstance().getInfoFileInt(TrkOUT)) {
+                if (InfoStato.getInstance().getTrkIN() == InfoStato.getInstance().getTrkOUT()) {
                     //System.out.println("TT*SocketGPRStask: data from RAM");
                     outText = InfoStato.getInstance().getDataRAM();
 							//outTextMqtt = InfoStato.getInstance().getDataMqttRAM();
@@ -185,7 +184,7 @@ public class SocketGPRStask extends Thread implements GlobCost {
                     ram = true;
                 } else {
                     ram = false;
-                    temp = InfoStato.getInstance().getInfoFileInt(TrkOUT);
+                    temp = InfoStato.getInstance().getTrkOUT();
                     //System.out.println("TT*SocketGPRStask: pointer out - " + temp);
                     if ((temp >= codaSize) || temp < 0) {
                         temp = 0;
@@ -209,17 +208,12 @@ public class SocketGPRStask extends Thread implements GlobCost {
                  */
                 //new LogError("GPRS string: " + outText);
                 ctrlSpeed = InfoStato.getInstance().getSpeedForTrk();
-                if (debug_speed) {
+                if (Settings.getInstance().getSetting("speedDebug", false)) {
                     ctrlSpeed = InfoStato.getInstance().getSpeedGree();
                     //System.out.println("SPEED " + ctrlSpeed);
                 }
 
-                try {
-                    val_insensibgps = Integer.parseInt(InfoStato.getInstance().getInfoFileString(InsensibilitaGPS));
-                } catch (NumberFormatException e) {
-                    //new LogError("NumberFormatException");
-                    val_insensibgps = 0;
-                }
+                val_insensibgps = Settings.getInstance().getSetting("minSpeed", 0);
                 //new LogError("Velocoita attuale: " + ctrlSpeed + ". Val insens: " + val_insensibgps);
 
                 if (ram) {
@@ -305,7 +299,7 @@ public class SocketGPRStask extends Thread implements GlobCost {
                             Date date = new Date();
                             MQTTHandler.getInstance().init(
                                     settings.getSetting("clientID", InfoStato.getInstance().getIMEI()),
-                                    InfoStato.getInstance().getInfoFileString(DestHost) + ":" + InfoStato.getInstance().getInfoFileString(DestPort),
+                                    Settings.getInstance().getSetting("host", "tcp://localhost") + ":" + Settings.getInstance().getSetting("port", 1883),
                                     settings.getSetting("user", null),
                                     settings.getSetting("password", null),
                                     settings.getSetting("willTopic",
@@ -354,8 +348,8 @@ public class SocketGPRStask extends Thread implements GlobCost {
                     }
 
                     LocationManager locationManager = LocationManager.getInstance();
-                    locationManager.setMinDistance(settings.getSetting("minDistance", 500));
-                    locationManager.setMaxInterval(settings.getSetting("maxInterval", 180));
+                    locationManager.setMinDistance(settings.getSetting("minDistance", 0));
+                    locationManager.setMaxInterval(settings.getSetting("maxInterval", 0));
 
                     if (locationManager.handleNMEAString(outText)) {
                         String[] fields = StringSplitter.split(
@@ -388,7 +382,7 @@ public class SocketGPRStask extends Thread implements GlobCost {
 
                 }
                 // If BearerListener different from BEARER_STATE_UP, I do not have network coverage
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("BEARER: " + InfoStato.getInstance().getGprsState());
                 }
                 if (!InfoStato.getInstance().getGprsState()) {
@@ -409,11 +403,7 @@ public class SocketGPRStask extends Thread implements GlobCost {
                         if (temp >= codaSize || temp < 0) {
                             temp = 0;
                         }
-                        InfoStato.getInstance().setInfoFileInt(TrkOUT, "" + temp);
-                        FlashFile.getInstance().setImpostazione(TrkOUT, "" + temp);
-                        InfoStato.getFile();
-                        FlashFile.getInstance().writeSettings();
-                        InfoStato.freeFile();
+                        InfoStato.getInstance().setTrkOUT(temp);
                     }
                     errorSent = false;
                 }
@@ -450,7 +440,7 @@ public class SocketGPRStask extends Thread implements GlobCost {
             InfoStato.getInstance().setApriGPRS(false);
             InfoStato.getInstance().setChiudiGPRS(false);
         }
-        if (debug) {
+        if (Settings.getInstance().getSetting("generalDebug", false)) {
             System.out.println("TT*SocketGPRStask, close: " + close);
         }
         if (close) {

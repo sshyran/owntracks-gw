@@ -119,7 +119,7 @@ public class DataStore extends Stack implements GlobCost {
         if (lastValidPOS != null) {
             return lastValidPOS;
         } else {
-            return InfoStato.getInstance().getInfoFileString(LastGPRMCValid);
+            return ""; //InfoStato.getInstance().getInfoFileString(LastGPRMCValid);
         }
 
     }

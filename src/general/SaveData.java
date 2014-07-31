@@ -91,7 +91,7 @@ public class SaveData implements GlobCost {
              * If the configuration file does not exist you have to upload it
              * to flash, the application ends notifying the lack
              */
-            if (debug) {
+            if (Settings.getInstance().getSetting("generalDebug", false)) {
                 System.out.println("EXECUTE");
             }
             if (!fconn.exists()) {
@@ -125,7 +125,6 @@ public class SaveData implements GlobCost {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
                 //System.out.println(z + " " + InfoStato.getInstance().getRecord(z));

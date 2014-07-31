@@ -139,34 +139,34 @@ public class Settings {
                     if (i == -1) {
                         break;
                     }
+                    //System.out.print("." + i + ".");
 
-                    if (i == '\r') {
-                        // ignore
-                    }
-
-                    if (line == null) {
-                        line = new String();
-                    }
-
-                    if (i == '\n') {
-                        //System.out.println("line " + line);
-                        if (line.length() == 0 || line.charAt(0) == '#') {
-                            // comment
-                        } else {
-                            int equal = line.indexOf('=');
-                            if (equal == -1) {
-                                // illegal
-                            } else {
-                                String key = line.substring(0, equal);
-                                String value = line.substring(equal + 1);
-                                hashTable.put(key, value);
-                            }
+                    if (i != '\r') {
+                        if (line == null) {
+                            line = new String();
                         }
-                        line = null;
-                    } else {
-                        line = line.concat(new StringBuffer().append((char) i).toString());
-                    }
 
+                        if (i == '\n') {
+                            //System.out.println("\r\nline " + line + line.length());
+                            if (line.length() == 0 || line.charAt(0) == '#') {
+                                // comment
+                            } else {
+                                int equal = line.indexOf('=');
+                                if (equal == -1) {
+                                    // illegal
+                                } else {
+                                    String key = line.substring(0, equal);
+                                    //System.out.println("\r\nkey " + key + key.length());
+                                    String value = line.substring(equal + 1);
+                                    //System.out.println("\r\nline " + value + value.length());
+                                    hashTable.put(key, value);
+                                }
+                            }
+                            line = null;
+                        } else {
+                            line = line.concat(new StringBuffer().append((char) i).toString());
+                        }
+                    }
                 } while (i != -1);
             } while (line != null);
 

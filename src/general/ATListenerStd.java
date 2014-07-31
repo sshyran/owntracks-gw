@@ -50,7 +50,7 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
          * callback method for passing the response to a call
          * of the NON-blocking version of the ATCommand.send()
          */
-        if (debugGSM) {
+        if (Settings.getInstance().getSetting("gsmDebug", false)) {
             System.out.println("ATResponse: " + response);
         }
         leaveAT = false;
@@ -75,11 +75,12 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
         if (response.indexOf("^SCFG: \"MEopMode/Airplane\",\"off\"") >= 0) {
             //InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
             //System.out.println("^SCFG: \"MEopMode/Airplane\",\"off\"");
-            FlashFile.getInstance().setImpostazione(CloseMode, closeAIR);
+            Settings.getInstance().setSetting("closeMode", closeAIR);
+            //FlashFile.getInstance().setImpostazione(CloseMode, closeAIR);
             // Write to FlashFile.getInstance()
-            InfoStato.getFile();
-            FlashFile.getInstance().writeSettings();
-            InfoStato.freeFile();
+            //InfoStato.getFile();
+            //FlashFile.getInstance().writeSettings();
+            //InfoStato.freeFile();
             Mailboxes.getInstance(0).write(msgREBOOT);
 
         }
@@ -152,7 +153,7 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
             response = response.substring(response.indexOf("^SBV: "));
             //System.out.println("response:" + response);
             Vbatt = response.substring("^SBV: ".length(), response.indexOf("\r\n"));
-            if (debugGSM) {
+            if (Settings.getInstance().getSetting("gsmDebug", false)) {
                 System.out.println("Vbatt:" + Vbatt);
             }
             //new LogError("Vbatt:" + Vbatt);
@@ -162,7 +163,7 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
             if (supplyVoltage <= VbattSoglia) {
                 // send msg to AppMain about battery undervoltage
                 Mailboxes.getInstance(0).write(msgBattScarica);
-                if (debugGSM) {
+                if (Settings.getInstance().getSetting("gsmDebug", false)) {
                     System.out.println("^SBC: UnderVoltage: " + Vbatt);
                 }
             }
@@ -178,7 +179,7 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
         if (response.indexOf("+CPMS: \"MT\"") >= 0) {
 
             //InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
-            if (debugGSM) {
+            if (Settings.getInstance().getSetting("gsmDebug", false)) {
                 System.out.println(response);
             }
             try {
@@ -223,7 +224,7 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
                 //System.out.println(temp);
                 InfoStato.getInstance().setCodSMS(Integer.parseInt(temp));
             } catch (StringIndexOutOfBoundsException ex) {
-                if (debugGSM) {
+                if (Settings.getInstance().getSetting("gsmDebug", false)) {
                     System.out.println("ATListenerStd, +CMGL: StringIndexOutOfBoundsException");
                 }
                 InfoStato.getInstance().setCodSMS(-2);
@@ -245,7 +246,7 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
              */
             if (response.indexOf("+CMGR: 0,,0") >= 0) {
                 InfoStato.getInstance().setSMSCommand("+CMGR: 0,,0");
-                InfoStato.getInstance().setValidSMS(false);
+                //InfoStato.getInstance().setValidSMS(false);
             } else {
                 try {
                     //System.out.println("ATListenerStd, response: " + response);
@@ -254,18 +255,18 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
                     comandoGPRSCFG = comandoGPRSCFG.substring(comandoGPRSCFG.indexOf("GPRSCFG ") + "GPRSCFG ".length(), comandoGPRSCFG.indexOf(","));
                     //System.out.println("ATListenerStd, APN: " + comandoGPRSCFG);
 
-                    FlashFile.getInstance().setImpostazione(ConnProfileGPRS, "bearer_type=GPRS;access_point=" + comandoGPRSCFG);
-                    FlashFile.getInstance().setImpostazione(apn, comandoGPRSCFG);
-                    InfoStato.getFile();
-                    FlashFile.getInstance().writeSettings();
-                    InfoStato.freeFile();
+                    //FlashFile.getInstance().setImpostazione(ConnProfileGPRS, "bearer_type=GPRS;access_point=" + comandoGPRSCFG);
+                    //FlashFile.getInstance().setImpostazione(apn, comandoGPRSCFG);
+                    //InfoStato.getFile();
+                    //FlashFile.getInstance().writeSettings();
+                    //InfoStato.freeFile();
 
                 } catch (StringIndexOutOfBoundsException ex) {
-                    if (debug) {
+                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                         System.out.println("ATListenerStd, +CMGR: StringIndexOutOfBoundsException");
                     }
                 } catch (NullPointerException npe) {
-                    if (debug) {
+                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                         System.out.println("ATListenerStd, +CMGR: NullPointerException");
                     }
                 } //catch
@@ -283,11 +284,11 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
                     //System.out.println("ATListenerStd, SMS sender number: " + InfoStato.getInstance().getNumTelSMS());
 
                 } catch (StringIndexOutOfBoundsException ex) {
-                    if (debug) {
+                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                         System.out.println("ATListenerStd, +CMGR: StringIndexOutOfBoundsException (Number)");
                     }
                 } catch (NullPointerException npe) {
-                    if (debug) {
+                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                         System.out.println("ATListenerStd, +CMGR: NullPointerException (Number)");
                     }
                 } //catch
@@ -295,22 +296,22 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
                 /*
                  * Check validity of command SMS
                  */
-                if (response.indexOf(keySMS) >= 0) {
-                    InfoStato.getInstance().setSMSCommand(keySMS);
-                    InfoStato.getInstance().setValidSMS(true);
-                } else {
-                    if (response.indexOf(keySMS1) >= 0) {
-                        InfoStato.getInstance().setSMSCommand(keySMS1);
-                        InfoStato.getInstance().setValidSMS(true);
-                    } else {
-                        if (response.indexOf(keySMS2) >= 0) {
-                            InfoStato.getInstance().setSMSCommand(keySMS2);
-                            InfoStato.getInstance().setValidSMS(true);
-                        } else {
-                            InfoStato.getInstance().setValidSMS(false);
-                        }
-                    }
-                }
+              //  if (response.indexOf(keySMS) >= 0) {
+                //    InfoStato.getInstance().setSMSCommand(keySMS);
+                  //  InfoStato.getInstance().setValidSMS(true);
+            //    } else {
+              //      if (response.indexOf(keySMS1) >= 0) {
+                //        InfoStato.getInstance().setSMSCommand(keySMS1);
+                   //     InfoStato.getInstance().setValidSMS(true);
+                  //  } else {
+                    //    if (response.indexOf(keySMS2) >= 0) {
+                      //      InfoStato.getInstance().setSMSCommand(keySMS2);
+                        //    InfoStato.getInstance().setValidSMS(true);
+                     //   } else {
+                       //     InfoStato.getInstance().setValidSMS(false);
+                   //     }
+                   // }
+                //}
             }
         } //+CMGR
 
@@ -379,7 +380,7 @@ public class ATListenerStd implements GlobCost, ATCommandResponseListener {
 
         // Execution ERROR
         if (response.indexOf("ERROR") >= 0) {
-            if (debugGSM) {
+            if (Settings.getInstance().getSetting("gsmDebug", false)) {
                 System.out.println("ATListenerStd, AT command result 'ERROR'");
             }
             //InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing

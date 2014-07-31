@@ -119,7 +119,7 @@ public class TestChiave extends Thread implements GlobCost {
                 if (InfoStato.getInstance().getGPIOchiave() == 0) {
 
                     // Send msg to AppMain
-                    if (debug_chiave) {
+                    if (Settings.getInstance().getSetting("keyDebug", false)) {
                         System.out.println("Th*TestChiave: KEY ACTIVATED!!!");
                     }
                     Mailboxes.getInstance(0).write(msgChiaveAttivata);
@@ -140,7 +140,7 @@ public class TestChiave extends Thread implements GlobCost {
                      while(InfoStato.getInstance().getATexec()) { Thread.sleep(whileSleep); }
                      SemAT.getInstance().putCoin();
                      */
-                    if (debug_chiave) {
+                    if (Settings.getInstance().getSetting("keyDebug", false)) {
                         System.out.println("Th*TestChiave: KEY DEACTIVATED!!!");
                     }
 

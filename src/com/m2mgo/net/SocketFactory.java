@@ -23,9 +23,6 @@ public class SocketFactory extends Object {
 
 	public SocketConnection createSocket(String host, int port)
 			throws IOException {
-
-		// socket://m2m.eclipse.org:1883
-
 		sc = (SocketConnection) Connector.open("socket://" + host + ":" + port
 				+ ";bearer_type="
 				+ connOptions.getBearerType() 
@@ -37,20 +34,6 @@ public class SocketFactory extends Object {
 				+ connOptions.getPasswd() 
 				+ ";timeout="
 				+ connOptions.getTimeout());
-		/*System.out.println("[MB]" + "socket://" + host + ":" + port
-				+ ";bearer_type="
-				+ connOptions.getBearerType() 
-				+ ";access_point="
-				+ connOptions.getAPN() 
-				+ ";username="
-				+ connOptions.getUser() 
-				+ ";password="
-				+ connOptions.getPasswd() 
-				+ ";timeout="
-				+ connOptions.getTimeout());*/
-		//[MB]sc.setSocketOption(SocketConnection.LINGER, 5); // TODO verify if
-														// settings correct
-
 		return sc;
 	}
 

@@ -3,11 +3,30 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/org/eclipse/paho/client/mqttv3/package.html</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/GPIOmanager.java</file>
             <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/Settings.java</file>
-            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/Location.java</file>
-            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/LocationManager.java</file>
-            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/AppMain.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/SaveData.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/com/m2mgo/net/SocketFactory.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/README.md</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/ATListenerEvents.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/CheckSMS.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/SocketGPRStask.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/UDPSocketTask.java</file>
             <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/MQTTHandler.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/TestChiave.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/GoToPowerDown.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/README_settings.md</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/Seriale.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/ATsender.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/InfoStato.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/TimeoutTask.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/org/eclipse/paho/client/mqttv3/internal/ClientState.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/UpdateCSD.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/ATListenerStd.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/LogError.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/TrackingGPRS.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/AppMain.java</file>
             <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/CommandProcessor.java</file>
         </group>
     </open-files>

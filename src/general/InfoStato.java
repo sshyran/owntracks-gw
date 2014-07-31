@@ -6,6 +6,9 @@
  */
 package general;
 
+import choral.io.InfoMicro;
+import java.io.IOException;
+
 /**
  * Contains all informations about thread and task status, to be used and
  * exchanged between application classes.
@@ -19,10 +22,12 @@ public class InfoStato implements GlobCost {
     /* 
      * local variables
      */
+    private static InfoMicro infoGW = null;
+
     private boolean ATexec = false;		// resource is free at startup
     private int numSMS, maxSMS;
     private int codSMS = -1;
-    private boolean validSMS = false;
+    //private boolean validSMS = false;
     private String numTelSMS = null;
     private String opMode = null;
     private String validOP = "no rete";
@@ -54,8 +59,8 @@ public class InfoStato implements GlobCost {
     private boolean trackingInCorso = false;
     private boolean SMSsent = false;
     private boolean restartGPRS = false;
-    private boolean uartTraspGPS = false;
-    private boolean csdTraspGPS = false;
+    //private boolean uartTraspGPS = false;
+    //private boolean csdTraspGPS = false;
     private String numSat, rssiCSQ;
     private String imei;
     private String batteryVoltage = "0.0V";
@@ -74,25 +79,13 @@ public class InfoStato implements GlobCost {
     private boolean trasmetti = false;
 
     // Settings for configuration file
-    private String header;
-    private String trakerID;
-    private String pwCSD;
-    private String appname;
-    private String lastCloseMode;
-    private String lastGPSvalid;
-    private String lastGPRMCvalid;
-    private String destHostFile;
-    private String destPortFile;
-    private String connProfileGPRS;
     private String entryPointUDPfile;
-    private String gprsProtocolfile;
+    //private String gprsProtocolfile;
     private String typeTRK;
     private String protTRK;
     private String acknowledge;
     private String opNum;
     private String gprsOnTm;
-    private String trkState;
-    private String publishTopic;
     private String slp;
     private String movsens;
     private String ign;
@@ -101,7 +94,6 @@ public class InfoStato implements GlobCost {
     private String uEOMrs;
     private String uEOMip;
     private String uID;
-    private String trackTM;
     private String dataRAM = "";
     private String moduleRev = "";
     private String rmc = "";
@@ -112,12 +104,8 @@ public class InfoStato implements GlobCost {
     private int uNumT;
     private int uTXto;
     private int trackInterval;
-    private int orePowerDownOK;
-    private int minPdOK;
-    private int orePdTOexpired;
-    private int minPdTOexpired;
-    private int contIN;
-    private int contOUT;
+    private int trkIN;
+    private int trkOUT;
     private int gprsOT;
     private String insensibilitaGPS;
     private boolean apriGPRS = true;
@@ -453,11 +441,11 @@ public class InfoStato implements GlobCost {
      * @param	newValue	Boolean value
      *
      */
-    public void setUartTraspGPS(boolean newValue) {
+    //public void setUartTraspGPS(boolean newValue) {
 
-        uartTraspGPS = newValue;
+        //uartTraspGPS = newValue;
 
-    }
+    //}
 
     /**
      * Get GPS transparence
@@ -465,11 +453,11 @@ public class InfoStato implements GlobCost {
      * @return	true or false;
      *
      */
-    public boolean getUartTraspGPS() {
+    //public boolean getUartTraspGPS() {
 
-        return uartTraspGPS;
+    //    return uartTraspGPS;
 
-    }
+    //}
 
     /**
      * Set GPS transparence
@@ -477,15 +465,15 @@ public class InfoStato implements GlobCost {
      * @param	newValue	Boolean value
      *
      */
-    public void setCSDTraspGPS(boolean newValue) {
+    //public void setCSDTraspGPS(boolean newValue) {
 
-        csdTraspGPS = newValue;
-        if (!csdTraspGPS) {
-            rmc = "";
-            gga = "";
-        }
+        //csdTraspGPS = newValue;
+        //if (!csdTraspGPS) {
+        //    rmc = "";
+        //    gga = "";
+        //}
 
-    }
+    //}
 
     /**
      * Get GPS transparence
@@ -493,11 +481,11 @@ public class InfoStato implements GlobCost {
      * @return	true or false;
      *
      */
-    public boolean getCSDTraspGPS() {
+    //public boolean getCSDTraspGPS() {
 
-        return csdTraspGPS;
+       // return csdTraspGPS;
 
-    }
+    //}
 
     /**
      * Set CSD GPS transparence
@@ -780,9 +768,9 @@ public class InfoStato implements GlobCost {
      *
      * @param	value	'true' if valid SMS, 'false' otherwise
      */
-    public synchronized void setValidSMS(boolean value) {
-        validSMS = value;
-    }
+    //public synchronized void setValidSMS(boolean value) {
+    //    validSMS = value;
+    //}
 
     public synchronized String getSMSCommand() {
         return commandSMS;
@@ -797,9 +785,9 @@ public class InfoStato implements GlobCost {
      *
      * @return	'true' if valid SMS, 'false' otherwise
      */
-    public synchronized boolean getValidSMS() {
-        return validSMS;
-    }
+    //public synchronized boolean getValidSMS() {
+      //  return validSMS;
+    //}
 
     /**
      * To set network operator
@@ -1145,338 +1133,6 @@ public class InfoStato implements GlobCost {
      */
     public synchronized String getTipoRisveglio() {
         return tipoRisveglio;
-    }
-
-    /**
-     * To set a value of a configuration file parameter	(string)
-     *
-     * @param	type	file parameter type
-     * @param	value	'String' value read from file
-     */
-    public synchronized boolean setInfoFileString(String type, String value) {
-
-        if (type.equalsIgnoreCase(IDtraker)) {
-            trakerID = value;
-        } //IDtraker
-        else if (type.equalsIgnoreCase(PasswordCSD)) {
-            pwCSD = value;
-        } //PasswordCSD
-        else if (type.equalsIgnoreCase(AppName)) {
-            appname = value;
-        } //AppName
-        else if (type.equalsIgnoreCase(CloseMode)) {
-            lastCloseMode = value;
-        } //CloseMode
-        else if (type.equalsIgnoreCase(LastGPSValid)) {
-            lastGPSvalid = value;
-        } //LastGPSValid
-        else if (type.equalsIgnoreCase(LastGPRMCValid)) {
-            lastGPRMCvalid = value;
-        } //LastGPRMCValid
-        else if (type.equalsIgnoreCase(TrackingInterv)) {
-            try {
-                int i = -1;
-                trackTM = value;
-                if ((i = value.indexOf("s")) > 0) {
-                    value = value.substring(0, i);
-                    trackInterval = Integer.parseInt(value);
-                } else {
-                    // convert minutes to seconds
-                    trackInterval = (Integer.parseInt(value)) * 60;
-                }
-            } catch (NumberFormatException e) {
-                return false;
-            } catch (IndexOutOfBoundsException e) {
-                return false;
-            }
-        } //TrackingInterv
-        else if (type.equalsIgnoreCase(DestHost)) {
-            destHostFile = value;
-        } //DestHost
-        else if (type.equalsIgnoreCase(DestPort)) {
-            destPortFile = value;
-            if (value.equalsIgnoreCase("0")) {
-                enableGPRS = false;
-            } else {
-                enableGPRS = true;
-            }
-        } //DestPort
-        else if (type.equalsIgnoreCase(ConnProfileGPRS)) {
-            connProfileGPRS = value;
-        } //ConnProfileGPRS 
-        else if (type.equalsIgnoreCase(apn)) {
-            entryPointUDPfile = value;
-        } //apn
-        else if (type.equalsIgnoreCase(GPRSProtocol)) {
-            gprsProtocolfile = value;
-        } //Protocol
-        else if (type.equalsIgnoreCase(TrackingType)) {
-            typeTRK = value;
-        } //Trktype
-        else if (type.equalsIgnoreCase(TrackingProt)) {
-            protTRK = value;
-        } //TrkProtocol
-        else if (type.equalsIgnoreCase(Header)) {
-            header = value;
-        } //TrkHeader
-        else if (type.equalsIgnoreCase(Ackn)) {
-            acknowledge = value;
-        } //TrkAck
-        else if (type.equalsIgnoreCase(GprsOnTime)) {
-            try {
-                int i = -1;
-                gprsOnTm = value;
-                if ((i = value.indexOf("s")) > 0) {
-                    value = value.substring(0, i);
-                    gprsOT = Integer.parseInt(value);
-                } else {
-                    // convero minuti in secondi
-                    gprsOT = (Integer.parseInt(value)) * 60;
-                }
-            } catch (NumberFormatException e) {
-                return false;
-            } catch (IndexOutOfBoundsException e) {
-                return false;
-            }
-        } //GprsOnTime
-        else if (type.equalsIgnoreCase(Operatore)) {
-            opNum = value;
-        } //Operator
-        else if (type.equalsIgnoreCase(TrkState)) {
-            trkState = value;
-        } //TrkState
-        else if (type.equalsIgnoreCase(PublishTopic)) {
-            publishTopic = value;
-        } //Topic
-        else if (type.equalsIgnoreCase(SlpState)) {
-            slp = value;
-        } //Sleep
-        else if (type.equalsIgnoreCase(MovState)) {
-            movsens = value;
-        } //Move sensor
-        else if (type.equalsIgnoreCase(IgnState)) {
-            ign = value;
-        } //IgnState
-        else if (type.equalsIgnoreCase(UartGateway)) {
-            uGW = value;
-        } //GateWay
-        else if (type.equalsIgnoreCase(UartHeaderRS)) {
-            uHead = value;
-        } //UartHeader
-        else if (type.equalsIgnoreCase(UartEndOfMessage)) {
-            uEOMrs = value;
-        } //EndOfMessageRS
-        else if (type.equalsIgnoreCase(UartEndOfMessageIP)) {
-            uEOMip = value;
-        } //EndOfMessageIP
-        else if (type.equalsIgnoreCase(UartIDdisp)) {
-            uID = value;
-        } //UartID
-        else if (type.equalsIgnoreCase(InsensibilitaGPS)) {
-            insensibilitaGPS = value;
-        } //InsensibilitaGPS
-        return true;
-
-    }
-
-    /**
-     * To set a value of a configuration file parameter	(integer)
-     *
-     * @param	type	file parameter type
-     * @param	value	'int' value read from file
-     */
-    public synchronized void setInfoFileInt(String type, String value) {
-
-        try {
-
-            if (type.equalsIgnoreCase(TrackingInterv)) {
-                trackInterval = Integer.parseInt(value);
-            } //TrackingInterv
-            else if (type.equalsIgnoreCase(OrePowerDownOK)) {
-                orePowerDownOK = Integer.parseInt(value);
-            } //OrePowerDownOK 
-            else if (type.equalsIgnoreCase(StillTime)) {
-                stilltm = Integer.parseInt(value);
-            } //Stilltm
-            else if (type.equalsIgnoreCase(MinPowerDownOK)) {
-                minPdOK = Integer.parseInt(value);
-            } //MinPowerDownOK
-            else if (type.equalsIgnoreCase(OrePowerDownTOexpired)) {
-                orePdTOexpired = Integer.parseInt(value);
-            } //OrePowerDownTOexpired
-            else if (type.equalsIgnoreCase(MinPowerDownTOexpired)) {
-                minPdTOexpired = Integer.parseInt(value);
-            } //MinPowerDownTOexpired
-            else if (type.equalsIgnoreCase(UartSpeed)) {
-                uSpeed = Integer.parseInt(value);
-            } //UartSpeed
-            else if (type.equalsIgnoreCase(UartAnswerTimeOut)) {
-                uATO = Integer.parseInt(value);
-            } //UartAnswerTimeOut
-            else if (type.equalsIgnoreCase(UartNumTent)) {
-                uNumT = Integer.parseInt(value);
-            } //UartNumTent
-            else if (type.equalsIgnoreCase(UartTXtimeOut)) {
-                uTXto = Integer.parseInt(value);
-            } //UartTXtimeOut
-            else if (type.equalsIgnoreCase(TrkIN)) {
-                contIN = Integer.parseInt(value);
-            } //IN pointer
-            else if (type.equalsIgnoreCase(TrkOUT)) {
-                contOUT = Integer.parseInt(value);
-            } //OUT pointer
-
-        } catch (NumberFormatException nfe) {
-            //System.out.println("InfoStato, setInfoFileInt: NumberFormatException");
-        } //catch
-    }
-
-    /**
-     * To get a value of a configuration file parameter	(string)
-     *
-     * @return	value of a configuration file parameter	(string)
-     */
-    public synchronized String getInfoFileString(String type) {
-
-        if (type.equalsIgnoreCase(Header)) {
-            return header;
-        } //Header
-        else if (type.equalsIgnoreCase(IDtraker)) {
-            return trakerID;
-        } //IDtraker
-        else if (type.equalsIgnoreCase(PasswordCSD)) {
-            return pwCSD;
-        } //PasswordCSD
-        else if (type.equalsIgnoreCase(AppName)) {
-            return appname;
-        } //AppName
-        else if (type.equalsIgnoreCase(CloseMode)) {
-            return lastCloseMode;
-        } //CloseMode
-        else if (type.equalsIgnoreCase(LastGPSValid)) {
-            return lastGPSvalid;
-        } //LastGPSValid
-        else if (type.equalsIgnoreCase(LastGPRMCValid)) {
-            return lastGPRMCvalid;
-        } //LastGPRMCValid
-        else if (type.equalsIgnoreCase(DestHost)) {
-            return destHostFile;
-        } //DestHost
-        else if (type.equalsIgnoreCase(DestPort)) {
-            return destPortFile;
-        } //DestPort
-        else if (type.equalsIgnoreCase(ConnProfileGPRS)) {
-            return connProfileGPRS;
-        } //ConnProfileGPRS 
-        else if (type.equalsIgnoreCase(apn)) {
-            return entryPointUDPfile;
-        } //apn
-        else if (type.equalsIgnoreCase(GPRSProtocol)) {
-            return gprsProtocolfile;
-        } //Protocol
-        else if (type.equalsIgnoreCase(TrackingType)) {
-            return typeTRK;
-        } //Tracking Type
-        else if (type.equalsIgnoreCase(TrackingProt)) {
-            return protTRK;
-        } //TrkProtocol
-        else if (type.equalsIgnoreCase(Ackn)) {
-            return acknowledge;
-        } //TrkAck
-        else if (type.equalsIgnoreCase(GprsOnTime)) {
-            return gprsOnTm;
-        } //GprsOnTime
-        else if (type.equalsIgnoreCase(Operatore)) {
-            return opNum;
-        } //Operator
-        else if (type.equalsIgnoreCase(TrkState)) {
-            return trkState;
-        } //TrkState
-        else if (type.equalsIgnoreCase(PublishTopic)) {
-            return publishTopic;
-        } //Topic
-        else if (type.equalsIgnoreCase(SlpState)) {
-            return slp;
-        } //Sleep
-        else if (type.equalsIgnoreCase(MovState)) {
-            return movsens;
-        } //Move sensor
-        else if (type.equalsIgnoreCase(IgnState)) {
-            return ign;
-        } //IgnState
-        else if (type.equalsIgnoreCase(UartGateway)) {
-            return uGW;
-        } //GateWay
-        else if (type.equalsIgnoreCase(UartHeaderRS)) {
-            return uHead;
-        } //UartHeader
-        else if (type.equalsIgnoreCase(UartEndOfMessage)) {
-            return uEOMrs;
-        } //EndOfMessageRS
-        else if (type.equalsIgnoreCase(UartEndOfMessageIP)) {
-            return uEOMip;
-        } //EndOfMessageIP
-        else if (type.equalsIgnoreCase(UartIDdisp)) {
-            return uID;
-        } //UartID
-        else if (type.equalsIgnoreCase(TrackingInterv)) {
-            return trackTM;
-        } //TrackingInterv
-        else if (type.equalsIgnoreCase(InsensibilitaGPS)) {
-            return insensibilitaGPS;
-        } //InsensibilitaGPS
-
-        return "ERROR";
-    }
-
-    /**
-     * To get value of a configuration file parameter (integer)
-     *
-     * @return	value of a configuration file parameter (integer)
-     */
-    public synchronized int getInfoFileInt(String type) {
-
-        if (type.equalsIgnoreCase(TrackingInterv)) {
-            return trackInterval;
-        } //TrackingInterv
-        else if (type.equalsIgnoreCase(OrePowerDownOK)) {
-            return orePowerDownOK;
-        } //OrePowerDownOK 
-        else if (type.equalsIgnoreCase(MinPowerDownOK)) {
-            return minPdOK;
-        } //MinPowerDownOK
-        else if (type.equalsIgnoreCase(StillTime)) {
-            return stilltm;
-        } //Stilltm
-        else if (type.equalsIgnoreCase(OrePowerDownTOexpired)) {
-            return orePdTOexpired;
-        } //OrePowerDownTOexpired
-        else if (type.equalsIgnoreCase(MinPowerDownTOexpired)) {
-            return minPdTOexpired;
-        } //MinPowerDownTOexpired
-        else if (type.equalsIgnoreCase(UartSpeed)) {
-            return uSpeed;
-        } //UartSpeed
-        else if (type.equalsIgnoreCase(UartAnswerTimeOut)) {
-            return uATO;
-        } //UartAnswerTimeOut
-        else if (type.equalsIgnoreCase(UartNumTent)) {
-            return uNumT;
-        } //UartNumTent
-        else if (type.equalsIgnoreCase(UartTXtimeOut)) {
-            return uTXto;
-        } //UartTXtimeOut
-        else if (type.equalsIgnoreCase(TrkIN)) {
-            return contIN;
-        } //IN pointer
-        else if (type.equalsIgnoreCase(TrkOUT)) {
-            return contOUT;
-        } //OUT pointer
-        else if (type.equalsIgnoreCase(GprsOnTime)) {
-            return gprsOT;
-        } //GprsOnTime
-
-        return 0;
     }
 
     /**
@@ -1904,6 +1560,19 @@ public class InfoStato implements GlobCost {
         return crashDetect;
     }
 
+    public synchronized int getTrkIN() {
+        return trkIN;
+    }
+    public synchronized int getTrkOUT() {
+        return trkOUT;
+    }
+    public synchronized void setTrkIN(int in) {
+        trkIN = in;
+    }
+    public synchronized void setTrkOUT(int out) {
+        trkOUT = out;
+    }
+    
     public synchronized void setCoordinate(int x, int y, int z) {
 
         asseX = x;
@@ -2072,11 +1741,23 @@ public class InfoStato implements GlobCost {
     }
 
     public synchronized String getVIN() {
-
         return powerVoltage;
-
     }
     
+    public synchronized String getReleaseMicro() {
+        String release = "unknown";
+
+        if (infoGW == null) {
+            infoGW = new InfoMicro();
+        }
+        try {
+            release = infoGW.getRelease();
+        } catch (IOException ie) {
+            ie.printStackTrace();
+        }
+        return release;
+    }
+
     /*
     More or less a Macro used 100s of times throughout the code
     

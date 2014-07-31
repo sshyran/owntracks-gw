@@ -49,7 +49,7 @@ public class UDPSocketTask extends Thread implements GlobCost {
      * constructors
      */
     public UDPSocketTask() {
-        if (debug) {
+        if (Settings.getInstance().getSetting("generalDebug", false)) {
             System.out.println("TT*UDPSocketTask: CREATED");
         }
     }
@@ -75,7 +75,10 @@ public class UDPSocketTask extends Thread implements GlobCost {
         while (!InfoStato.getInstance().isCloseUDPSocketTask()) {
 
             //if(false){
-            if ((InfoStato.getInstance().getInfoFileString(TrkState).equals("ON") || (InfoStato.getInstance().getInfoFileString(TrkState)).equalsIgnoreCase("ON,FMS")) && InfoStato.getInstance().getInfoFileString(GPRSProtocol).equals("UDP") && ((InfoStato.getInstance().getInfoFileInt(TrkIN) != InfoStato.getInstance().getInfoFileInt(TrkOUT)) || !InfoStato.getInstance().getDataRAM().equals(""))) {
+            if (Settings.getInstance().getSetting("tracking", false) &&
+                    Settings.getInstance().getSetting("protocol", "TCP").equals("UDP") &&
+                    ((InfoStato.getInstance().getTrkIN() != InfoStato.getInstance().getTrkOUT()) ||
+                    !InfoStato.getInstance().getDataRAM().equals(""))) {
 
                 exitTRKON = false;
 
@@ -84,7 +87,9 @@ public class UDPSocketTask extends Thread implements GlobCost {
 					// Indicates if GPRS SOCKET is ACTIVE
                     //System.out.println("TT*UDPSocketTask: START");
                     InfoStato.getInstance().setIfsocketAttivo(true);
-                    destAddressUDP = "datagram://" + InfoStato.getInstance().getInfoFileString(DestHost) + ":" + InfoStato.getInstance().getInfoFileString(DestPort);
+                    destAddressUDP = "datagram://"
+                            + Settings.getInstance().getSetting("tcp://host", "localhost")
+                            + ":" + Settings.getInstance().getSetting("port", 1883);
 
                     /*
                      * Once this task has been started, it is completely
@@ -100,12 +105,12 @@ public class UDPSocketTask extends Thread implements GlobCost {
                         } catch (InterruptedException e) {
                         }
 
-                        if (InfoStato.getInstance().getInfoFileInt(TrkIN) == InfoStato.getInstance().getInfoFileInt(TrkOUT)) {
+                        if (InfoStato.getInstance().getTrkIN() == InfoStato.getInstance().getTrkOUT()) {
                             outText = InfoStato.getInstance().getDataRAM();
                             ram = true;
                         } else {
                             ram = false;
-                            temp = InfoStato.getInstance().getInfoFileInt("TrkOUT");
+                            temp = InfoStato.getInstance().getTrkOUT();
                             System.out.println("TT*UDPSocketTask: pointer out - " + temp);
                             if ((temp >= codaSize) || (temp < 0)) {
                                 temp = 0;
@@ -118,16 +123,11 @@ public class UDPSocketTask extends Thread implements GlobCost {
                         System.out.println("TT*UDPSocketTask: string to send through GPRS:\r\n" + this.outText);
 
                         ctrlSpeed = InfoStato.getInstance().getSpeedForTrk();
-                        if (debug_speed) {
+                        if (Settings.getInstance().getSetting("speedDebug", false)) {
                             ctrlSpeed = InfoStato.getInstance().getSpeedGree();
                             System.out.println("SPEED " + ctrlSpeed);
                         }
-                        try {
-                            val_insensibgps = Integer.parseInt(InfoStato.getInstance().getInfoFileString(InsensibilitaGPS));
-                        } catch (NumberFormatException e) {
-                            val_insensibgps = 0;
-                        }
-						//new LogError("Actual speed: " + ctrlSpeed + ". Val insens: " + val_insensibgps);
+                            val_insensibgps = Settings.getInstance().getSetting("minSpeed", 0);
 
                         if (ram) {
 
@@ -221,7 +221,9 @@ public class UDPSocketTask extends Thread implements GlobCost {
 								//mem2 = r.freeMemory();
                                 //System.out.println("Free memory after allocation: " + mem2);
                                 if ((outText == null) || (outText.indexOf("null") >= 0)) {
-                                    outText = InfoStato.getInstance().getInfoFileString(Header) + "," + InfoStato.getInstance().getInfoFileString(IDtraker) + defaultGPS + ",<ERROR>*00";
+                                    outText = Settings.getInstance().getSetting("header", "$")
+                                            + "," + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI())
+                                            + defaultGPS + ",<ERROR>*00";
                                     buff = outText.getBytes();
                                 }
                                 System.out.println("OPEN DATAGRAM");
@@ -233,6 +235,7 @@ public class UDPSocketTask extends Thread implements GlobCost {
                                 new LogError("outText = " + outText);
                                 dgram.setData(buff, 0, buff.length);
                                 udpConn.send(dgram);
+                                /*
                                 int gprsCount = 0;
                                 answer = "";
                                 String ack = InfoStato.getInstance().getInfoFileString(Ackn);
@@ -244,7 +247,7 @@ public class UDPSocketTask extends Thread implements GlobCost {
                                         byte[] data = dgram.getData();
                                         answer = new String(data);
                                         answer = answer.substring(0, ack.length());
-                                        if (debug) {
+                                        if (Settings.getInstance().getSetting("generalDebug", false) {
                                             System.out.println("ACK: " + answer);
                                         }
                                         if (answer.equals(ack)) {
@@ -271,7 +274,7 @@ public class UDPSocketTask extends Thread implements GlobCost {
                                         }
                                     }
                                 }
-
+*/
                             } catch (Exception err) {
                                 System.out.println("TT*UDPSocketTask: Exception err");
                                 new LogError("TT*UDPSocketTask: Exception during out text" + err.getMessage());
@@ -280,7 +283,7 @@ public class UDPSocketTask extends Thread implements GlobCost {
                                 break;
                             }
                             //new LogError(outText);
-                            if (debug) {
+                            if (Settings.getInstance().getSetting("generalDebug", false)) {
                                 System.out.println(outText);
                             }
 
@@ -314,11 +317,7 @@ public class UDPSocketTask extends Thread implements GlobCost {
                                 if (temp >= codaSize || temp < 0) {
                                     temp = 0;
                                 }
-                                InfoStato.getInstance().setInfoFileInt(TrkOUT, "" + temp);
-                                FlashFile.getInstance().setImpostazione(TrkOUT, "" + temp);
-                                InfoStato.getFile();
-                                FlashFile.getInstance().writeSettings();
-                                InfoStato.freeFile();
+                                InfoStato.getInstance().setTrkOUT(temp);
                             }
                             errorSent = false;
                         }
@@ -420,7 +419,7 @@ public class UDPSocketTask extends Thread implements GlobCost {
             } else {
 
                 try {
-                    if (InfoStato.getInstance().getInfoFileString(TrkState).equals("OFF")) {
+                    if (!Settings.getInstance().getSetting("tracking", false)) {
 
                         InfoStato.getInstance().setTRKstate(false);
                         InfoStato.getInstance().setEnableCSD(true);

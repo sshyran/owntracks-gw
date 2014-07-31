@@ -19,15 +19,13 @@ import com.cinterion.io.file.FileConnection;
  *
  */
 public class LogError implements GlobCost {
-
-    /*
-     * local variables 
-     */
-    String fileLog = "log.txt";
-    String fileOLD = "logOLD.txt";
+    
+    private static String url = "file:///a:/log/";
+    private static String fileLog = "log.txt";
+    private static String fileOLD = "logOLD.txt";
 
     public LogError(String error) {
-        if (debug) {
+        if (Settings.getInstance().getSetting("generalDebug", false)) {
             System.out.println("LogError: " + error);
         }
         try {
@@ -54,7 +52,7 @@ public class LogError implements GlobCost {
         //System.out.println("TotalMem: " + Runtime.getRuntime().totalMemory());
         try {
             if (Runtime.getRuntime().freeMemory() > 200) {
-                FileConnection fconn = (FileConnection) Connector.open("file:///a:/log/" + fileLog);
+                FileConnection fconn = (FileConnection) Connector.open(url + fileLog);
 	            // If no exception is thrown, then the URI is valid, but the file
                 // may or may not exist.
                 if (!fconn.exists()) {
@@ -62,11 +60,11 @@ public class LogError implements GlobCost {
                 }
 
                 DataOutputStream dos = fconn.openDataOutputStream();
-                dos.write(("Versione software: " + revNumber + "\r\n").getBytes());
+                dos.write(("Versione software: " + Settings.getInstance().getSetting("MIDlet-Version", "unknown") + "\r\n").getBytes());
                 dos.flush();
                 dos.close();
                 //append writing
-                fconn = (FileConnection) Connector.open("file:///a:/log/" + fileLog);
+                fconn = (FileConnection) Connector.open(url + fileLog);
                 fconn.setReadable(true);
                 OutputStream os;
                 //System.out.println(fconn.fileSize());
@@ -78,7 +76,7 @@ public class LogError implements GlobCost {
                 os.close();
 
                 if (fconn.fileSize() > 20000) {
-                    FileConnection fconn1 = (FileConnection) Connector.open("file:///a:/log/" + fileOLD);
+                    FileConnection fconn1 = (FileConnection) Connector.open(url + fileOLD);
                     if (fconn1.exists()) {
                         fconn1.delete();
                         fconn1.close();
@@ -98,4 +96,59 @@ public class LogError implements GlobCost {
         return "OK";
     }
 
+    private static StringBuffer readLog(String fileName) {
+        StringBuffer buffer = null;
+        try {
+            while (!InfoStato.getLogSemaphore()) {
+                Thread.sleep(1);
+            }
+        } catch (InterruptedException ie) {
+            ie.printStackTrace();
+        }
+
+        try {
+            FileConnection fconn = (FileConnection) Connector.open(fileName);
+            if (fconn.exists()) {
+                DataInputStream dos = fconn.openDataInputStream();
+                buffer = new StringBuffer();
+                while (dos.available() > 0) {
+                    buffer.append((char) dos.read());
+                }
+            } else {
+            }
+            fconn.close();
+        } catch (IOException ioe) {
+        } catch (SecurityException e) {
+        }
+        InfoStato.freeLogSemaphore();
+        return buffer;
+    }
+    
+    public static StringBuffer readCurrentLog() {
+        return readLog(url + fileLog);
+    }
+    public static StringBuffer readOldLog() {
+        return readLog(url + fileOLD);
+    }
+    
+    public static void deleteLog() {
+        try {
+            while (!InfoStato.getLogSemaphore()) {
+                Thread.sleep(1);
+            }
+        } catch (InterruptedException e) {
+        }
+
+        try {
+            FileConnection fconn1 = (FileConnection) Connector.open("file:///a:/log/log.txt");
+            if (fconn1.exists()) {
+                fconn1.delete();
+            }
+            fconn1.close();
+        } catch (IOException e) {
+
+        } catch (SecurityException e) {
+        }
+        InfoStato.freeLogSemaphore();
+    }
 }

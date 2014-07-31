@@ -113,7 +113,6 @@ public class AppMain extends MIDlet implements GlobCost {
     PrioSem semAT;
     InfoStato infoS;
     Mailboxes mailboxes;
-    FlashFile flashFile;
 
     /*
      * timer and tasks about GPS, GPRS e battery control
@@ -178,10 +177,6 @@ public class AppMain extends MIDlet implements GlobCost {
         
         CheckUpgrade fw = new CheckUpgrade("");
 
-        if (debug) {
-            System.out.println("AppMain: starting...");
-        }
-
         settings = Settings.getInstance();
         settings.setfileURL("file:///a:/file/OwnTracks.properties");
 
@@ -194,11 +189,10 @@ public class AppMain extends MIDlet implements GlobCost {
             + " " + settings.getSetting("MIDlet-Vendor", "")
             + " " + settings.getSetting("MIDlet-Version", "")
         );
-       
+
         semAT = SemAT.getInstance();
         infoS = InfoStato.getInstance();
         mailboxes = Mailboxes.getInstance();
-        flashFile = FlashFile.getInstance();
 
 		// Status info strcture creation
         // Threads creation
@@ -290,11 +284,11 @@ public class AppMain extends MIDlet implements GlobCost {
                 th11.setPriority(5);
 				//th12.setPriority(5);
 
-                puntatori = save.loadLog();
-                if (!puntatori) {
-                    InfoStato.getInstance().setInfoFileInt(TrkIN, "0");
-                    InfoStato.getInstance().setInfoFileInt(TrkOUT, "0");
-                }
+                //puntatori = save.loadLog();
+                //if (!puntatori) {
+                    //InfoStato.getInstance().setInfoFileInt(TrkIN, "0");
+                    //InfoStato.getInstance().setInfoFileInt(TrkOUT, "0");
+                //}
 
                 // Start ATsender thread 
                 th2.start();
@@ -303,90 +297,26 @@ public class AppMain extends MIDlet implements GlobCost {
                  * [2] RECOVER SSYSTEM SETTINGS FROM CONFIGURATION FILE
                  * 
                  */
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("AppMain: Recover system settings in progress...");
                 }
-                String rsp = FlashFile.getInstance().loadSettings();
-                /* 
-                 * If configuration file not found, close application
-                 *  
-                 */
-                if (rsp.equalsIgnoreCase("AppMain: FileNotFound")) {
-                    destroyApp(true);
+                String closeMode = Settings.getInstance().getSetting("closeMode", closeAppResetHW);
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
+                    System.out.println("AppMain: Last closing of application: " + closeMode);
                 }
-
-                /*
-                 * Recover settings
-                 */
-				//FlashFile.getInstance().setImpostazione(TrkIN, "0");
-                //FlashFile.getInstance().setImpostazione(TrkOUT, "0");
-                //temp
-                InfoStato.getInstance().setInfoFileString(IDtraker, FlashFile.getInstance().getImpostazione(IDtraker));
-                InfoStato.getInstance().setInfoFileString(PasswordCSD, FlashFile.getInstance().getImpostazione(PasswordCSD));
-                InfoStato.getInstance().setInfoFileString(AppName, FlashFile.getInstance().getImpostazione(AppName));
-                InfoStato.getInstance().setInfoFileString(CloseMode, FlashFile.getInstance().getImpostazione(CloseMode));
-                if (debug) {
-                    System.out.println("AppMain: Last closing of application: " + InfoStato.getInstance().getInfoFileString(CloseMode));
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
+                    System.out.println("AppMain: Last valid string: "
+                            + Settings.getInstance().getSetting("lastGPSValid", ""));
                 }
-                InfoStato.getInstance().setInfoFileString(LastGPSValid, FlashFile.getInstance().getImpostazione(LastGPSValid));
-                if (debug) {
-                    System.out.println("AppMain: Last valid string: " + InfoStato.getInstance().getInfoFileString(LastGPSValid));
-                }
-                InfoStato.getInstance().setInfoFileString(TrackingInterv, FlashFile.getInstance().getImpostazione(TrackingInterv));
-                InfoStato.getInstance().setInfoFileString(Operatore, FlashFile.getInstance().getImpostazione(Operatore));
-                InfoStato.getInstance().setInfoFileString(TrackingType, FlashFile.getInstance().getImpostazione(TrackingType));
-                InfoStato.getInstance().setInfoFileString(TrackingProt, FlashFile.getInstance().getImpostazione(TrackingProt));
-                InfoStato.getInstance().setInfoFileString(Header, FlashFile.getInstance().getImpostazione(Header));
-                InfoStato.getInstance().setInfoFileString(Ackn, FlashFile.getInstance().getImpostazione(Ackn));
-                InfoStato.getInstance().setInfoFileString(GprsOnTime, FlashFile.getInstance().getImpostazione(GprsOnTime));
-                InfoStato.getInstance().setInfoFileString(TrkState, FlashFile.getInstance().getImpostazione(TrkState));
-                InfoStato.getInstance().setInfoFileString(PublishTopic, FlashFile.getInstance().getImpostazione(PublishTopic));
-                InfoStato.getInstance().setInfoFileString(SlpState, FlashFile.getInstance().getImpostazione(SlpState));
-                InfoStato.getInstance().setInfoFileInt(StillTime, FlashFile.getInstance().getImpostazione(StillTime));
-                InfoStato.getInstance().setInfoFileString(MovState, FlashFile.getInstance().getImpostazione(MovState));
-                InfoStato.getInstance().setInfoFileString(IgnState, FlashFile.getInstance().getImpostazione(IgnState));
-                InfoStato.getInstance().setInfoFileInt(UartSpeed, FlashFile.getInstance().getImpostazione(UartSpeed));
-                InfoStato.getInstance().setInfoFileString(UartGateway, FlashFile.getInstance().getImpostazione(UartGateway));
-                InfoStato.getInstance().setInfoFileString(UartHeaderRS, FlashFile.getInstance().getImpostazione(UartHeaderRS));
-                InfoStato.getInstance().setInfoFileString(UartEndOfMessage, FlashFile.getInstance().getImpostazione(UartEndOfMessage));
-                InfoStato.getInstance().setInfoFileInt(UartAnswerTimeOut, FlashFile.getInstance().getImpostazione(UartAnswerTimeOut));
-                InfoStato.getInstance().setInfoFileInt(UartNumTent, FlashFile.getInstance().getImpostazione(UartNumTent));
-                InfoStato.getInstance().setInfoFileString(UartEndOfMessageIP, FlashFile.getInstance().getImpostazione(UartEndOfMessageIP));
-                InfoStato.getInstance().setInfoFileString(UartIDdisp, FlashFile.getInstance().getImpostazione(UartIDdisp));
-                InfoStato.getInstance().setInfoFileInt(UartTXtimeOut, FlashFile.getInstance().getImpostazione(UartTXtimeOut));
-                InfoStato.getInstance().setInfoFileInt(OrePowerDownOK, FlashFile.getInstance().getImpostazione(OrePowerDownOK));
-                InfoStato.getInstance().setInfoFileInt(MinPowerDownOK, FlashFile.getInstance().getImpostazione(MinPowerDownOK));
-                InfoStato.getInstance().setInfoFileInt(OrePowerDownTOexpired, FlashFile.getInstance().getImpostazione(OrePowerDownTOexpired));
-                InfoStato.getInstance().setInfoFileInt(MinPowerDownTOexpired, FlashFile.getInstance().getImpostazione(MinPowerDownTOexpired));
-                InfoStato.getInstance().setInfoFileString(DestHost, FlashFile.getInstance().getImpostazione(DestHost));
-                if (debug) {
-                    System.out.println("AppMain: destination host: " + InfoStato.getInstance().getInfoFileString(DestHost));
-                }
-                InfoStato.getInstance().setInfoFileString(DestPort, FlashFile.getInstance().getImpostazione(DestPort));
-                InfoStato.getInstance().setInfoFileString(ConnProfileGPRS, FlashFile.getInstance().getImpostazione(ConnProfileGPRS));
-                InfoStato.getInstance().setInfoFileString(apn, FlashFile.getInstance().getImpostazione(apn));
-                InfoStato.getInstance().setInfoFileString(GPRSProtocol, FlashFile.getInstance().getImpostazione(GPRSProtocol));
-                if (puntatori) {
-                    InfoStato.getInstance().setInfoFileInt(TrkIN, FlashFile.getInstance().getImpostazione(TrkIN));
-                    InfoStato.getInstance().setInfoFileInt(TrkOUT, FlashFile.getInstance().getImpostazione(TrkOUT));
-                }
-				//InfoStato.getInstance().setInfoFileInt(TrkIN, "0");
-                //InfoStato.getInstance().setInfoFileInt(TrkOUT, "0");
-                InfoStato.getInstance().setInfoFileString(InsensibilitaGPS, FlashFile.getInstance().getImpostazione(InsensibilitaGPS));
-                /*
-                 * Prepare settings file for any possible hardware reset or close of application
-                 * due to shutdown or unexpected
-                 */
-                FlashFile.getInstance().setImpostazione(CloseMode, closeAppResetHW);
-                FlashFile.getInstance().writeSettings();
+                Settings.getInstance().setSetting("closeMode", closeAppResetHW);
 
                 /*
                  * [3] DETERMINATION OF THE STATE WITH WHICH START THE APPLICATION
                  * 
                  */
-                if (debug) {
-                    System.out.println("GPS insensibility: " + InfoStato.getInstance().getInfoFileString(InsensibilitaGPS));
-                    System.out.println("AppMain: Last CloseMode: " + InfoStato.getInstance().getInfoFileString(CloseMode));
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
+                    System.out.println("GPS insensibility: " + Settings.getInstance().getSetting("minDistance", 0));
+                    System.out.println("AppMain: Last CloseMode: " + closeMode);
                     System.out.print("AppMain: Determination of application state...");
                 }
 
@@ -399,52 +329,52 @@ public class AppMain extends MIDlet implements GlobCost {
                 InfoStato.getInstance().setTipoRisveglio(risveglioMovimento);
 
                 // First execution after leaving the factory
-                if (InfoStato.getInstance().getInfoFileString(CloseMode).equalsIgnoreCase(closeAppFactory)) {
+                if (closeMode.equalsIgnoreCase(closeAppFactory)) {
                     InfoStato.getInstance().setSTATOexecApp(execFIRST);
                 } // Reboot after AIRPLANE MODE
-                else if (InfoStato.getInstance().getInfoFileString(CloseMode).equalsIgnoreCase(closeAIR)) {
+                else if (closeMode.equalsIgnoreCase(closeAIR)) {
                     InfoStato.getInstance().setSTATOexecApp(execNORMALE);
                     // Set AIRPLANE MODE to deactivate radio parts of the module 
                     InfoStato.getInstance().setOpMode("AIRPLANE");
                     InfoStato.getInstance().setTipoRisveglio(risveglioCala);
                 } // Normal OK
-                else if (InfoStato.getInstance().getInfoFileString(CloseMode).equalsIgnoreCase(closeAppNormaleOK)) {
+                else if (closeMode.equalsIgnoreCase(closeAppNormaleOK)) {
                     InfoStato.getInstance().setSTATOexecApp(execNORMALE);
                 } // Normal Timeout
-                else if (InfoStato.getInstance().getInfoFileString(CloseMode).equalsIgnoreCase(closeAppNormaleTimeout)) {
+                else if (closeMode.equalsIgnoreCase(closeAppNormaleTimeout)) {
                     InfoStato.getInstance().setSTATOexecApp(execNORMALE);
                 } // Key deactivation FIRST
-                else if (InfoStato.getInstance().getInfoFileString(CloseMode).equalsIgnoreCase(closeAppDisattivChiaveFIRST)) {
+                else if (closeMode.equalsIgnoreCase(closeAppDisattivChiaveFIRST)) {
                     InfoStato.getInstance().setSTATOexecApp(execNORMALE);
                 } // Key deactivation OK
-                else if (InfoStato.getInstance().getInfoFileString(CloseMode).equalsIgnoreCase(closeAppDisattivChiaveOK)) {
+                else if (closeMode.equalsIgnoreCase(closeAppDisattivChiaveOK)) {
                     InfoStato.getInstance().setSTATOexecApp(execNORMALE);
                 } // Key deactivation Timeout
-                else if (InfoStato.getInstance().getInfoFileString(CloseMode).equalsIgnoreCase(closeAppDisattivChiaveTimeout)) {
+                else if (closeMode.equalsIgnoreCase(closeAppDisattivChiaveTimeout)) {
                     InfoStato.getInstance().setSTATOexecApp(execNORMALE);
                 } // Motion sensor OK
-                else if (InfoStato.getInstance().getInfoFileString(CloseMode).equalsIgnoreCase(closeAppMovimentoOK)) {
+                else if (closeMode.equalsIgnoreCase(closeAppMovimentoOK)) {
                     InfoStato.getInstance().setSTATOexecApp(execNORMALE);
                 } // Post Reset
-                else if (InfoStato.getInstance().getInfoFileString(CloseMode).equalsIgnoreCase(closeAppPostReset)) {
+                else if (closeMode.equalsIgnoreCase(closeAppPostReset)) {
                     InfoStato.getInstance().setSTATOexecApp(execNORMALE);
                 } // Low battery
-                else if (InfoStato.getInstance().getInfoFileString(CloseMode).equalsIgnoreCase(closeAppBatteriaScarica)) {
+                else if (closeMode.equalsIgnoreCase(closeAppBatteriaScarica)) {
                     InfoStato.getInstance().setSTATOexecApp(execNORMALE);
                 } // Hardware Reset
-                else if (InfoStato.getInstance().getInfoFileString(CloseMode).equalsIgnoreCase(closeAppResetHW)) {
+                else if (closeMode.equalsIgnoreCase(closeAppResetHW)) {
                     InfoStato.getInstance().setSTATOexecApp(execPOSTRESET);
                 } // Closure due to low battery
-                else if (InfoStato.getInstance().getInfoFileString(CloseMode).equalsIgnoreCase(closeAppBatteriaScarica)) {
+                else if (closeMode.equalsIgnoreCase(closeAppBatteriaScarica)) {
                     InfoStato.getInstance().setSTATOexecApp(execPOSTRESET);
                 } else {
-                    if (debug) {
+                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                         System.out.println("AppMain: ERROR, I can not determine the status of execution of the application!");
                     }
                     new LogError("AppMain: ERROR, I can not determine the status of execution of the application!");
                 }
 
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println(InfoStato.getInstance().getSTATOexecApp());
                 }
 
@@ -482,8 +412,8 @@ public class AppMain extends MIDlet implements GlobCost {
                      */
                     byte b[] = rs.getRecord(1);
                     String str = new String(b, 0, b.length);
-                    InfoStato.getInstance().setInfoFileString(LastGPRMCValid, str);
-                    if (debug) {
+                    //InfoStato.getInstance().setInfoFileString(LastGPRMCValid, str);
+                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                         System.out.println("RecordStore, record n.1: " + str);
                     }
 
@@ -491,19 +421,19 @@ public class AppMain extends MIDlet implements GlobCost {
                     rs.closeRecordStore();
 
                 } catch (RecordStoreNotOpenException rsnoe) {
-                    if (debug) {
+                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                         System.out.println("FlashRecordStore: RecordStoreNotOpenException");
                     }
                 } catch (RecordStoreFullException rsfe) {
-                    if (debug) {
+                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                         System.out.println("FlashRecordStore: RecordStoreFullException");
                     }
                 } catch (RecordStoreException rse) {
-                    if (debug) {
+                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                         System.out.println("FlashRecordStore: RecordStoreException");
                     }
                 } catch (IllegalArgumentException e) {
-                    if (debug) {
+                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                         System.out.println("FlashRecordStore: IllegalArgumentException");
                     }
                 }
@@ -517,13 +447,14 @@ public class AppMain extends MIDlet implements GlobCost {
                         || InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execPOSTRESET)) {
 
                     SemAT.getInstance().getCoin(5);
-                    if (debug) {
+                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                         System.out.println("AppMain: Set AUTOSTART...");
                     }
-                    InfoStato.getInstance().writeATCommand("at^scfg=\"Userware/Autostart/AppName\",\"\",\"a:/app/" + InfoStato.getInstance().getInfoFileString(AppName) + "\"\r");
+                    InfoStato.getInstance().writeATCommand("at^scfg=\"Userware/Autostart/AppName\",\"\",\"a:/app/"
+                            + Settings.getInstance().getSetting("MIDlet-Name", "OwnTracks") + ".jar\"\r");
                     InfoStato.getInstance().writeATCommand("at^scfg=\"Userware/Autostart/Delay\",\"\",10\r");
                     InfoStato.getInstance().writeATCommand("at^scfg=\"Userware/Autostart\",\"\",\"1\"\r");
-                    if (usbDebug) {
+                    if (Settings.getInstance().getSetting("usbDebug", false)) {
                         InfoStato.getInstance().writeATCommand("at^scfg=\"Userware/StdOut\",USB\r");
                     } else {
                         InfoStato.getInstance().writeATCommand("at^scfg=\"Userware/StdOut\",ASC0\r");
@@ -537,7 +468,7 @@ public class AppMain extends MIDlet implements GlobCost {
                 // Set wake up for ALIVE
                 SemAT.getInstance().getCoin(5);
                 InfoStato.getInstance().writeATCommand("ati\r");
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("AppMain: Set AT+CCLK");
                 }
                 InfoStato.getInstance().writeATCommand("at+cclk=\"02/01/01,00:00:00\"\r");
@@ -549,7 +480,7 @@ public class AppMain extends MIDlet implements GlobCost {
                  * 
                  */
                 SemAT.getInstance().getCoin(5);
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("AppMain: Set AT^SBC...");
                 }
                 InfoStato.getInstance().writeATCommand("AT^SBC=5000\r");
@@ -560,10 +491,12 @@ public class AppMain extends MIDlet implements GlobCost {
                  * 
                  */
                 SemAT.getInstance().getCoin(5);
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("AppMain: Set AT^SJNET...");
                 }
-                InfoStato.getInstance().writeATCommand("at^sjnet=\"GPRS\",\"" + InfoStato.getInstance().getInfoFileString(apn) + "\",\"\",\"\",\"\",0\r");
+                InfoStato.getInstance().writeATCommand("at^sjnet=\"GPRS\",\""
+                        + Settings.getInstance().getSetting("apn", "internet")
+                        + "\",\"\",\"\",\"\",0\r");
                 SemAT.getInstance().putCoin();
 
                 /*
@@ -571,7 +504,7 @@ public class AppMain extends MIDlet implements GlobCost {
                  *
                  */
                 SemAT.getInstance().getCoin(5);
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("AppMain: Read IMEI...");
                 }
                 InfoStato.getInstance().writeATCommand("AT+CGSN\r");
@@ -584,7 +517,7 @@ public class AppMain extends MIDlet implements GlobCost {
                  * 
                  */
                 SemAT.getInstance().getCoin(5);
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*GPIOmanager: Open GPIO driver...");
                 }
                 InfoStato.getInstance().writeATCommand("at^spio=1\r");
@@ -601,7 +534,7 @@ public class AppMain extends MIDlet implements GlobCost {
                 while (InfoStato.getInstance().getPollingAttivo() == false) {
                     Thread.sleep(whileSleep);
                 }
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("AppMain: Polling is enabled on GPIO key!");
                 }
 
@@ -614,7 +547,7 @@ public class AppMain extends MIDlet implements GlobCost {
                      * If awakening due to motion sensor
                      * go to state 'execMOVIMENTO'
                      */
-                    if (debug) {
+                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                         System.out.println("execMOVIMENTO");
                     }
                     InfoStato.getInstance().setSTATOexecApp(execMOVIMENTO);
@@ -638,13 +571,13 @@ public class AppMain extends MIDlet implements GlobCost {
                 }
 
                 // Wait until motion sensor is disabled
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("AppMain: waiting for disabling motion sensor...");
                 }
                 while (InfoStato.getInstance().getDisattivaSensore() == true) {
                     Thread.sleep(whileSleep);
                 }
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("AppMain: Motion sensor disabled!");
                 }
 
@@ -673,7 +606,7 @@ public class AppMain extends MIDlet implements GlobCost {
                 }
 
                 /* Power on radio parts of the module for safety */
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("AppMain: SWITCH ON RADIO PART of the module...");
                 }
                 SemAT.getInstance().getCoin(1);
@@ -716,7 +649,7 @@ public class AppMain extends MIDlet implements GlobCost {
                  */
                 // GPS
                 FIXgpsTimer = new Timer();
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("AppMain: GPS timer RESET n." + countTimerResetGPS);
                 }
                 countTimerResetGPS++;
@@ -725,7 +658,7 @@ public class AppMain extends MIDlet implements GlobCost {
 
                 // GPRS
                 FIXgprsTimer = new Timer();
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("AppMain: GPRS timer RESET n." + countTimerResetGPRS);
                 }
                 countTimerResetGPRS++;
@@ -742,7 +675,7 @@ public class AppMain extends MIDlet implements GlobCost {
                  * the operations to be carried out in accordance with the msg
                  * received, according to the priorities
                  */
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("AppMain, actual state of the application: " + InfoStato.getInstance().getSTATOexecApp());
                 }
 
@@ -798,12 +731,12 @@ public class AppMain extends MIDlet implements GlobCost {
                          *  application startup and when the key is activated
                          * while the application is running in another state)
                          */
-                        if (debug_main) {
+                        if (Settings.getInstance().getSetting("mainDebug", false)) {
                             System.out.println("msg? " + msgRicevuto);
                         }
                         if (msgRicevuto.equalsIgnoreCase(msgChiaveAttivata) && InfoStato.getInstance().getInibizioneChiave() == false) {
 
-                            if (debug_chiave) {
+                            if (Settings.getInstance().getSetting("keyDebug", false)) {
                                 System.out.println("AppMain: KEY activation detected...");
                             }
 
@@ -815,7 +748,7 @@ public class AppMain extends MIDlet implements GlobCost {
                              */
                             if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execMOVIMENTO)) {
 
-                                if (debug) {
+                                if (Settings.getInstance().getSetting("generalDebug", false)) {
                                     System.out.println("AppMain,MOTION: key was activated!");
                                 }
 
@@ -826,7 +759,7 @@ public class AppMain extends MIDlet implements GlobCost {
                             } //execMOVIMENTO
                             else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execCHIAVEattivata)) {
 
-                                if (debug) {
+                                if (Settings.getInstance().getSetting("generalDebug", false)) {
                                     System.out.println("AppMain, KEY ACTIVE: already in key active state!");
                                 }
                                 /*
@@ -836,10 +769,10 @@ public class AppMain extends MIDlet implements GlobCost {
                                 InfoStato.getInstance().setSTATOexecApp(execNORMALE);
                                 if (InfoStato.getInstance().getEnableGPRS() == true) {
                                     Mailboxes.getInstance(3).write(trackAttivChiave);
-                                    if (debug) {
+                                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                                         System.out.println("AppMain: sent messageo: " + trackAttivChiave + " to tasksocket");
                                     }
-                                } else if (debug) {
+                                } else if (Settings.getInstance().getSetting("generalDebug", false)) {
                                     System.out.println("AppMain: GPRS disabled");
                                 }
 									//}
@@ -882,7 +815,7 @@ public class AppMain extends MIDlet implements GlobCost {
                          */
                         if (msgRicevuto.equalsIgnoreCase(msgChiaveDisattivata) && InfoStato.getInstance().getInibizioneChiave() == false) {
                             //if (msgRicevuto.equalsIgnoreCase(msgChiaveDisattivata)){	
-                            if (debug_chiave) {
+                            if (Settings.getInstance().getSetting("keyDebug", false)) {
                                 System.out.println("AppMain: KEY deactivation detected");
                             }
 
@@ -909,7 +842,7 @@ public class AppMain extends MIDlet implements GlobCost {
                             } /*
                              * Case 'execMOVIMENTO' -> do nothing
                              */ else {
-                                if (debug) {
+                                if (Settings.getInstance().getSetting("generalDebug", false)) {
                                     System.out.println("AppMain,CHIAVEdisattivata: nothing to do, key already deactivated!");
                                 }
                                 if (timeToOff == 50 || timeToOff == 70) {
@@ -939,14 +872,14 @@ public class AppMain extends MIDlet implements GlobCost {
 							//*** [12c] WAIT FOR VALID GPS FIX / 'FIXtimeout' EXPIRED
                         if (InfoStato.getInstance().getValidFIX() == false && InfoStato.getInstance().isFIXtimeoutExpired() == false) {
                             // No valid FIX and 'FIXtimeout' not expired
-                            if (debug) {
+                            if (Settings.getInstance().getSetting("generalDebug", false)) {
                                 System.out.println("AppMain: waiting for 'validFIX'...");
                             }
                         }
 
 							//*** [12e]	WAIT FOR SENDING A VALID GPS FIX WITH SUCCESS THROUGH GPRS
                         //***  		OR 'FIXgprsTimeout' EXPIRED
-                        if (debug_main) {
+                        if (Settings.getInstance().getSetting("mainDebug", false)) {
                             System.out.println(msgRicevuto);
                         }
                         /*
@@ -954,9 +887,10 @@ public class AppMain extends MIDlet implements GlobCost {
                          * I have at least a valid GPS FIX,
                          * go to application closure procedure
                          */
-                        if (msgRicevuto.equalsIgnoreCase(msgFIXgprs) && InfoStato.getInstance().getCSDattivo() == false && ((InfoStato.getInstance().getInfoFileString(TrkState)).equalsIgnoreCase("ON") || (InfoStato.getInstance().getInfoFileString(TrkState)).equalsIgnoreCase("ON,FMS"))) {
+                        if (msgRicevuto.equalsIgnoreCase(msgFIXgprs) && InfoStato.getInstance().getCSDattivo() == false && 
+                                Settings.getInstance().getSetting("tracking", false)) {
 
-                            if (debug) {
+                            if (Settings.getInstance().getSetting("generalDebug", false)) {
                                 System.out.println("AppMain: valid GPS FIX sent through GPRS connection with success");
                             }
                             InfoStato.getInstance().setValidFIXgprs(true);
@@ -975,13 +909,13 @@ public class AppMain extends MIDlet implements GlobCost {
                                 FIXgprsTimer.cancel();
                                 //gprsTimerAlive = false;
                                 FIXgprsTimeoutTask.cancel();
-                                if (debug) {
+                                if (Settings.getInstance().getSetting("generalDebug", false)) {
                                     System.out.println("AppMain: GPRS timer STOP n." + countTimerStopGPRS);
                                 }
                                 countTimerStopGPRS++;
 
                                 FIXgprsTimer = new Timer();
-                                if (debug) {
+                                if (Settings.getInstance().getSetting("generalDebug", false)) {
                                     System.out.println("AppMain: GPRS timer RESET n." + countTimerResetGPRS);
                                 }
                                 countTimerResetGPRS++;
@@ -995,15 +929,16 @@ public class AppMain extends MIDlet implements GlobCost {
                             //else GOTOstagePwDownSTANDBY = true;
                         } //msgFIXgprs
 
-                        if (msgRicevuto.equalsIgnoreCase(msgALIVE) && InfoStato.getInstance().getCSDattivo() == false && ((InfoStato.getInstance().getInfoFileString(TrkState)).equalsIgnoreCase("ON") || (InfoStato.getInstance().getInfoFileString(TrkState)).equalsIgnoreCase("ON,FMS"))) {
+                        if (msgRicevuto.equalsIgnoreCase(msgALIVE) && InfoStato.getInstance().getCSDattivo() == false &&
+                                Settings.getInstance().getSetting("tracking", false)) {
 
-                            if (debug) {
+                            if (Settings.getInstance().getSetting("generalDebug", false)) {
                                 System.out.println("AppMain: Alive message");
                             }
                             InfoStato.getInstance().setValidFIXgprs(true);
 
                             SemAT.getInstance().getCoin(5);
-                            if (debug) {
+                            if (Settings.getInstance().getSetting("generalDebug", false)) {
                                 System.out.println("AppMain: Set AT+CCLK");
                             }
                             InfoStato.getInstance().writeATCommand("at+cclk=\"02/01/01,00:00:00\"\r");
@@ -1016,6 +951,7 @@ public class AppMain extends MIDlet implements GlobCost {
                                 InfoStato.getInstance().setSTATOexecApp(execNORMALE);
                                 Mailboxes.getInstance(3).write(trackAlive);
                                 trackTimerAlive = true;
+                                /*
                                 if (InfoStato.getInstance().getInfoFileInt(UartNumTent) > 0) {
                                     InfoStato.getInstance().setInfoFileInt(UartNumTent, "0");
                                     FlashFile.getInstance().setImpostazione(UartNumTent, "0");
@@ -1024,13 +960,15 @@ public class AppMain extends MIDlet implements GlobCost {
                                     InfoStato.freeFile();
                                     Mailboxes.getInstance(3).write(trackUrcSim);
                                 }
+                                */
                             }
 
                         } //msgAlive
 
-                        if (msgRicevuto.equalsIgnoreCase(msgALR1) && InfoStato.getInstance().getCSDattivo() == false && ((InfoStato.getInstance().getInfoFileString(TrkState)).equalsIgnoreCase("ON") || (InfoStato.getInstance().getInfoFileString(TrkState)).equalsIgnoreCase("ON,FMS"))) {
+                        if (msgRicevuto.equalsIgnoreCase(msgALR1) && InfoStato.getInstance().getCSDattivo() == false &&
+                                Settings.getInstance().getSetting("tracking", false)) {
 
-                            if (debug) {
+                            if (Settings.getInstance().getSetting("generalDebug", false)) {
                                 System.out.println("AppMain: rilevato ALLARME INPUT 1");
                             }
                             InfoStato.getInstance().setValidFIXgprs(true);
@@ -1045,9 +983,10 @@ public class AppMain extends MIDlet implements GlobCost {
 
                         } //msgALR1
 
-                        if (msgRicevuto.equalsIgnoreCase(msgALR2) && InfoStato.getInstance().getCSDattivo() == false && ((InfoStato.getInstance().getInfoFileString(TrkState)).equalsIgnoreCase("ON") || (InfoStato.getInstance().getInfoFileString(TrkState)).equalsIgnoreCase("ON,FMS"))) {
+                        if (msgRicevuto.equalsIgnoreCase(msgALR2) && InfoStato.getInstance().getCSDattivo() == false &&
+                                Settings.getInstance().getSetting("tracking", false)) {
 
-                            if (debug) {
+                            if (Settings.getInstance().getSetting("generalDebug", false)) {
                                 System.out.println("AppMain: rilevato ALLARME INPUT 2");
                             }
                             InfoStato.getInstance().setValidFIXgprs(true);
@@ -1071,7 +1010,7 @@ public class AppMain extends MIDlet implements GlobCost {
 
                             elabBATT = true;
 
-                            if (debug) {
+                            if (Settings.getInstance().getSetting("generalDebug", false)) {
                                 System.out.println("AppMain: low battery signal received");
                             }
 
@@ -1083,13 +1022,13 @@ public class AppMain extends MIDlet implements GlobCost {
                                 FIXgpsTimer.cancel();
                                 gpsTimerAlive = false;
                                 FIXgpsTimeoutTask.cancel();
-                                if (debug) {
+                                if (Settings.getInstance().getSetting("generalDebug", false)) {
                                     System.out.println("AppMain: GPS timer STOP n." + countTimerStopGPS);
                                 }
                                 countTimerStopGPS++;
 
                                 FIXgpsTimer = new Timer();
-                                if (debug) {
+                                if (Settings.getInstance().getSetting("generalDebug", false)) {
                                     System.out.println("AppMain: GPS timer RESET n." + countTimerResetGPS);
                                 }
                                 countTimerResetGPS++;
@@ -1107,13 +1046,13 @@ public class AppMain extends MIDlet implements GlobCost {
                                 FIXgprsTimer.cancel();
                                 //gprsTimerAlive = false;
                                 FIXgprsTimeoutTask.cancel();
-                                if (debug) {
+                                if (Settings.getInstance().getSetting("generalDebug", false)) {
                                     System.out.println("AppMain: GPRS timer STOP n." + countTimerStopGPRS);
                                 }
                                 countTimerStopGPRS++;
 
                                 FIXgprsTimer = new Timer();
-                                if (debug) {
+                                if (Settings.getInstance().getSetting("generalDebug", false)) {
                                     System.out.println("AppMain: GPRS timer RESET n." + countTimerResetGPRS);
                                 }
                                 countTimerResetGPRS++;
@@ -1129,17 +1068,17 @@ public class AppMain extends MIDlet implements GlobCost {
                             if (InfoStato.getInstance().getEnableGPRS() == true) {
 //									InfoStato.getInstance().setNumTrak(InfoStato.getInstance().getInfoFileInt(NumTrakNormal));
                                 Mailboxes.getInstance(3).write(trackBatteria);
-                                if (debug) {
+                                if (Settings.getInstance().getSetting("generalDebug", false)) {
                                     System.out.println("AppMain: sent message: " + trackBatteria);
                                 }
                             } else /*
                              * Close as low battery
                              */ {
-                                FlashFile.getInstance().setImpostazione(CloseMode, closeAppBatteriaScarica);
+                                //FlashFile.getInstance().setImpostazione(CloseMode, closeAppBatteriaScarica);
                             }
-                            InfoStato.getFile();
-                            FlashFile.getInstance().writeSettings();
-                            InfoStato.freeFile();
+                            //InfoStato.getFile();
+                            //FlashFile.getInstance().writeSettings();
+                            //InfoStato.freeFile();
                             /*
                              * Don't start GPRS timeout, try to send strings until battery is fully discharged
                              */
@@ -1168,7 +1107,7 @@ public class AppMain extends MIDlet implements GlobCost {
                              *  writing on file the closure reason (battery low)
                              */
                             if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execBATTSCARICA)) {
-                                if (debug) {
+                                if (Settings.getInstance().getSetting("generalDebug", false)) {
                                     System.out.println("AppMain, low battery: motion sensor DISABLED!");
                                 }
                             } // If key deactivated, enable motion sensor and call 'GoToPowerDown'
@@ -1184,7 +1123,7 @@ public class AppMain extends MIDlet implements GlobCost {
                                     while (InfoStato.getInstance().getAttivaSensore() == true) {
                                         Thread.sleep(whileSleep);
                                     }
-                                    if (debug) {
+                                    if (Settings.getInstance().getSetting("generalDebug", false)) {
                                         System.out.println("AppMain: motion sensor ENABLED!");
                                     }
                                 }
@@ -1206,7 +1145,7 @@ public class AppMain extends MIDlet implements GlobCost {
                          * I can put module in Power Down mode
                          */
                         if (msgRicevuto.equalsIgnoreCase(msgClose)) {
-                            if (debug) {
+                            if (Settings.getInstance().getSetting("generalDebug", false)) {
                                 System.out.println("AppMain: received instruction to close application");
                             }
                             break;	//break while loop
@@ -1220,7 +1159,7 @@ public class AppMain extends MIDlet implements GlobCost {
                          */
                         if (msgRicevuto.equalsIgnoreCase(msgRING) && InfoStato.getInstance().getEnableCSD() == true && InfoStato.getInstance().getCSDattivo() == false) {
 
-                            if (debug) {
+                            if (Settings.getInstance().getSetting("generalDebug", false)) {
                                 System.out.println("AppMain: received instruction to start CSD procedure");
                             }
 
@@ -1236,12 +1175,14 @@ public class AppMain extends MIDlet implements GlobCost {
 
                         if (InfoStato.getInstance().getReboot()) {
                             System.out.println("Reboot for GPIO");
+                            /*
                             if (InfoStato.getInstance().getInfoFileInt(UartNumTent) > 0) {
                                 FlashFile.getInstance().setImpostazione(UartNumTent, "1");
                                 InfoStato.getFile();
                                 FlashFile.getInstance().writeSettings();
                                 InfoStato.freeFile();
                             }
+                            */
                             restart = true;
                             //break;
                         }
@@ -1261,7 +1202,7 @@ public class AppMain extends MIDlet implements GlobCost {
                         InfoStato.freeFile();
                         restart = false;
                         SemAT.getInstance().getCoin(1);
-                        if (debug) {
+                        if (Settings.getInstance().getSetting("generalDebug", false)) {
                             System.out.println("AppMain: Reboot module in progress...");
                         }
                         System.out.println("Reboot for GPIO");
@@ -1286,7 +1227,7 @@ public class AppMain extends MIDlet implements GlobCost {
                  * 		therefore AT^SMSO should not be called inside detroyApp()
                  */
                 SemAT.getInstance().getCoin(1);
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("AppMain: Power off module in progress...");
                 }
                 InfoStato.getInstance().closeTrackingGPRS();
@@ -1298,46 +1239,41 @@ public class AppMain extends MIDlet implements GlobCost {
                 InfoStato.getFile();
                 save.writeLog();
                 InfoStato.freeFile();
-                InfoStato.getInstance().setATexec(true);
-                Mailboxes.getInstance(2).write("AT^SPIO=0\r");
-                while (InfoStato.getInstance().getATexec()) {
-                    Thread.sleep(whileSleep);
-                }
+                
+                InfoStato.getInstance().writeATCommand("AT^SPIO=0\r");
+                
                 pwr = new PowerManager();
                 pwr.setLowPwrMode();
                 Thread.sleep(5000);
-                InfoStato.getInstance().setATexec(true);
-                Mailboxes.getInstance(2).write("AT^SMSO\r");
-                while (InfoStato.getInstance().getATexec()) {
-                    Thread.sleep(whileSleep);
-                }
+
+                InfoStato.getInstance().writeATCommand("AT^SMSO\r");
                 SemAT.getInstance().putCoin();
 
                 /*try {
-                 if(debug){
+                 if(Settings.getInstance().getSetting("generalDebug", false){
                  System.out.println("XE DRIO STUARSE");
                  }
                  destroyApp(true);
                  } catch (MIDletStateChangeException me) { 
-                 if(debug){
+                 if(Settings.getInstance().getSetting("generalDebug", false){
                  System.out.println("AppMain: MIDletStateChangeException"); 
                  }
                  }*/
             } /*
              * APPLICATION TEST ENVIRONMENT
              */ else if (TESTenv) {
-                if (debug) {
+                if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Application test environment");
                 }
             } //TEST ENVIRONMENT
 
         } catch (InterruptedException ie) {
-            if (debug) {
+            if (Settings.getInstance().getSetting("generalDebug", false)) {
                 System.out.println("Interrupted Exception AppMain");
             }
             new LogError("Interrupted Exception AppMain");
         } catch (Exception ioe) {
-            if (debug) {
+            if (Settings.getInstance().getSetting("generalDebug", false)) {
                 System.out.println("Generic Exception AppMain");
             }
             new LogError("Generic Exception AppMain");
@@ -1348,7 +1284,7 @@ public class AppMain extends MIDlet implements GlobCost {
      * Contains code to run the application when is in PAUSE.
      */
     protected void pauseApp() {
-        if (debug) {
+        if (Settings.getInstance().getSetting("generalDebug", false)) {
             System.out.println("Application in pause...");
         }
         try {
@@ -1365,7 +1301,7 @@ public class AppMain extends MIDlet implements GlobCost {
      * @throws	MIDletStateChangeException
      */
     protected void destroyApp(boolean cond) throws MIDletStateChangeException {
-        if (debug) {
+        if (Settings.getInstance().getSetting("generalDebug", false)) {
             System.out.println("Close application in progress...");
         }
 

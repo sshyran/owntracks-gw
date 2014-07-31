@@ -22,12 +22,7 @@ public interface GlobCost {
     public static final boolean TESTenv = false;
     public static final boolean movsens = false;
     
-    boolean debug = false;
-    boolean debugGSM = false;
-    boolean debug_chiave = false;
-    boolean debug_main = false;
-    boolean debug_speed = false;
-    boolean usbDebug = false;
+    boolean debug = true;
 	//remember to modify empty string "defaultGPS" and "posusr" for tests
 
     public static final String NMEA = "NMEA";
@@ -65,8 +60,8 @@ public interface GlobCost {
     //public static final String 	recordPOS 			= "Pos_Prova";
     public static final String fileName = "GWmqttSettings.txt";
  
-    public static final String revNumber = "0.1.40";
-    public static final String dataRev = "26/07/2014";
+    //public static final String revNumber = "0.1.40";
+    //public static final String dataRev = "26/07/2014";
     public static final String moduleCodeRev = "EGS5 rev. ";
 
     /**
@@ -110,9 +105,9 @@ public interface GlobCost {
     /**
      * Keyword to send a valid command by SMS
      */
-    public static final String keySMS = "gps";
-    public static final String keySMS1 = "reboot";
-    public static final String keySMS2 = "state";
+    //public static final String keySMS = "gps";
+    //public static final String keySMS1 = "reboot";
+    //public static final String keySMS2 = "state";
 
     /**
      * Settings for serial interface gps0
@@ -134,47 +129,6 @@ public interface GlobCost {
     public static final String CSDtimeout = "CSDTimeout";
     public static final String CHIAVEtimeout = "TimeoutDisabilitazioneChiave";
     public static final String trackTimeout = "TimeoutTrackingCHIAVE";
-
-    /* File key constants */
-    public static final String IDtraker = "DeviceID";
-    public static final String PasswordCSD = "PasswordCSD";
-    public static final String AppName = "AppName";
-    public static final String CloseMode = "CloseMode";
-    public static final String LastGPSValid = "LastGPSValid";
-    public static final String TrackingInterv = "TrackingInterval";
-    public static final String Operatore = "Operatore";
-    public static final String TrackingType = "TrackingType";
-    public static final String TrackingProt = "TrackingProt";
-    public static final String Header = "Header";
-    public static final String Ackn = "Ackn";
-    public static final String GprsOnTime = "GprsOnTime";
-    public static final String TrkState = "TrkState";
-    public static final String PublishTopic = "PublishTopic";
-    public static final String SlpState = "SlpState";
-    public static final String StillTime = "StillTime";
-    public static final String MovState = "MovState";
-    public static final String IgnState = "IgnState";
-    public static final String UartSpeed = "UartSpeed";
-    public static final String UartGateway = "UartGateWay";
-    public static final String UartHeaderRS = "UartHeaderRS";
-    public static final String UartEndOfMessage = "UartEndOfMessage";
-    public static final String UartAnswerTimeOut = "UartAnswerTimeOut";
-    public static final String UartNumTent = "UartNumTent";
-    public static final String UartEndOfMessageIP = "UartEndOfMessageIP";
-    public static final String UartIDdisp = "UartIDdisp";
-    public static final String UartTXtimeOut = "UartTXtimeOut";
-    public static final String OrePowerDownOK = "HoursPowerDownOK";
-    public static final String MinPowerDownOK = "MinPowerDownOK";
-    public static final String OrePowerDownTOexpired = "HoursPowerDownTOexpired";
-    public static final String MinPowerDownTOexpired = "MinPowerDownTOexpired";
-    public static final String DestHost = "DestHost";
-    public static final String DestPort = "DestPort";
-    public static final String ConnProfileGPRS = "ConnProfileGPRS";
-    public static final String apn = "apn";
-    public static final String GPRSProtocol = "GPRSProtocol";
-    public static final String TrkIN = "TrkIN";
-    public static final String TrkOUT = "TrkOUT";
-    public static final String InsensibilitaGPS = "InsensibilitaGPS";
 
     /**
      * Inhibition KEY duration after GPRS request (in seconds)
@@ -221,7 +175,7 @@ public interface GlobCost {
     /**
      * ALIAS for flash settings
      */
-    public static final String LastGPRMCValid = "LastGPRMCValid";
+    //public static final String LastGPRMCValid = "LastGPRMCValid";
 
     /**
      * Application execution status
@@ -297,62 +251,6 @@ public interface GlobCost {
     public static final String csdOpen = "OPEN-CSD";
     public static final String csdWrite = "WRITE-CSD";
     public static final String csdRead = "READ-CSD";
-
-    /**
-     * Commands to send through CSD and UART
-     */
-    public static final String ACTOP = "#ACTOP";
-    public static final String CFG = "#CFG";
-
-    public static final String CHPWD = "#CHPWD";
-    public static final String CHPWDconfirm = "Confirm new password: ";
-    public static final String CHPWDok = "#CHPWD:OK\r\n\r\n";
-    public static final String CHPWDerr = "#CHPWD:ERR\r\n\r\n";
-    public static final String CHPWDlong = "#CHPWD:ERR, maximum length 15 characters\r\n\r\n";
-
-    public static final String csdCLOSE = "#CLOSE";
-
-    public static final String GPRSCFG = "#GPRSCFG";
-    public static final String IGNCFG = "#IGNCFG";
-    public static final String MOVSENS = "#MOVSENS";
-    public static final String POSREP = "#POSREP";
-    public static final String POSUSR = "#POSUSR";
-    public static final String PROTOCOLCFG = "#PROTOCOLCFG";
-
-    public static final String PWD = "#PWD";
-    public static final String PWDok = "#PWD:OK\r\n\r\n";
-    public static final String PWDerr = "#PWD:ERR,\r\n\r\n";
-
-    public static final String REBOOT = "#REBOOT";
-    public static final String REQIO = "#REQIO";
-    public static final String SETID = "#SETID";
-    public static final String SIG = "#SIG";
-    public static final String SLP = "#SLP";
-    public static final String SLPTM = "#SLPTM";
-    public static final String SNOP = "#SNOP";
-    public static final String PUBTOPIC = "#PUBTOPIC";
-    public static final String STILLTM = "#STILLTM";
-    public static final String TRK = "#TRK";
-    public static final String TRKCFG = "#TRKCFG";
-    public static final String TRKTM = "#TRKTM";
-    public static final String UARTCFG = "#UARTCFG";
-    public static final String VBAT = "#VBAT";
-    public static final String EE_GET_PTR = "#EE_GET_PTR";
-    public static final String SETSPEED = "#SETSPEED";
-
-    public static final String ACK = "#ACK_OK\r\n\r\n";
-    public static final String NACK = "#ACK_ERR\r\n\r\n";
-
-    public static final String logREAD = "@LOG";
-    public static final String logDELETE = "@DELLOG";
-    public static final String OLDlogREAD = "@OLDLOG";
-    public static final String logEND = "\r\n@END\r\n\r\n";
-    public static final String logQUEUE = "@CODA";
-
-    //DFS 
-    public static final String csdSETINSENSIBILITAGPS = "#SETINSENSIBILITAGPS";
-    public static final String csdSETINSENSIBILITAGPSok = "#SETINSENSIBILITAGPS:OK\n\r";
-    public static final String csdSETINSENSIBILITAGPSerr = "#SETINSENSIBILITAGPS:ERR\n\r";
 
     public static final int codaSize = 100;
 
