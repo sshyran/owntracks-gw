@@ -200,7 +200,7 @@ public class MQTTHandler implements MqttCallback {
             System.out.println("Message: " + new String(message.getPayload()));
         }
         CommandProcessor commandProcessor = CommandProcessor.getInstance();
-        if (commandProcessor.execute(message.toString())) {
+        if (commandProcessor.execute(message.toString(), false)) {
             publish(topic.getName() + "/out", 0, false, ("ACK: " + commandProcessor.message).getBytes());
         } else {
             publish(topic.getName() + "/out", 0, false, ("NACK: " + commandProcessor.message).getBytes());
