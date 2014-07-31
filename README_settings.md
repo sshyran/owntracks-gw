@@ -3,8 +3,8 @@ Settings.properties file and Command Processor
 
 ## Settings.file Format
 
-* comment lines start with #
-* other lines are <key>=<value>
+* comment lines start with `#`
+* other lines are `<key>=<value>`
 * keys are case sensitive
 
 
@@ -21,21 +21,21 @@ minDistance=500
 ## Command Processor user interface
 
 Commands can be entered
-* via serial line (starting with $, e.g. $set)
-* via publish to .../cmd
+* via serial line at the `>` prompt (starting with `$`, e.g. `$set`)
+* via an MQTT publish to the base topic with `/cmd` appended to it.
 * via SMS
 
 Commands are:
-* - login <secret>
+* - login _secret_
 * + logout
-* + set [<key>[=[<value>]]]
+* + set `[<key>[=[<value>]]]`
 * + reboot
 * - gps
 * - state 
 * + log [old/delete]
 * - close
 
-commands marked with + require login
+commands marked with `+` require login
 
 For example, assume your Greenwich is publishing to `owntracks/GWBUS-ak`, I can publish the following:
 
@@ -53,7 +53,7 @@ owntracks/GWBUS-ak/cmd/out ACK: command: "gps" {"_type":"location","t":"m", ...}
 login expires after "loginTimeout" (settings) seconds
 "secret" is stored in settings, too (see below)
 
-gps returns and publishes the last known location
+`gps` returns and publishes the last known location
 
 
 ## used keys
@@ -64,14 +64,14 @@ gps returns and publishes the last known location
 |:-----|:------:|:-------:|---------:|:------------|
 | protocol         | TCP/UDP | TCP    | reboot    | publish via TCP/MQTT or UDP/CSV |
 | apn              |         | internet | reboot    | GPRS access point name |
-| host             |       | tcp://localhost  | reboot    | scheme and hostname/ip to connect to (valid schemes are tcp: and ssl:) |
+| host             |       | tcp://localhost  | reboot    | scheme and hostname/ip to connect to (valid schemes are `tcp:` and `ssl:`) |
 | port             | 1-... | 1883        | reboot    | port to connect to |
 | retained         | 0/1   | 1        | reboot    | publish locations with retained flag |
 | qos              | 0-2   | 1        | reboot    | publish locations with Quality of Service |
 | raw              | 0/1   | 1        | immediate | publish raw GPS string to .../raw topic |
 | user             |       | null     | reboot    | MQTT connect user name, default means no authorization |
 | password         |       | null     | reboot    | MQTT connect password |
-| publish          |       | owntrack/gw | reboot    | base topic for MQTT location messages |
+| publish          |       | owntracks/gw | reboot    | base topic for MQTT location messages |
 | willTopic        |       | =publish | reboot    | topic for MQTT last will and testament |
 | will             |       | {"type":"lwt","tst":"<timestamp>"} | reboot    | the message published on MQTT client error |
 | willQos          |  0..2 | 1    | reboot    | NQTT willQos |
