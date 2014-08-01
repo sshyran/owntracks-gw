@@ -1,5 +1,5 @@
-Settings.properties file and Command Processor
-==============================================
+Settings.properties & Command Processor
+=======================================
 
 ## Settings.file Format
 
@@ -29,11 +29,13 @@ Commands are:
 * - login _secret_
 * + logout
 * + set `[<key>[=[<value>]]]`
-* + reboot
-* - gps
-* - state 
-* + log [old/delete]
-* - close
+* + reboot ([sic])
+* - gps (requests location update)
+* - state (shows state)
+* + log `[old/delete]` (shows or resets log files)
+* - close (closes CSD)
+* - destroy (switches back to non-Java AT-mode)
+* - exec _at-command_ (pass command to modem)
 
 commands marked with `+` require login
 
