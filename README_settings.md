@@ -74,10 +74,10 @@ login expires after "loginTimeout" (settings) seconds
 | user             |       | null     | reboot    | MQTT connect user name, default means no authorization |
 | password         |       | null     | reboot    | MQTT connect password |
 | publish          |       | owntracks/gw | reboot    | base topic for MQTT location messages |
-| willTopic        |       | =publish | reboot    | topic for MQTT last will and testament |
-| will             |       | {"type":"lwt","tst":"<timestamp>"} | reboot    | the message published on MQTT client error |
+| willTopic        |       | =publish + / + clientID + /status | reboot    | topic for MQTT last will and testament |
+| will             |       | 0    | reboot    | the message published on MQTT client error |
 | willQos          |  0..2 | 1    | reboot    | NQTT willQos |
-| willRetain       |  0/1  | 0    | reboot    | MQTT willRetain |
+| willRetain       |  0/1  | 1    | reboot    | MQTT willRetain |
 | keepAlive        |  1-.. | 60   | reboot    | MQTT keepAlive |
 | cleanSession     |  0/1  | 1    | reboot    | MQTT cleansession |
 | subscription     |       | =publish + /cmd | reboot    | client listens for commands here |
