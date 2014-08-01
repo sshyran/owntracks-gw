@@ -3,9 +3,6 @@ OrionMqtt - OwnTracks Edition
 
 This project started off as a fork of [Choral's OrionMQTT demo app](https://github.com/Choralthings/OrionMqtt). It is a Java MIDlet application which includes the [Paho] library to send [MQTT] position messages in [OwnTracks] format with Choral Greenwich hardware.
 
-Introduction
-------------
-
 ![greenwich](assets/gw.png)
 
 The [Choral Greenwich](http://www.choral.it/greenwich) is a Java based GPS- and GPRS-enabled sensing box for vehicles which, together with this application, enables it to routinely report a vehicle's position using the [OwnTracks JSON format](https://github.com/owntracks/owntracks/wiki/JSON) over [MQTT]. An example payload may look like this:
