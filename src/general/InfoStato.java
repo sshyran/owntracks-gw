@@ -31,7 +31,6 @@ public class InfoStato implements GlobCost {
     private String numTelSMS = null;
     private String opMode = null;
     private String validOP = "no rete";
-    private String responseAT;
     private boolean validFIX = false;
     private boolean validFIXgprs = false;
     private boolean FIXtimeoutExpired = false;
@@ -117,10 +116,6 @@ public class InfoStato implements GlobCost {
     private int dataX = 0;
     private int dataY = 0;
     private int dataZ = 0;
-    private boolean crashDetect = false;
-    private int asseX = 0;
-    private int asseY = 0;
-    private int asseZ = 0;
     private boolean closeTrack = false;
     private boolean closeUDP = false;
     private boolean closeTCP = false;
@@ -143,9 +138,11 @@ public class InfoStato implements GlobCost {
     private String powerVoltage = "0.0";
     
     public Queue gpsQ;
+    public Queue smsQ;
 
     private InfoStato() {
         gpsQ = new Queue(100, "gpsQ");
+        smsQ = new Queue(100, "smsQ");
     }
 
     public static InfoStato getInstance() {
@@ -654,25 +651,6 @@ public class InfoStato implements GlobCost {
     public synchronized String getOpMode() {
         return opMode;
     }
-
-    /**
-     * To modify answer to requested read AT command
-     *
-     * @param	resp	answer to requested read AT command
-     */
-    public synchronized void setResponseAT(String resp) {
-        responseAT = resp;
-    }
-
-    /**
-     * To get answer to requested read AT command
-     *
-     * @return	responseAT
-     */
-    public synchronized String getResponseAT() {
-        return responseAT;
-    }
-
     /**
      * To set valid FIX indication before timeout expired
      *
@@ -1460,29 +1438,6 @@ public class InfoStato implements GlobCost {
 
     public synchronized int getZ() {
         return dataZ;
-    }
-
-    public synchronized void setAlarmCrash(boolean x) {
-
-        crashDetect = x;
-    }
-
-    public synchronized boolean getAlarmCrash() {
-
-        return crashDetect;
-    }
-
-    public synchronized void setCoordinate(int x, int y, int z) {
-
-        asseX = x;
-        asseY = y;
-        asseZ = z;
-
-    }
-
-    public synchronized String getCoordinate() {
-
-        return "Allarme: " + "X=" + asseX + ", Y=" + asseY + ", Z=" + asseZ;
     }
 
     public synchronized void closeTrackingGPRS() {

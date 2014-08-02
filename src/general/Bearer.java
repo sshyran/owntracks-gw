@@ -7,6 +7,7 @@
 package general;
 
 import com.cinterion.io.BearerControlListener;
+import com.m2mgo.util.GPRSConnectOptions;
 
 /**
  *
@@ -18,6 +19,10 @@ public class Bearer implements BearerControlListener {
     private boolean gprsOn;
     
     private Bearer() {
+        GPRSConnectOptions.getConnectOptions().setAPN(Settings.getInstance().getSetting("apn", "internet"));
+        GPRSConnectOptions.getConnectOptions().setBearerType("gprs");
+        
+
     }
     
     public static Bearer getInstance() {

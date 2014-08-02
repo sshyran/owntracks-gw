@@ -6,8 +6,6 @@
  */
 package general;
 
-import com.m2mgo.util.GPRSConnectOptions;
-
 /**
  * Task that tales care of sending strings through a GPRS connection using a TCP
  * socket service
@@ -17,12 +15,14 @@ import com.m2mgo.util.GPRSConnectOptions;
  *
  */
 public class SocketGPRSThread extends Thread implements GlobCost {
+
     final private int nothingSleep = 500;
     final private int errorSleep = 5000;
     final private int closingSleep = 2000;
-    
+
     public boolean terminate = false;
     private boolean sending = false;
+
     public boolean isSending() {
         return sending;
     }
@@ -68,7 +68,7 @@ public class SocketGPRSThread extends Thread implements GlobCost {
         }
         return MQTTHandler.getInstance().isConnected();
     }
-    
+
     void close() {
         SemAT.getInstance().getCoin(5);
         MQTTHandler.getInstance().disconnect();
@@ -82,47 +82,33 @@ public class SocketGPRSThread extends Thread implements GlobCost {
     }
 
     public void run() {
-                
-        GPRSConnectOptions.getConnectOptions().setAPN(Settings.getInstance().getSetting("apn", "internet"));
-        GPRSConnectOptions.getConnectOptions().setBearerType("gprs");
-        
+
         while (!terminate) {
             String message = null;
-            
+
             if (Settings.getInstance().getSetting("generalDebug", false)) {
                 System.out.println("SocketGPRS tracking " + Settings.getInstance().getSetting("tracking", false));
             }
-            if (Settings.getInstance().getSetting("tracking", false)) {
-                if (!sending) {
-                    sending = open();
+            if (!sending) {
+                sending = open();
+            }
+            if (sending) {
+                if (message == null) {
+                    message = (String) InfoStato.getInstance().gpsQ.get();
                 }
-                if (sending) {
-                    if (message == null) {
-                        message = (String)InfoStato.getInstance().gpsQ.get();
-                    }
-                    if (message != null) {
-                        if (processMessage(message)) {
-                            message = null;
-                        } else {
-                            sending = false;
-                            try {
-                                Thread.sleep(errorSleep);
-                            } catch (InterruptedException e) {
-                            }
-                        }
+                if (message != null) {
+                    if (processMessage(message)) {
+                        message = null;
                     } else {
+                        sending = false;
                         try {
-                            Thread.sleep(nothingSleep);
+                            Thread.sleep(errorSleep);
                         } catch (InterruptedException e) {
                         }
                     }
-                }
-            } else {
-                if (sending) {
-                    close();
-                    sending = false;
+                } else {
                     try {
-                        Thread.sleep(2000);
+                        Thread.sleep(nothingSleep);
                     } catch (InterruptedException e) {
                     }
                 }
@@ -132,7 +118,7 @@ public class SocketGPRSThread extends Thread implements GlobCost {
         }
         close();
     }
-    
+
     boolean processMessage(String message) {
         if (Settings.getInstance().getSetting("raw", true)) {
             SemAT.getInstance().getCoin(5);
@@ -144,11 +130,11 @@ public class SocketGPRSThread extends Thread implements GlobCost {
                     message.getBytes());
             SemAT.getInstance().putCoin();
         }
-        
+
         if (!MQTTHandler.getInstance().isConnected()) {
             return false;
         }
-        
+
         LocationManager.getInstance().setMinDistance(Settings.getInstance().getSetting("minDistance", 0));
         LocationManager.getInstance().setMaxInterval(Settings.getInstance().getSetting("maxInterval", 0));
         LocationManager.getInstance().setMinSpeed(Settings.getInstance().getSetting("minSpeed", 0));
@@ -173,4 +159,3 @@ public class SocketGPRSThread extends Thread implements GlobCost {
         return true;
     }
 }
-

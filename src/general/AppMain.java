@@ -5,13 +5,13 @@
  */
 package general;
 
+import choral.io.CheckUpgrade;
+import choral.io.PowerManager;
+import com.cinterion.io.BearerControl;
+import java.util.*;
 import javax.microedition.midlet.*;
 import javax.microedition.rms.*;
 
-import choral.io.CheckUpgrade;
-import choral.io.PowerManager;
-
-import java.util.*;
 
 /**
  * Main application class.
@@ -40,7 +40,6 @@ public class AppMain extends MIDlet implements GlobCost {
 //	private boolean trackFIRST = false;
 //	private boolean trackSMSenable = false;
 //	private boolean checkCHIAVE = false;
-    private boolean watchdog = true;
     private boolean PowDown = false;
     private boolean restart = false;
     private boolean puntatori = false;
@@ -58,7 +57,7 @@ public class AppMain extends MIDlet implements GlobCost {
     /**
      * <BR> Thread for AT interface management.
      */
-    ATsender th2;
+    ModemManager th2;
     /**
      * <BR> Thread for sending position strings through GPRS connection (TCP or
      * UDP).
@@ -83,7 +82,7 @@ public class AppMain extends MIDlet implements GlobCost {
     /**
      * <BR> Thread for (received) SMS management.
      */
-    CheckSMS th8;
+    ProcessSMSThread processSMSThread;
     /**
      * <BR> Thread for serial (ASC0) management.
      */
@@ -91,7 +90,7 @@ public class AppMain extends MIDlet implements GlobCost {
     /**
      * <BR> Thread for TCP socket management.
      */
-    SocketGPRStask th10;
+    SocketGPRSThread socketGPRSThread;
     /**
      * <BR> Thread for UDP socket management.
      */
@@ -106,9 +105,7 @@ public class AppMain extends MIDlet implements GlobCost {
      */
     /**
      * <BR> Manager for save and take data from configuration file.
-     */
-    SaveData save;
-    
+     */    
     Settings settings;
     PrioSem semAT;
     InfoStato infoS;
@@ -152,14 +149,10 @@ public class AppMain extends MIDlet implements GlobCost {
      * monitoring.
      */
     TimeoutTask regTimeoutTask;
-    /**
-     * <BR> Timer for cyclic monitoring of WatchDog.
-     */
-    Timer WatchDogTimer;
-    /**
-     * <BR> Task for execute operations about WatchDog.
-     */
-    TimeoutTask WatchDogTimeoutTask;
+    
+    
+    WatchDogTask watchDogTask;
+    
     /**
      * <BR> Timer for delay tracking start when key is activated.
      */
@@ -169,6 +162,12 @@ public class AppMain extends MIDlet implements GlobCost {
      * <BR> Task for delay tracking start when key is activated.
      */
     TimeoutTask trackTimeoutTask;
+    
+    
+    static AppMain appMain;
+    public static AppMain getInstance() {
+        return AppMain.appMain;
+    }
 
     /*
      * constructors 
@@ -197,19 +196,18 @@ public class AppMain extends MIDlet implements GlobCost {
 		// Status info strcture creation
         // Threads creation
         th1 = new CommGPStrasparent();
-        th2 = new ATsender();
+        th2 = new ModemManager();
         th3 = new TrackingGPRS();
         th4 = new GoToPowerDown();
         th5 = new TestChiave();
         th6 = new GPIOmanager();
-        th8 = new CheckSMS();
+        processSMSThread = new ProcessSMSThread();
         th9 = new Seriale();
-        th10 = new SocketGPRStask();
+        socketGPRSThread = new SocketGPRSThread();
         th11 = new UDPSocketTask();
 		//th12 = new AccelerometerTask();
-//		NMEAQueue = new Coda(dsNMEA, 100);
-        // file and recordStre
-        save = new SaveData();
+        
+        BearerControl.addListener(Bearer.getInstance());
     }
 
     /*
@@ -260,6 +258,7 @@ public class AppMain extends MIDlet implements GlobCost {
      * </ul>
      */
     protected void startApp() throws MIDletStateChangeException {
+        AppMain.appMain = this;
         try {
 
             /*
@@ -278,9 +277,9 @@ public class AppMain extends MIDlet implements GlobCost {
                 th4.setPriority(5);
                 th5.setPriority(5);
                 th6.setPriority(5);
-                th8.setPriority(5);
+                processSMSThread.setPriority(5);
                 th9.setPriority(5);
-                th10.setPriority(5);
+                socketGPRSThread.setPriority(5);
                 th11.setPriority(5);
 				//th12.setPriority(5);
 
@@ -290,7 +289,7 @@ public class AppMain extends MIDlet implements GlobCost {
                     //InfoStato.getInstance().setInfoFileInt(TrkOUT, "0");
                 //}
 
-                // Start ATsender thread 
+                // Start ModemManager thread 
                 th2.start();
 
                 /*
@@ -563,13 +562,8 @@ public class AppMain extends MIDlet implements GlobCost {
                 th6.start();
 				//th12.start();
 
-                // Start WatchDog timer			
-                if (watchdog == true) {
-                    WatchDogTimer = new Timer();
-                    WatchDogTimeoutTask = new TimeoutTask(WatchDogTimeout);
-                    WatchDogTimer.scheduleAtFixedRate(WatchDogTimeoutTask, 1000 * 60, WatchDogTOvalue * 1000);
-                }
-
+                watchDogTask = new WatchDogTask();
+                
                 // Wait until motion sensor is disabled
                 if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("AppMain: waiting for disabling motion sensor...");
@@ -634,12 +628,12 @@ public class AppMain extends MIDlet implements GlobCost {
                 SemAT.getInstance().putCoin();
 
 				// Radio activation
-                // Starting threads CommGPStrasparent, TrackingGPRS, CheckSMS e Seriale
+                // Starting threads CommGPStrasparent, TrackingGPRS, ProcessSMSThread e Seriale
                 th1.start();
                 th3.start();
-                th8.start();
+                processSMSThread.start();
                 th9.start();
-                th10.start();
+                socketGPRSThread.start();
                 th11.start();
 
 
@@ -831,7 +825,7 @@ public class AppMain extends MIDlet implements GlobCost {
                                 Mailboxes.getInstance(3).write(exitTrack);
 
                                 // Wait for closure
-                                while (InfoStato.getInstance().getTrackingAttivo() == true) {
+                                while (InfoStato.getInstance().gpsQ.size() > 0) {
                                     Thread.sleep(whileSleep);
                                 }
 
@@ -853,7 +847,7 @@ public class AppMain extends MIDlet implements GlobCost {
                                         Mailboxes.getInstance(3).write(exitTrack);
 
                                         // Wait for closure
-                                        while (InfoStato.getInstance().getTrackingAttivo() == true) {
+                                        while (InfoStato.getInstance().gpsQ.size() > 0) {
                                             Thread.sleep(whileSleep);
                                         }
 
@@ -1197,9 +1191,11 @@ public class AppMain extends MIDlet implements GlobCost {
                         restart = true;
                     }
                     if (restart == true) {
-                        InfoStato.getFile();
-                        save.writeLog();
-                        InfoStato.freeFile();
+                        //InfoStato.getFile();
+                        //save.writeLog();
+                        //InfoStato.freeFile();        
+                        InfoStato.getInstance().gpsQ.store();
+                        
                         restart = false;
                         SemAT.getInstance().getCoin(1);
                         if (Settings.getInstance().getSetting("generalDebug", false)) {
@@ -1234,12 +1230,17 @@ public class AppMain extends MIDlet implements GlobCost {
                 InfoStato.getInstance().closeUDPSocketTask();
                 InfoStato.getInstance().closeTCPSocketTask();
                 th3.join();
-                th10.join();
-                th11.join();
-                InfoStato.getFile();
-                save.writeLog();
-                InfoStato.freeFile();
                 
+                socketGPRSThread.terminate = true;
+                socketGPRSThread.join();
+                
+                th11.join();
+                
+                //InfoStato.getFile();
+                //save.writeLog();
+                //InfoStato.freeFile();
+                InfoStato.getInstance().gpsQ.store();
+
                 InfoStato.getInstance().writeATCommand("AT^SPIO=0\r");
                 
                 pwr = new PowerManager();

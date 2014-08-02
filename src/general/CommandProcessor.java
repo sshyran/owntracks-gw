@@ -1,6 +1,5 @@
 package general;
 
-import com.cinterion.imp.io.tls.SSLStreamConnection;
 import com.cinterion.io.ATCommand;
 import com.cinterion.io.ATCommandFailedException;
 import java.io.IOException;
@@ -13,10 +12,8 @@ import javax.microedition.io.Connector;
 import javax.microedition.io.SecureConnection;
 import javax.microedition.io.SecurityInfo;
 import javax.microedition.io.SocketConnection;
-import javax.microedition.io.StreamConnection;
 import javax.microedition.midlet.MIDletStateChangeException;
 import javax.microedition.pki.CertificateException;
-import org.eclipse.paho.client.mqttv3.MqttException;
 
 /**
  *
@@ -30,6 +27,7 @@ public class CommandProcessor implements GlobCost {
     private final String state = "state";
     private final String set = "set";
     private final String reboot = "reboot";
+    private final String upgrade = "upgrade";
     private final String close = "close";
     private final String reconnect = "reconnect";
     private final String secure = "secure";
@@ -39,8 +37,7 @@ public class CommandProcessor implements GlobCost {
     private final String log = "log";
     private final String dump = "dump";
 
-    private final String[] unauthorizedCommands = {login, gps, state, close, secure, magic, exec};
-    private final String[] authorizedCommands = {set, reboot, reconnect, dump, log, logout, destroy};
+    private final String[] authorizedCommands = {set, reboot, reconnect, dump, log, logout, destroy, exec, upgrade, close};
 
     private final String CRLF = "\r\n";
 
@@ -78,10 +75,11 @@ public class CommandProcessor implements GlobCost {
             if (words.length >= 1) {
                 Settings settings = Settings.getInstance();
                 message = "command: \"" + commandLine + "\"" + CRLF;
-                if ((isInStringArray(words[0], unauthorizedCommands))
-                        || ((isInStringArray(words[0], authorizedCommands))
-                        && ((authorizedSince + settings.getSetting("loginTimeout", 30) > new Date().getTime() / 1000)
-                        || (settings.getSetting("loginTimeout", 30) == 0)))) {
+                if (
+                        !isInStringArray(words[0], authorizedCommands)
+                        || settings.getSetting("loginTimeout", 30) == 0
+                        || authorizedSince + settings.getSetting("loginTimeout", 30) < new Date().getTime() / 1000
+                    ) {
                     if (words[0].equals("login")) {
                         if ((words.length == 2)
                                 && (words[1].equals(settings.getSetting("secret", "1234567890")))) {
@@ -177,6 +175,9 @@ public class CommandProcessor implements GlobCost {
 
         } else if (command.equalsIgnoreCase(set)) {
             return setCommand(parameters);
+
+        } else if (command.equalsIgnoreCase(upgrade)) {
+            return upgradeCommand(parameters);
 
         } else if (command.equalsIgnoreCase(secure)) {
             return secureCommand(parameters);
@@ -281,6 +282,80 @@ public class CommandProcessor implements GlobCost {
             }
         } else {
             message = "usage " + log + "[old|del]";
+            return false;
+        }
+    }
+
+    String replaceString(String originalString, String oldString, String newString) {
+        String intermediateString = originalString;
+        //System.out.println("replaceString " + originalString + " " + oldString + " " + newString);
+        int indexOldString;
+
+        if (newString.indexOf(oldString) >= 0) {
+            System.out.println("replaceString recursion " + originalString + " " + oldString + " " + newString);
+            return originalString;
+        }
+        do {
+            //System.out.println("intermediateString " + intermediateString);
+            indexOldString = intermediateString.indexOf(oldString);
+            //System.out.println("indexOldString " + indexOldString);
+            if (indexOldString >= 0) {
+                String workString;
+                if (indexOldString > 0) {
+                    workString = intermediateString.substring(0, indexOldString);
+                } else {
+                    workString = "";
+                }
+                //System.out.println("anfang " + workString);
+                workString = workString.concat(newString);
+                //System.out.println("mitte " + workString);
+                if (intermediateString.length() > indexOldString + oldString.length()) {
+                    workString = workString.concat(intermediateString.substring(indexOldString + oldString.length()));
+                }
+                //System.out.println("abschluss " + workString);
+                intermediateString = workString;
+            }
+        } while (indexOldString >= 0);
+        return intermediateString;
+    }
+    
+    boolean upgradeCommand(String[] parameters) {
+        if (parameters.length == 1) {
+            String clientID = Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI());
+            String otapURI = Settings.getInstance().getSetting("otapURI", "");
+            String notifyURI = Settings.getInstance().getSetting("notifyURI", "");
+            otapURI = replaceString(otapURI, "@", clientID);
+            notifyURI = replaceString(notifyURI, "@", clientID);
+
+            String apn = Settings.getInstance().getSetting("apn", "internet");
+            String otapUser = Settings.getInstance().getSetting("otapUser", "");
+            String otapPassword = Settings.getInstance().getSetting("otapPassword", "");
+            
+            String otap =
+                    "AT^SJOTAP=,"
+                    + otapURI
+                    + ",a:/app,"
+                    + otapUser
+                    + ","
+                    + otapPassword
+                    + ",gprs,"
+                    + apn
+                    + ",,,8.8.8.8,"
+                    + notifyURI
+                    + "\r";
+
+            if (Settings.getInstance().getSetting("debug", false)) {
+                System.out.println("upgrade " + otap);
+            }
+
+            SemAT.getInstance().getCoin(5);
+            InfoStato.getInstance().writeATCommand(otap);
+            InfoStato.getInstance().writeATCommand("AT^SJOTAP\r");
+            SemAT.getInstance().putCoin();
+            message = "upgrade " + otap;
+            return true;
+        } else {
+            message = "usage " + upgrade;
             return false;
         }
     }

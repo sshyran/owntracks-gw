@@ -217,10 +217,10 @@ public class MQTTHandler implements MqttCallback {
     public void messageArrived(MqttTopic topic, MqttMessage message)
             throws Exception {
         if (Settings.getInstance().getSetting("debug", false)) {
-            System.out.println("Msg arrived!");
-            System.out.println("Topic: " + topic.getName() + " QoS: "
-                + message.getQos());
-            System.out.println("Message: " + new String(message.getPayload()));
+            System.out.println("messageArrived " + topic.getName()
+                + " q" + message.getQos()
+                + " r" + (message.isRetained() ? "1" : "0")
+                + "\r\n" + new String(message.getPayload()));
         }
         CommandProcessor commandProcessor = CommandProcessor.getInstance();
         if (commandProcessor.execute(message.toString(), false)) {
