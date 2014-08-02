@@ -141,7 +141,7 @@ owntracks/gw/dev1/status 1
 Similarly, a retained `0` will be published when the device goes offline. When the device does an "intended shutdown", e.g. you disable tracking with
 
 ```
-$set tracking=OFF
+$set tracking=0
 ```
 
 the device publishes a retained `-1` to status.
