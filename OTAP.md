@@ -4,7 +4,7 @@ Over the Air Provisioning is supported by the OwnTracks Edition, and it can be
 triggered by an MQTT publish or via the console. The following prerequisites
 must be met.
 
-Configure the following either within the `.properties` file or on one console:
+Configure the following either within the `.properties` file or on the console:
 
 ```
 set otapURI=http://example.com/files/@/OwnTracks.jad
@@ -22,7 +22,7 @@ http://example.com/files/dev1/OwnTracks.jad
 Internally, the following AT command is sent to the device to configure OTAP:
 
 ```
-AT^SJOTAP=,<otapURI>,a:/app,jog,secret,gprs,internet,,,8.8.8.8,<notifyURI>
+AT^SJOTAP=,<otapURI>,a:/app,jog,secret,gprs,<apn>,,,8.8.8.8,<notifyURI>
 ```
 
 The actual upgrade is launched with an `$upgrade` command which may also be submitted via MQTT to the device.
