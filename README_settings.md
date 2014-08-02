@@ -122,3 +122,27 @@ locations are published when tracking is on and maxInterval has passed or minSpe
 |:-----|:------:|:-------:|---------:|:------------|
 | secret |  | 1234567890 | immediate | for login |
 | loginTimeout    | 0-... | 30 | immediate| you will have to login again afer loginTimeout seconds, 0 = disable |
+
+### Status monitoring
+
+When the device comes alive, it will publish a retained `1` to the base `publish` topic with `/status` appended to it. Assuming you've configured
+
+```
+publish=owntracks/gw/
+```
+
+and the devices `clientID` is `dev1`, the following publish will be seen when the device comes
+up:
+
+```
+owntracks/gw/dev1/status 1
+```
+
+Similarly, a retained `0` will be published when the device goes offline. When the device does an "intended shutdown", e.g. you disable tracking with
+
+```
+$set tracking=OFF
+```
+
+the device publishes a retained `-1` to status.
+
