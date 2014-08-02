@@ -14,6 +14,7 @@ import javax.microedition.io.SecureConnection;
 import javax.microedition.io.SecurityInfo;
 import javax.microedition.io.SocketConnection;
 import javax.microedition.io.StreamConnection;
+import javax.microedition.midlet.MIDletStateChangeException;
 import javax.microedition.pki.CertificateException;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
@@ -32,11 +33,14 @@ public class CommandProcessor implements GlobCost {
     private final String close = "close";
     private final String reconnect = "reconnect";
     private final String secure = "secure";
+    private final String magic = "magic";
+    private final String exec = "exec";
+    private final String destroy = "destroy";
     private final String log = "log";
     private final String dump = "dump";
 
-    private final String[] unauthorizedCommands = {login, gps, state, close, secure};
-    private final String[] authorizedCommands = {set, reboot, reconnect, dump, log, logout};
+    private final String[] unauthorizedCommands = {login, gps, state, close, secure, magic, exec};
+    private final String[] authorizedCommands = {set, reboot, reconnect, dump, log, logout, destroy};
 
     private final String CRLF = "\r\n";
 
@@ -126,8 +130,6 @@ public class CommandProcessor implements GlobCost {
                             settings.getSetting("qos", 1),
                             settings.getSetting("retain", true),
                             json.getBytes("UTF-8"));
-                } catch (MqttException e) {
-                    e.printStackTrace();
                 } catch (UnsupportedEncodingException uee) {
                     uee.printStackTrace();
                 }
@@ -158,6 +160,15 @@ public class CommandProcessor implements GlobCost {
             message = message.concat("closing");
             return true;
 
+        } else if (command.equalsIgnoreCase(destroy)) {
+            try {
+                AppMain.getInstance().destroyApp(true);
+            } catch (MIDletStateChangeException ex) {
+                System.err.println("MidletStateChangeException");
+            }
+            message = message.concat("destroying app");
+            return true;
+
         } else if (command.equalsIgnoreCase(reconnect)) {
             message = message.concat("reconnecting");
             InfoStato.getInstance().setCloseGPRS(true);
@@ -169,6 +180,12 @@ public class CommandProcessor implements GlobCost {
 
         } else if (command.equalsIgnoreCase(secure)) {
             return secureCommand(parameters);
+
+        } else if (command.equalsIgnoreCase(exec)) {
+            return execCommand(parameters);
+
+        } else if (command.equalsIgnoreCase(magic)) {
+            return magicCommand(parameters);
 
         } else if (command.equalsIgnoreCase(dump)) {
             String combined;
@@ -230,20 +247,19 @@ public class CommandProcessor implements GlobCost {
 
     boolean stateCommand(String[] parameters) {
         message = "CSQ:" + InfoStato.getInstance().getCSQ() + "," + InfoStato.getInstance().getNumSat();
-        message = message.concat(";BEARER:" + InfoStato.getInstance().getGPRSBearer());
+        message = message.concat(";BEARER:" + Bearer.getInstance().getBearerState());
         message = message.concat(";CREG:" + InfoStato.getInstance().getCREG());
         message = message.concat(";CGREG:" + InfoStato.getInstance().getCGREG());
         message = message.concat(";ERR:" + InfoStato.getInstance().getERROR());
         message = message.concat(";BATT:" + InfoStato.getInstance().getBatteryVoltage());
-        message = message.concat(";IN:" + InfoStato.getInstance().getTrkIN());
-        message = message.concat(";OUT:" + InfoStato.getInstance().getTrkOUT());
         message = message.concat(";t1:" + InfoStato.getInstance().getTask1Timer());
         message = message.concat(";t2:" + InfoStato.getInstance().getTask2Timer());
-        message = message.concat(";t3:" + InfoStato.getInstance().getTask3Timer());
+        message = message.concat(";gpsQ:" + InfoStato.getInstance().gpsQ.size());
+        message = message.concat(";sgt:" + (AppMain.getInstance().socketGPRSThread.isSending() ? "1" : "0"));
         message = message.concat(";uFW:" + InfoStato.getInstance().getReleaseMicro());
         message = message.concat(";SW:" + Settings.getInstance().getSetting("MIDlet-Version", "unknown"));
         message = message.concat(";EG5:" + InfoStato.getInstance().getREV());
-        message = message.concat(";IMEI: " + InfoStato.getInstance().getIMEI());
+        message = message.concat(";IMEI:" + InfoStato.getInstance().getIMEI());
         return true;
     }
 
@@ -283,13 +299,6 @@ public class CommandProcessor implements GlobCost {
             }
         }
     }
-//#ifdef IMPORT
-//#                                         } // @CODA --> Read queue						
-//#                                         else if (comCSD.indexOf(logQUEUE) >= 0) {
-//#                                             for (int indice = 0; indice < 99; indice++) {
-//#                                                 dataOut.write(InfoStato.getInstance().getRecord(indice).getBytes());
-//#                                             }
-//#endif 
 
     boolean secureCommand(String[] parameters) {
         if (parameters.length == 3) {
@@ -346,6 +355,44 @@ public class CommandProcessor implements GlobCost {
 
         } else {
             message = "usage " + secure + " url message";
+            return false;
+        }
+    }
+    boolean execCommand(String[] parameters) {
+        if (parameters.length == 2) {
+            SemAT.getInstance().getCoin(5);
+            InfoStato.getInstance().writeATCommand(parameters[1] + "\r");
+            SemAT.getInstance().putCoin();
+            message = "To see response set gsmDebug=1";
+            return true;
+        } else {
+            message = "usage " + exec + " at-command";
+            return false;
+        }
+    }
+    boolean magicCommand(String[] parameters) {
+        if (parameters.length == 2) {
+            try {
+                Date date = new Date(Long.parseLong(parameters[1]));
+                message = date.toString();
+            } catch (NumberFormatException nfe) {
+                message = message.concat("IllegalArgumentException " + parameters[1]);
+                return false;
+            }
+            return true;
+        } else if (parameters.length == 3) {
+            DateParser dp = new DateParser(parameters[1], parameters[2]);
+            Date date = dp.getDate();
+            if (date != null) {
+                message = "tst " + date.getTime() + CRLF;
+                message = message.concat("toString " + date.toString()) + CRLF;
+                return true;
+            } else {
+                message = "Parsing error";
+                return false;
+            }
+        } else {
+            message = "usage " + magic + " timestamp | YYMMDD HHMMSS";
             return false;
         }
     }

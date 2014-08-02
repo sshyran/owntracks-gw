@@ -35,7 +35,6 @@ public class TrackingGPRS extends Thread implements GlobCost {
      */
     private boolean trackingAttivo = false;
     private boolean exit = false;
-    protected BCListener BCL;
     private String infoGps;
     private boolean invia_to_socket = false;
     private boolean setStop = true;
@@ -72,10 +71,6 @@ public class TrackingGPRS extends Thread implements GlobCost {
         //System.out.println("Th*TrackingGPRS: STARTED");
         while (!InfoStato.getInstance().isCloseTrackingGPRS()) {
 			//try {
-
-            // Bearer Control
-            BCL = new BCListener();
-            BearerControl.addListener(BCL);
 
             /* 
              * WAIT FOR MESSAGES into MAILBOX for GPRS TRACKING START
@@ -247,43 +242,12 @@ public class TrackingGPRS extends Thread implements GlobCost {
                         invia_to_socket = true;
                     }
                     if (invia_to_socket) {
-                        try {
-                            // semophore for queue
-                            while (!InfoStato.getCoda()) {
-                                Thread.sleep(1);
-                            }
-                        } catch (InterruptedException e) {
-                        }
-
-                        if ((InfoStato.getInstance().getDataRAM()).equals("")) {
-                            InfoStato.getInstance().setDataRAM(datoToSend);
+                        if (InfoStato.getInstance().gpsQ.put(datoToSend)) {
                             if (Settings.getInstance().getSetting("generalDebug", false)) {
-                                System.out.println(datoToSend);
+                                System.out.println("gpsQ overflow");
                             }
-                        } else {
-
-                            String datoToMem = InfoStato.getInstance().getDataRAM();
-                            InfoStato.getInstance().setDataRAM(datoToSend);
-
-                            /*
-                             * Save data to send
-                             */
-                            int temp = InfoStato.getInstance().getTrkIN();
-                            //System.out.println("Th*TrackingGPRS: pointer in - " + temp);
-                            if ((temp >= codaSize) || (temp < 0)) {
-                                temp = 0;
-                            }
-                            new LogError("Th*TrackingGPRS: pointer in - " + temp + " " + datoToMem);
-                            InfoStato.getInstance().saveRecord(temp, datoToMem);
-                            temp++;
-                            if ((temp >= codaSize) || (temp < 0)) {
-                                temp = 0;
-                            }
-                            InfoStato.getInstance().setTrkIN(temp);
-
                             invia_to_socket = false;
                         }
-                        InfoStato.freeCoda();
                     }
                 }
 
@@ -311,7 +275,6 @@ public class TrackingGPRS extends Thread implements GlobCost {
             if (Settings.getInstance().getSetting("generalDebug", false)) {
                 System.out.println("Th*TrackingGPRS: END");
             }
-            InfoStato.getInstance().setTrackingAttivo(false);
 
             try {
                 Thread.sleep(1000);

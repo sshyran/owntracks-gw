@@ -76,7 +76,7 @@ public class MQTTHandler implements MqttCallback {
         if (Settings.getInstance().getSetting("debug", false)) {
             System.out.println("connectToBroker " + brokerURL
                     + " as " + clientId
-                    + "(c" + cleanSession
+                    + "(c" + (cleanSession ? "1" : "0")
                     + " k" + keepAlive
                     + " u" + ((userName == null) ? "<null>" : userName) + ")");
         }
@@ -109,6 +109,9 @@ public class MQTTHandler implements MqttCallback {
                 }
 
                 client.connect(options);
+                
+                publishIfConnected(willTopic, willQos, willRetain, "1".getBytes());
+
                 if (subscription != null) {
                     if (cleanSession || firstConnect) {
                         if (Settings.getInstance().getSetting("debug", false)) {
@@ -125,17 +128,16 @@ public class MQTTHandler implements MqttCallback {
                 System.err.println("Error connectToBroker: " + e.getReasonCode());
             }
         }
+        
     }
 
-    public synchronized void publish(String topicName,
+    public synchronized void publishIfConnected(String topicName,
             int qos,
             boolean retained,
             byte[] payload) {
+
         if (Settings.getInstance().getSetting("debug", false)) {
             System.out.println("publish");
-        }
-        if (!client.isConnected()) {
-            connectToBroker();
         }
 
         if (client.isConnected()) {
@@ -152,6 +154,18 @@ public class MQTTHandler implements MqttCallback {
         } else {
             // not connected
         }
+    }
+
+    public synchronized void publish(String topicName,
+            int qos,
+            boolean retained,
+            byte[] payload) {
+
+        if (!client.isConnected()) {
+            connectToBroker();
+        }
+
+        publishIfConnected(topicName, qos, retained, payload);
     }
 
     public synchronized void subscribe(String topicName, int qos) {
@@ -173,6 +187,11 @@ public class MQTTHandler implements MqttCallback {
         if (Settings.getInstance().getSetting("debug", false)) {
             System.out.println("disconnect");
         }
+        
+        if (client.isConnected()) {
+            publish(willTopic, willQos, willRetain, "-1".getBytes());
+        }
+
         try {
             client.disconnect(0);
         } catch (MqttException e) {

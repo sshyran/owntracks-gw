@@ -330,7 +330,8 @@ public class CommGPStrasparent extends Thread implements GlobCost {
                     // variable for task verification
                     timer1++;
                     InfoStato.getInstance().setTask1Timer(timer1);
-                    InfoStato.getInstance().setTickTask1WD();
+                    
+                    AppMain.getInstance().watchDogTask.gpsRunning = true;
 
                     Thread.sleep(100);
                 } //while

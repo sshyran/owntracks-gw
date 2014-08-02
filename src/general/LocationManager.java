@@ -1,7 +1,5 @@
 package general;
 
-import java.util.Calendar;
-
 /**
  *
  * @author christoph krey
@@ -15,6 +13,7 @@ public class LocationManager {
     
     private int minDistance = 0; // in meters
     private int maxInterval = 0; // in seconds
+    private int minSpeed = 0; // in km/h
 
     private LocationManager() {
     }
@@ -37,6 +36,17 @@ public class LocationManager {
             min = 0;
         }
         minDistance = min;
+    }
+
+    public int getMinSpeed() {
+        return minSpeed;
+    }
+
+    public void setMinSpeed(int min) {
+        if (min < 0) {
+            min = 0;
+        }
+        minSpeed = min;
     }
 
     public int getMaxInterval() {
@@ -87,27 +97,6 @@ public class LocationManager {
         if (parts.length == 19) {
             if (parts[2].equalsIgnoreCase("A")) {
                 try {
-                    long day;
-                    day = Long.parseLong(parts[4]);
-
-                    long time;
-                    time = Long.parseLong(parts[5]);
-
-                    Calendar cal;
-                    cal = Calendar.getInstance();
-                    if (day == 0) {
-                        cal.set(Calendar.YEAR, 1970);
-                        cal.set(Calendar.MONTH, 0);
-                        cal.set(Calendar.DAY_OF_MONTH, 1);
-                    } else {
-                        cal.set(Calendar.YEAR, (int) (day / 10000 + 2000));
-                        cal.set(Calendar.MONTH, (int) ((day / 100) % 100) - 1);
-                        cal.set(Calendar.DAY_OF_MONTH, (int) (day % 100));
-                    }
-                    cal.set(Calendar.HOUR, (int) (time / 10000));
-                    cal.set(Calendar.MINUTE, (int) ((time / 100) % 100));
-                    cal.set(Calendar.SECOND, (int) (time % 100));
-
                     double lat;
                     lat = Double.parseDouble(parts[6].substring(0, 2))
                             + Double.parseDouble(parts[6].substring(2)) / 60;
@@ -145,7 +134,10 @@ public class LocationManager {
                     battery = parts[15].concat(parts[14]);
 
                     currentLocation = new Location();
-                    currentLocation.date = cal.getTime();
+                    currentLocation.date = new DateParser(parts[4], parts[5]).getDate();
+                    if (currentLocation.date == null) {
+                        throw new NumberFormatException();
+                    }
                     currentLocation.longitude = lon;
                     currentLocation.latitude = lat;
                     currentLocation.course = course;
@@ -159,17 +151,22 @@ public class LocationManager {
                     }
 
                 } catch (NumberFormatException nfe) {
-                    System.err.println(nfe.toString());
+                    System.err.println("NumberFormatException");
                     return false;
                 } catch (ArrayIndexOutOfBoundsException aioobe) {
-                    System.err.println(aioobe.toString());
+                    System.err.println("ArrayIndexOutOfBoundsException");
                     return false;
                 }
 
                 if (lastReportedLocation != null) {
                     if (currentLocation.date.getTime() / 1000 - lastReportedLocation.date.getTime() / 1000 < maxInterval) {
                         if (currentLocation.distance(lastReportedLocation) < minDistance) {
-                            return false;
+                            if (currentLocation.speed < minSpeed) {
+                                return false;
+                            } else {
+                                reason = "s";
+                                return true;
+                            }
                         } else {
                             reason = "d";
                             return true;

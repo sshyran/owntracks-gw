@@ -48,8 +48,6 @@ public class InfoStato implements GlobCost {
     private boolean attivazionePolling = false;
     private String STATOexecApp;
     private boolean inibizioneChiave = false;
-    private boolean socketAttivo = false;
-    private boolean trackingAttivo = false;
     private String tipoRisveglio;
     private boolean appSTANDBY = false;
     private boolean enableCSD = false;
@@ -76,7 +74,6 @@ public class InfoStato implements GlobCost {
     private double DFSPreSpeed = 0.0;
     private int GreeSpeed = 0;
     private boolean InvioCoordinataStop = true;
-    private boolean trasmetti = false;
 
     // Settings for configuration file
     private String entryPointUDPfile;
@@ -104,11 +101,8 @@ public class InfoStato implements GlobCost {
     private int uNumT;
     private int uTXto;
     private int trackInterval;
-    private int trkIN;
-    private int trkOUT;
     private int gprsOT;
     private String insensibilitaGPS;
-    private boolean apriGPRS = true;
     private boolean chiudiGPRS = false;
     private boolean preAlive = false;
     private static boolean free_coda = true;
@@ -118,7 +112,6 @@ public class InfoStato implements GlobCost {
     private String[] record = new String[codaSize];
     private String[][] recordMqtt = new String[codaSize][21];
     private String commandSMS = "";
-    private boolean gprsBearer = false;
     private boolean riavvia = false;
     private String codiceTastiera = "";
     private int dataX = 0;
@@ -133,12 +126,11 @@ public class InfoStato implements GlobCost {
     private boolean closeTCP = false;
     private boolean canbusState = false;
     private boolean gpsLive = true;
-    private int bearer = 0;
     private String creg = "null";
     private String cgreg = "null";
     private int errorGPS = 0;
     private boolean alarmNack = false;
-    private int t1 = 0, t2 = 0, t3 = 0;
+    private int t1 = 0, t2 = 0;
     private boolean t1WD = false, t2WD = false, t3WD = false;
     private boolean gpsLed = false;
     private String[] dataMqttRAM = null;
@@ -149,8 +141,11 @@ public class InfoStato implements GlobCost {
     private boolean powerSupply = false;
     private boolean powerSupplyOff = false;
     private String powerVoltage = "0.0";
+    
+    public Queue gpsQ;
 
     private InfoStato() {
+        gpsQ = new Queue(100, "gpsQ");
     }
 
     public static InfoStato getInstance() {
@@ -165,29 +160,7 @@ public class InfoStato implements GlobCost {
     /* 
      * methods
      */
-    synchronized public void setTickTask1WD() {
-        //System.out.println("InfoStato: setTickTask1WD()++++++TRUE");
-        t1WD = true;
-    }
-
-    synchronized public void setTickTask3WD() {
-        //System.out.println("InfoStato: setTickTask3WD()++++++TRUE");
-        t3WD = true;
-    }
-
-    synchronized public boolean getTickTask1WD() {
-        return t1WD;
-    }
-
-    synchronized public boolean getTickTask3WD() {
-        return t3WD;
-    }
-
-    synchronized public void resetTickTaskWD() {
-        //System.out.println("InfoStato: resetTickTaskWD()++++++FALSE");
-        t1WD = false;
-        t3WD = false;
-    }
+    /*
 
     synchronized static public boolean getFile() {
         if (!free_file) {
@@ -214,6 +187,7 @@ public class InfoStato implements GlobCost {
     synchronized static public void freeCoda() {
         free_coda = true;
     }
+    */
 
     synchronized static public boolean getLogSemaphore() {
         if (!free_log) {
@@ -343,14 +317,6 @@ public class InfoStato implements GlobCost {
         return GreeSpeed;
     }
 
-    public synchronized void setGprsState(boolean newValue) {
-        gprsBearer = newValue;
-    }
-
-    public synchronized boolean getGprsState() {
-        return gprsBearer;
-    }
-
     public synchronized boolean setInvioStop(boolean newValue) {
         InvioCoordinataStop = newValue;
         return InvioCoordinataStop;
@@ -360,15 +326,6 @@ public class InfoStato implements GlobCost {
         return InvioCoordinataStop;
     }
 
-    public synchronized boolean setApriGPRS(boolean newValue) {
-        apriGPRS = newValue;
-        return apriGPRS;
-    }
-
-    public synchronized boolean getApriGPRS() {
-        return apriGPRS;
-    }
-
     public synchronized boolean setChiudiGPRS(boolean newValue) {
         chiudiGPRS = newValue;
         return chiudiGPRS;
@@ -376,15 +333,6 @@ public class InfoStato implements GlobCost {
 
     public synchronized boolean getChiudiGPRS() {
         return chiudiGPRS;
-    }
-
-    public synchronized boolean settrasmetti(boolean newValue) {
-        trasmetti = newValue;
-        return trasmetti;
-    }
-
-    public synchronized boolean gettrasmetti() {
-        return trasmetti;
     }
 
     /**
@@ -1046,42 +994,6 @@ public class InfoStato implements GlobCost {
     }
 
     /**
-     * To set if GPRS socket is active
-     *
-     * @param	value	indication about GPRS socket active
-     */
-    public synchronized void setIfsocketAttivo(boolean value) {
-        socketAttivo = value;
-    }
-
-    /**
-     * To get indication about GPRS socket is active
-     *
-     * @return	indication about GPRS socket active
-     */
-    public synchronized boolean getIfsocketAttivo() {
-        return socketAttivo;
-    }
-
-    /**
-     * To set indication about tracking activation
-     *
-     * @param	value	indication about tracking activation
-     */
-    public synchronized void setTrackingAttivo(boolean value) {
-        trackingAttivo = value;
-    }
-
-    /**
-     * To get indication about tracking activation
-     *
-     * @return	indication about tracking activation
-     */
-    public synchronized boolean getTrackingAttivo() {
-        return trackingAttivo;
-    }
-
-    /**
      * To set indication about CSD activation
      *
      * @param	value	indication about CSD activation
@@ -1560,19 +1472,6 @@ public class InfoStato implements GlobCost {
         return crashDetect;
     }
 
-    public synchronized int getTrkIN() {
-        return trkIN;
-    }
-    public synchronized int getTrkOUT() {
-        return trkOUT;
-    }
-    public synchronized void setTrkIN(int in) {
-        trkIN = in;
-    }
-    public synchronized void setTrkOUT(int out) {
-        trkOUT = out;
-    }
-    
     public synchronized void setCoordinate(int x, int y, int z) {
 
         asseX = x;
@@ -1614,14 +1513,6 @@ public class InfoStato implements GlobCost {
     public synchronized boolean isCloseTCPSocketTask() {
 
         return closeTCP;
-    }
-
-    public synchronized void setGPRSBearer(int state) {
-        bearer = state;
-    }
-
-    public synchronized int getGPRSBearer() {
-        return bearer;
     }
 
     public synchronized void setCREG(String state) {
@@ -1670,14 +1561,6 @@ public class InfoStato implements GlobCost {
 
     public synchronized int getTask2Timer() {
         return t2;
-    }
-
-    public synchronized void setTask3Timer(int x) {
-        t3 = x;
-    }
-
-    public synchronized int getTask3Timer() {
-        return t3;
     }
 
     public synchronized void setGpsLed(boolean x) {

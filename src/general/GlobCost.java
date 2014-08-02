@@ -125,7 +125,6 @@ public interface GlobCost {
     public static final String FIXgprsTimeout = "FIXgprsTimeout";
     public static final String BatteryTimeout = "BatteryTimeout";
     public static final String RegTimeout = "RegTimeout";
-    public static final String WatchDogTimeout = "WatchDogTimeout";
     public static final String CSDtimeout = "CSDTimeout";
     public static final String CHIAVEtimeout = "TimeoutDisabilitazioneChiave";
     public static final String trackTimeout = "TimeoutTrackingCHIAVE";
@@ -144,11 +143,6 @@ public interface GlobCost {
      * Range for network registration control (in seconds)
      */
     public static final int regTOvalue = 30;
-
-    /**
-     * Range for WatchDog control (in seconds)
-     */
-    public static final int WatchDogTOvalue = 100;
 
     /**
      * Range for CSD WatchDog control (in seconds)

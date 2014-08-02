@@ -142,33 +142,6 @@ public class TimeoutTask extends TimerTask implements GlobCost {
                 //System.out.println("***Free memory after garbage collection: " + mem1);
             } //RegTimeout
 
-            /*
-             * WatchDogTimeout
-             */
-            if (timeoutType.equalsIgnoreCase(WatchDogTimeout)) {
-
-                //System.out.println("TimeoutTask, WatchDogTimeout: STARTED");
-                if (InfoStato.getInstance().getTickTask1WD() && InfoStato.getInstance().getTickTask3WD()) {
-
-                    InfoStato.getInstance().resetTickTaskWD();
-                    SemAT.getInstance().getCoin(5);
-
-                    //System.out.println("***   TimeoutTask, WatchDog: generated a WATCHDOG pulse");
-                    InfoStato.getInstance().writeATCommand("at^ssio=5,1\r");
-
-                    Thread.sleep(sensMovHoldTime);
-
-                    InfoStato.getInstance().writeATCommand("at^ssio=5,0\r");
-                    InfoStato.getInstance().writeATCommand("at^ssio=5,1\r");
-
-                    Thread.sleep(sensMovHoldTime);
-
-                    InfoStato.getInstance().writeATCommand("at^ssio=5,0\r");
-
-                    SemAT.getInstance().putCoin();
-                }
-
-            } //WatchDogTimeout
 
             /*
              * CSDtimeout
