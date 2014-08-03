@@ -78,7 +78,7 @@ public class CommandProcessor implements GlobCost {
                 if (
                         !isInStringArray(words[0], authorizedCommands)
                         || settings.getSetting("loginTimeout", 30) == 0
-                        || authorizedSince + settings.getSetting("loginTimeout", 30) < new Date().getTime() / 1000
+                        || authorizedSince + settings.getSetting("loginTimeout", 30) > new Date().getTime() / 1000
                     ) {
                     if (words[0].equals("login")) {
                         if ((words.length == 2)
@@ -91,6 +91,7 @@ public class CommandProcessor implements GlobCost {
                             return false;
                         }
                     } else if (words[0].equals("logout")) {
+                        authorizedSince = 0;
                         message = message.concat("logged out");
                         return true;
                     } else {

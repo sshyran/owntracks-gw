@@ -197,7 +197,7 @@ public class ProcessSMSThread extends Thread implements GlobCost {
 
                 SemAT.getInstance().getCoin(5);
                 InfoStato.getInstance().writeATCommand("AT+CMGS=" + telephoneNo + "\r");
-                InfoStato.getInstance().writeATCommand("NACK: " + response.substring(0, 140) + "\032");
+                InfoStato.getInstance().writeATCommand(response.substring(0, 140) + "\032");
                 SemAT.getInstance().putCoin();
             }
         }                
