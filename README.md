@@ -28,7 +28,7 @@ Features
 * Message payloads compatible with [OwnTracks' JSON](https://github.com/owntracks/owntracks/wiki/JSON) which means you can use the OwnTracks apps to display location data.
 * Location updates on a per/time and per/moved distance basis. For example, publish location after vehicle has moved 200 meters or at most 120 seconds, whichever comes first.
 * MQTT authentication
-* TLS (work in progress)
+* TLS
 * Subscription to a configurable topic branch for remote-control / information retrieval.
 * Watchdog: device resets itself if GPS or GPRS unavailable or in case of the device hanging itself up.
 * Configurable via SMS.
