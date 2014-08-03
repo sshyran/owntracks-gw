@@ -9,6 +9,8 @@ Configure the following either within the `.properties` file or on the console:
 ```
 set otapURI=http://example.com/files/@/OwnTracks.jad
 set notifyURI=http://example.com/otap.php?id=@
+set otapUser=username
+set otapPassword=password
 ```
 
 `otapURI` sets the base URI for the OTA upgrade. Any number of `@` characters
@@ -20,13 +22,15 @@ URI above will be expanded to
 http://example.com/files/dev1/OwnTracks.jad
 ```
 
+`notifyURI`, `otapUser`, and `otapPassword` are optional and default to empty strings.
+
 Internally, the following AT command is sent to the device to configure OTAP:
 
 ```
-AT^SJOTAP=,<otapURI>,a:/app,jog,secret,gprs,<apn>,,,8.8.8.8,<notifyURI>
+AT^SJOTAP=,<otapURI>,a:/app,<otapUser>,<otapPassword>,gprs,<apn>,,,8.8.8.8,<notifyURI>
 ```
 
-The actual upgrade is launched with an `$upgrade` command which may also be submitted via MQTT to the device.
+The actual upgrade is launched with an `$upgrade` command which may also be submitted to the device over MQTT.
 
 Upon receiving the `$upgrade`, the device issues `AT^SJOTAP` to perform the actual HTTP GET request for the _jad_ file. This text file contains the URI to the _jar_ file:
 

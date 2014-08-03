@@ -35,6 +35,7 @@ Commands are:
 * + log `[old/delete]` (shows or resets log files)
 * - close (closes CSD)
 * - destroy (switches back to non-Java AT-mode)
+* + upgrade (perform an [OTA upgrade](OTAP.md)
 * - exec _at-command_ (pass command to modem)
 
 commands marked with `+` require login
@@ -83,6 +84,10 @@ login expires after "loginTimeout" (settings) seconds
 | subscription     |       | =publish + /cmd | reboot    | client listens for commands here |
 | subscriptionQos  |  0..2 | 1    | reboot    | MQTT subscriptionQos |
 | clientID         |       | IMEI | reboot    | used as MQTT connect client id and is appended to base publish topic|
+| otapUser         |  `""` | string   | upgrade    | HTTP basic auth username for [OTAP](OTAP.md) |
+| otapPassword     |  `""` | string   | upgrade    | HTTP basic auth password for [OTAP](OTAP.md) |
+| otapURI          |  `""` | string   | upgrade    | URL to `OwnTracks.jad` for [OTAP](OTAP.md) |
+| notifyURI        |  `""` | string   | upgrade    | URL to POST result of [OTAP](OTAP.md) |
 
 
 `$set clientID=<id>` sets the MQTT clientID for the publish (default is the device's IMEI number). This identifier is also appended to `$set publish=<basetopic>`, default owntracks/gw
