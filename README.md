@@ -32,7 +32,7 @@ Features
 * Subscription to a configurable topic branch for remote-control / information retrieval.
 * Watchdog: device resets itself if GPS or GPRS unavailable or in case of the device hanging itself up.
 * Configurable via SMS.
-* Over the Air upgrades (OTA)
+* [Over the Air upgrades](OTAP.md) (OTA)
 * MQTT Last Will and Testament (LWT) messages for monitoring
 
 Requirements
