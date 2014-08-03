@@ -48,3 +48,8 @@ As soon as the Greenwich has performed the upgrade, it will send an HTTP POST to
 ```
 
 (other codes currently unknown to us).
+
+### Notes
+
+* We haven't been able to convice the module to perform OTA upgrades if the `otapURI` doesn't end in the string `".jad"`, irrespective of filename, content-type or content-disposition.
+* `otapURI` is invoked with an HTTP GET method, whereas `notifyURI` is POSTed to.
