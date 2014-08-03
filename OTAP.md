@@ -12,7 +12,8 @@ set notifyURI=http://example.com/otap.php?id=@
 ```
 
 `otapURI` sets the base URI for the OTA upgrade. Any number of `@` characters
-will be replaced by the device's `clientID`. So, for a clientID of `dev1`, the
+will be replaced by the device's `clientID`. (If the clientID contains an `@` character,
+this conversion is not performed.) So, for a clientID of `dev1`, the
 URI above will be expanded to
 
 ```
