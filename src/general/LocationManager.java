@@ -94,7 +94,7 @@ public class LocationManager {
         }
 
         String[] parts = StringSplitter.split(nmea, ",");
-        if (parts.length == 19) {
+        if (parts.length >= 19) {
             if (parts[2].equalsIgnoreCase("A")) {
                 try {
                     double lat;
@@ -241,6 +241,38 @@ public class LocationManager {
 
             json = json.concat("}");
             return json;
+        } else {
+            return null;
+        }
+    }
+    
+    public String getLastHumanString() {
+        Location location = null;
+        if (currentLocation != null) {
+             location = currentLocation;
+        } else if (lastReportedLocation != null) {
+            location = lastReportedLocation;
+        }
+        if (location != null) {
+            String human;
+            
+            /*
+            * dow mon dd hh:mm:ss zzz yyyy
+            * MON JAN 01 16:54:07 UTC 2014
+            * 0123456789012345678901234567
+            * 0         1         2
+            */
+            String s = location.date.toString();
+            
+            human = s.substring(4, 19) + "\r\n";
+            human = human.concat("Latitude " + location.latitude + "\r\n");
+            human = human.concat("Longitude " + location.longitude+ "\r\n");
+            human = human.concat("Altitude " + location.altitude + "m\r\n");
+            human = human.concat("Speed " + location.speed + "kph\r\n");
+            human = human.concat("Course " + location.course + "\r\n");
+            human = human.concat("Distance " + location.distance + "m\r\n");
+ 
+            return human;
         } else {
             return null;
         }

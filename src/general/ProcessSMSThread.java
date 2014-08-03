@@ -185,7 +185,7 @@ public class ProcessSMSThread extends Thread implements GlobCost {
                 CommandProcessor commandProcessor = CommandProcessor.getInstance();
                 String response;
                 if (commandProcessor.execute(text, false)) {
-                    response = "ACK: " + commandProcessor.message;               
+                    response = commandProcessor.message;               
                 } else {
                     response = "NACK: " + commandProcessor.message;
                 }
@@ -194,10 +194,14 @@ public class ProcessSMSThread extends Thread implements GlobCost {
                     System.out.println("response (" + response.length() + "): " + response);
                 }               
 
+                // max length SMS 140/160 
+                if (response.length() > 140) {
+                    response = response.substring(0, 140);
+                }
 
                 SemAT.getInstance().getCoin(5);
                 InfoStato.getInstance().writeATCommand("AT+CMGS=" + telephoneNo + "\r");
-                InfoStato.getInstance().writeATCommand(response.substring(0, 140) + "\032");
+                InfoStato.getInstance().writeATCommand(response + "\032");
                 SemAT.getInstance().putCoin();
             }
         }                

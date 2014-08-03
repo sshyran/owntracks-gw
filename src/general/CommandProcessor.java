@@ -74,7 +74,7 @@ public class CommandProcessor implements GlobCost {
             String[] words = StringSplitter.split(commandLine, " ");
             if (words.length >= 1) {
                 Settings settings = Settings.getInstance();
-                message = "command: \"" + commandLine + "\"" + CRLF;
+                message = "";
                 if (
                         !isInStringArray(words[0], authorizedCommands)
                         || settings.getSetting("loginTimeout", 30) == 0
@@ -102,7 +102,7 @@ public class CommandProcessor implements GlobCost {
                     return false;
                 }
             } else {
-                message = "no command given";
+                message = "no cmd given";
                 return false;
             }
         } else {
@@ -115,24 +115,26 @@ public class CommandProcessor implements GlobCost {
         Settings settings = Settings.getInstance();
         if (command.equalsIgnoreCase(gps)) {
             LocationManager locationManager = LocationManager.getInstance();
+            
+            String human = locationManager.getLastHumanString();
+            if (human != null) {
+                message = message.concat(human);
+            } else {
+                message = message.concat("no location available");
+            }
+            
             String[] fields = StringSplitter.split(
                     settings.getSetting("fields", "course,speed,altitude,distance,battery"), ",");
             String json = locationManager.getlastJSONString(fields);
-            if (json == null) {
-                message = message.concat("no location available");
-                return false;
-            } else {
-                message = message.concat(json);
-                try {
-                    MQTTHandler.getInstance().publish(settings.getSetting("publish", "owntracks/gw/")
-                            + settings.getSetting("clientID", InfoStato.getInstance().getIMEI()),
-                            settings.getSetting("qos", 1),
-                            settings.getSetting("retain", true),
-                            json.getBytes("UTF-8"));
-                } catch (UnsupportedEncodingException uee) {
-                    uee.printStackTrace();
-                }
+            if (json != null) {
+                MQTTHandler.getInstance().publish(settings.getSetting("publish", "owntracks/gw/")
+                    + settings.getSetting("clientID", InfoStato.getInstance().getIMEI()),
+                    settings.getSetting("qos", 1),
+                    settings.getSetting("retain", true),
+                    json.getBytes());
                 return true;
+            } else {
+                return false;
             }
 
         } else if (command.equalsIgnoreCase(reboot)) {
@@ -442,7 +444,7 @@ public class CommandProcessor implements GlobCost {
             message = "To see response set gsmDebug=1";
             return true;
         } else {
-            message = "usage " + exec + " at-command";
+            message = "usage " + exec + " at-cmd";
             return false;
         }
     }

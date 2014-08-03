@@ -197,7 +197,7 @@ public class ModemManager extends Thread implements GlobCost, ATCommandListener,
                                             CommandProcessor commandProcessor = CommandProcessor.getInstance();
                                             try {
                                                 if (commandProcessor.execute(comCSD.substring(1), true)) {
-                                                    dataOut.write(("ACK: " + commandProcessor.message + "\r\n").getBytes());
+                                                    dataOut.write((commandProcessor.message + "\r\n").getBytes());
                                                 } else {
                                                     dataOut.write(("NACK: " + commandProcessor.message + "\r\n").getBytes());
                                                 }
