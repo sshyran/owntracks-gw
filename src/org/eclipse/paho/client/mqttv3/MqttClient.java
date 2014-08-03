@@ -266,6 +266,7 @@ public class MqttClient implements DestinationProvider {
 			netModule = new TCPNetworkModule(trace, factory, host, port);
 			break;
 		case URI_TYPE_SSL:
+                        //System.out.println("URI_TYPE_SSL");
 			shortAddress = address.substring(6);
 			host = getHostName(shortAddress);
 			port = getPort(shortAddress, 8883);
@@ -279,6 +280,8 @@ public class MqttClient implements DestinationProvider {
 				// factoryFactory.initialize(sslClientProps, null);//m2mgo
 				// factory = factoryFactory.createSocketFactory(null);//m2mgo
 				factory = SSLSocketFactory.getDefault();
+                                //System.out.println("SSLSsocketFactory =" + ((factory == null) ? "<null>" : factory.toString()));
+
 				// }
 				// catch (MqttDirectException ex) {
 				/*
