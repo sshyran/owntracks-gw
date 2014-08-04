@@ -34,6 +34,7 @@ Features
 * Configurable via SMS.
 * [Over the Air upgrades](OTAP.md) (OTA)
 * MQTT Last Will and Testament (LWT) messages for monitoring
+* The [OwnTracks Live Map](https://github.com/owntracks/contrib/tree/master/osm-leaf) has support for the additional JSON elements provided by Greenwich.
 
 Requirements
 ------------
