@@ -32,6 +32,7 @@ Then connect to serial and configure the launch app:
 ```
 AT^SCFG="Userware/Autostart/AppName","","a:/app/OwnTracks.jar"
 AT^SCFG="Userware/Autostart","",1
+AT^SJRA=a:/app/owntracks.jar
 ```
 
 At the next reboot, you should see something like this, and you can 
