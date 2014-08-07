@@ -68,7 +68,7 @@ public class DateParser {
                         timeStamp += 31L * 24L * 3600L;
                     }
                 }
-                timeStamp += sDay * 24L * 3600L + sHour * 3600L + sMinute * 60L + sSecond;
+                timeStamp += (sDay - 1) * 24L * 3600L + sHour * 3600L + sMinute * 60L + sSecond;
             } else {
                 System.err.println("Illegal date/time " + YYMMDD + " " + HHMMSS);
             }
