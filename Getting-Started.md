@@ -20,9 +20,37 @@ and quit putty to release the lock on COM3.
 5. Copy the configuration you prepared as well as the `OwnTracks.ja[dr]` files to the device: (we recommend you create a small `inst.bat` with which to do this:
 
 ```
-mescopy GWmqttSettings.txt 	mod:a:/file/
+rem mescopy GWmqttSettings.txt 	mod:a:/file/
 mescopy OwnTracks.properties	mod:a:/file/
 
 mescopy OwnTracks.jad	mod:a:/app/
 mescopy OwnTracks.jar	mod:a:/app/
+```
+
+Then connect to serial and configure the launch app:
+
+```
+AT^SCFG="Userware/Autostart/AppName","","a:/app/OwnTracks.jar"
+AT^SCFG="Userware/Autostart","",1
+AT^SJRA=a:/app/owntracks.jar
+```
+
+At the next reboot, you should see something like this, and you can 
+begin entering commands:
+
+```
+^SYSSTART
+
+^SYSSTART
+Running OwnTracks Choral 0.3.78
+>$gps
+ACK: Aug 06 09:33:40
+Latitude xx.034441
+Longitude y.476541
+Altitude 168.8m
+Speed 0.718576kph
+Course 0.0
+Distance 141m
+
+>
 ```

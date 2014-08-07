@@ -47,7 +47,7 @@ As soon as the Greenwich has performed the upgrade, it will send an HTTP POST to
 900 Success
 ```
 
-(other codes currently unknown to us).
+See also: [OTAP on JavaCint](http://www.javacint.com/OTAP)
 
 ### Notes
 
