@@ -61,13 +61,20 @@ login expires after "loginTimeout" (settings) seconds
 
 ## used keys
 
+### GPRS
+
+| Key         | Values | Default  | Validity | Description                |
+|:------------|:------:|:--------:|---------:|:---------------------------|
+| apn         |        | internet | reboot   | GPRS access point name     |
+| apnUser     |        |          | reboot   | GPRS access point user id  |
+| apnPassword |        |          | reboot   | GPRS access point password |
+
 ### MQTT
 
 | Key  | Values | Default | Validity | Description |
 |:-----|:------:|:-------:|---------:|:------------|
 | protocol         | TCP/UDP | TCP    | reboot    | publish via TCP/MQTT or UDP/CSV |
-| apn              |         | internet | reboot    | GPRS access point name |
-| host             |       | tcp://localhost  | reboot    | scheme and hostname/ip to connect to (valid schemes are `tcp:` and `ssl:`) |
+| host             |         | tcp://localhost  | reboot    | scheme and hostname/ip to connect to (valid schemes are `tcp:` and `ssl:`) |
 | port             | 1-... | 1883        | reboot    | port to connect to |
 | retained         | 0/1   | 1        | reboot    | publish locations with retained flag |
 | qos              | 0-2   | 1        | reboot    | publish locations with Quality of Service |
