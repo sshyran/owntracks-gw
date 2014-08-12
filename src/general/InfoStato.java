@@ -31,10 +31,6 @@ public class InfoStato implements GlobCost {
     private String numTelSMS = null;
     private String opMode = null;
     private String validOP = "no rete";
-    private boolean validFIX = false;
-    private boolean validFIXgprs = false;
-    private boolean FIXtimeoutExpired = false;
-    private boolean FIXgprsTimeoutExpired = false;
     private int GPIOvalue;
     private int digInput0 = 0;
     private int digInput1 = 0;
@@ -46,21 +42,15 @@ public class InfoStato implements GlobCost {
     private boolean disattivazioneSensore = false;
     private boolean attivazionePolling = false;
     private String STATOexecApp;
-    private boolean inibizioneChiave = false;
     private String tipoRisveglio;
     private boolean appSTANDBY = false;
     private boolean enableCSD = false;
-    private boolean enableGPRS = true;
     private boolean CSDconnect = false;
     private boolean CSDattivo = false;
     private boolean trackingInCorso = false;
     private boolean SMSsent = false;
-    private boolean restartGPRS = false;
-    //private boolean uartTraspGPS = false;
-    //private boolean csdTraspGPS = false;
     private String numSat, rssiCSQ;
     private String imei;
-    private String batteryVoltage = "0.0V";
     private String value1, value2, value3, value4, value5, value6, value7;
     private String temp;
     private int tempInt;
@@ -76,12 +66,10 @@ public class InfoStato implements GlobCost {
 
     // Settings for configuration file
     private String entryPointUDPfile;
-    //private String gprsProtocolfile;
     private String typeTRK;
     private String protTRK;
     private String acknowledge;
     private String opNum;
-    private String gprsOnTm;
     private String slp;
     private String movsens;
     private String ign;
@@ -100,9 +88,6 @@ public class InfoStato implements GlobCost {
     private int uNumT;
     private int uTXto;
     private int trackInterval;
-    private int gprsOT;
-    private String insensibilitaGPS;
-    private boolean chiudiGPRS = false;
     private boolean preAlive = false;
     private static boolean free_coda = true;
     private static boolean free_file = true;
@@ -120,14 +105,12 @@ public class InfoStato implements GlobCost {
     private boolean closeUDP = false;
     private boolean closeTCP = false;
     private boolean canbusState = false;
-    private boolean gpsLive = true;
     private String creg = "null";
     private String cgreg = "null";
     private int errorGPS = 0;
     private boolean alarmNack = false;
-    private int t1 = 0, t2 = 0;
+    private int t2 = 0;
     private boolean t1WD = false, t2WD = false, t3WD = false;
-    private boolean gpsLed = false;
     private String[] dataMqttRAM = null;
     private int counterIn1 = 0;
     private int counterIn2 = 0;
@@ -137,11 +120,9 @@ public class InfoStato implements GlobCost {
     private boolean powerSupplyOff = false;
     private String powerVoltage = "0.0";
     
-    public Queue gpsQ;
     public Queue smsQ;
 
     private InfoStato() {
-        gpsQ = new Queue(100, "gpsQ");
         smsQ = new Queue(100, "smsQ");
     }
 
@@ -323,15 +304,6 @@ public class InfoStato implements GlobCost {
         return InvioCoordinataStop;
     }
 
-    public synchronized boolean setChiudiGPRS(boolean newValue) {
-        chiudiGPRS = newValue;
-        return chiudiGPRS;
-    }
-
-    public synchronized boolean getChiudiGPRS() {
-        return chiudiGPRS;
-    }
-
     /**
      * Set keyboard code
      *
@@ -478,24 +450,6 @@ public class InfoStato implements GlobCost {
      */
     public synchronized boolean getATexec() {
         return ATexec;
-    }
-
-    /**
-     * To set GPRS reset
-     *
-     * @param	state 'true' if necessary GPRS reset
-     */
-    public synchronized void setCloseGPRS(boolean state) {
-        restartGPRS = state;
-    }
-
-    /**
-     * To verify if restart GPRS
-     *
-     * @return	'true' if GPRS restart needed
-     */
-    public synchronized boolean closeGPRS() {
-        return restartGPRS;
     }
 
     /**
@@ -651,43 +605,6 @@ public class InfoStato implements GlobCost {
     public synchronized String getOpMode() {
         return opMode;
     }
-    /**
-     * To set valid FIX indication before timeout expired
-     *
-     * @param	fix	'true' if valid FIX, 'false' otherwise
-     */
-    public synchronized void setValidFIX(boolean fix) {
-        validFIX = fix;
-    }
-
-    /**
-     * To verify valid FIX indication before timeout expired
-     *
-     * @return	'true' if valid FIX, 'false' otherwise
-     */
-    public synchronized boolean getValidFIX() {
-        return validFIX;
-    }
-
-    /**
-     * To set if valid FIX indication sent correctly through GPRS for requested
-     * number of times
-     *
-     * @param	fix	'true' if valid FIX sent, 'false' otherwise
-     */
-    public synchronized void setValidFIXgprs(boolean fix) {
-        validFIXgprs = fix;
-    }
-
-    /**
-     * To verify if valid FIX indication sent correctly through GPRS for
-     * requested number of times
-     *
-     * @return	'true' if valid FIX sent, 'false' otherwise
-     */
-    public synchronized boolean getValidFIXgprs() {
-        return validFIXgprs;
-    }
 
     /**
      * To set SMS validity indicator
@@ -731,42 +648,6 @@ public class InfoStato implements GlobCost {
      */
     public synchronized String getOpRete() {
         return validOP;
-    }
-
-    /**
-     * To set if 'FIXtimeout' expired
-     *
-     * @param	expired	'true' if 'FIXtimeout' expired, 'false' otherwise
-     */
-    public synchronized void setIfIsFIXtimeoutExpired(boolean expired) {
-        FIXtimeoutExpired = expired;
-    }
-
-    /**
-     * To verify if 'FIXtimeout' expired
-     *
-     * @return	'true' if 'FIXtimeout' expired, 'false' otherwise
-     */
-    public synchronized boolean isFIXtimeoutExpired() {
-        return FIXtimeoutExpired;
-    }
-
-    /**
-     * To set if 'FIXgprsTimeout' expired
-     *
-     * @param	expired	'true' if 'FIXgprsTimeout' expired, 'false' otherwise
-     */
-    public synchronized void setIfIsFIXgprsTimeoutExpired(boolean expired) {
-        FIXgprsTimeoutExpired = expired;
-    }
-
-    /**
-     * To verify if 'FIXgprsTimeout' expired
-     *
-     * @return	'true' if 'FIXgprsTimeout' expired, 'false' if SMS MOVE sent
-     */
-    public synchronized boolean isFIXgprsTimeoutExpired() {
-        return FIXgprsTimeoutExpired;
     }
 
     /**
@@ -954,24 +835,6 @@ public class InfoStato implements GlobCost {
     }
 
     /**
-     * To set KEY inhibition indication
-     *
-     * @param	value KEY inhibition indication
-     */
-    public synchronized void setInibizioneChiave(boolean value) {
-        inibizioneChiave = value;
-    }
-
-    /**
-     * To get KEY inhibition indication
-     *
-     * @return	KEY inhibition indication
-     */
-    public synchronized boolean getInibizioneChiave() {
-        return inibizioneChiave;
-    }
-
-    /**
      * To set indication about CSD activation
      *
      * @param	value	indication about CSD activation
@@ -1062,15 +925,6 @@ public class InfoStato implements GlobCost {
     }
 
     /**
-     * To get GPRS enable indication
-     *
-     * @return	'true' if enabled, 'false' otherwise
-     */
-    public synchronized boolean getEnableGPRS() {
-        return enableGPRS;
-    }
-
-    /**
      * To set if made a CSD connection
      *
      * @param	value	'true' if made a CSD connection, 'false' otherwise
@@ -1086,24 +940,6 @@ public class InfoStato implements GlobCost {
      */
     public synchronized boolean getCSDconnect() {
         return CSDconnect;
-    }
-
-    /**
-     * To set battery voltage value
-     *
-     * @param	value	battery voltage value
-     */
-    public synchronized void setBatteryVoltage(String value) {
-        batteryVoltage = value;
-    }
-
-    /**
-     * To get battery voltage value
-     *
-     * @return	battery voltage value
-     */
-    public synchronized String getBatteryVoltage() {
-        return batteryVoltage;
     }
 
     /**
@@ -1403,16 +1239,6 @@ public class InfoStato implements GlobCost {
         return canbusState;
     }
 
-    public synchronized void setGPSLive(boolean state) {
-
-        gpsLive = state;
-    }
-
-    public synchronized boolean getGPSLive() {
-
-        return gpsLive;
-    }
-
     public synchronized int setX(int data) {
         dataX = data;
         return data;
@@ -1438,16 +1264,6 @@ public class InfoStato implements GlobCost {
 
     public synchronized int getZ() {
         return dataZ;
-    }
-
-    public synchronized void closeTrackingGPRS() {
-
-        closeTrack = true;
-    }
-
-    public synchronized boolean isCloseTrackingGPRS() {
-
-        return closeTrack;
     }
 
     public synchronized void closeUDPSocketTask() {
@@ -1502,32 +1318,12 @@ public class InfoStato implements GlobCost {
         alarmNack = b;
     }
 
-    public synchronized void setTask1Timer(int x) {
-        t1 = x;
-    }
-
-    public synchronized int getTask1Timer() {
-        return t1;
-    }
-
     public synchronized void setTask2Timer(int x) {
         t2 = x;
     }
 
     public synchronized int getTask2Timer() {
         return t2;
-    }
-
-    public synchronized void setGpsLed(boolean x) {
-
-        gpsLed = x;
-
-    }
-
-    public synchronized boolean getGpsLed() {
-
-        return gpsLed;
-
     }
 
     public synchronized void setGpsState(boolean x) {

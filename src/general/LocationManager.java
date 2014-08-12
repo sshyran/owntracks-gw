@@ -1,21 +1,51 @@
 package general;
 
+import java.util.Date;
+import java.util.TimerTask;
+import java.util.Timer;
+import choral.io.UserLed;
+import java.io.IOException;
+
 /**
  *
  * @author christoph krey
  */
 public class LocationManager {
 
+    final private int fixTimeout = 120;
+    private Timer timer = null;
+    private TimerTask timerTask = null;
+    private boolean fix;
+    private boolean timeout;
+    final private UserLed userLed;
+    
+    private boolean stationary = false;
+
     private Location firstLocation = null;
     private Location lastReportedLocation = null;
     private Location currentLocation = null;
     private String reason = "";
     
-    private int minDistance = 0; // in meters
-    private int maxInterval = 0; // in seconds
-    private int minSpeed = 0; // in km/h
-
+    private double travel = 0.0;
+    
+    private String rmc;
+    private Date tempDate;
+        
+    private double tempLon;
+    private double tempLat;
+    private double tempVel;
+    private double tempCog;
+    
+    private String gga;
+    private double tempAlt;
+    private int tempNumSat;
+    
+    
     private LocationManager() {
+        fix = false;
+        userLed = new UserLed();
+        setLED(false);
+        startTimer();
     }
 
     public static LocationManager getInstance() {
@@ -23,170 +53,331 @@ public class LocationManager {
     }
 
     private static class LocationManagerHolder {
-
         private static final LocationManager INSTANCE = new LocationManager();
     }
 
-    public int getMinDistance() {
-        return minDistance;
-    }
+    class FixTimeout extends TimerTask {
+        public void run() {
+            if (Settings.getInstance().getSetting("locDebug", false)) {
+                System.out.println("FixTimeout");
+            }
+            timeout = true;
+            SocketGPRSThread.getInstance().put(
+                    Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                    + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI())
+                    + "/error",
+                    Settings.getInstance().getSetting("qos", 1),
+                    Settings.getInstance().getSetting("retain", false),
+                    "FixTimeout".getBytes()
+            );
 
-    public void setMinDistance(int min) {
-        if (min < 0) {
-            min = 0;
         }
-        minDistance = min;
     }
-
-    public int getMinSpeed() {
-        return minSpeed;
-    }
-
-    public void setMinSpeed(int min) {
-        if (min < 0) {
-            min = 0;
+    
+    private void startTimer() {
+        stopTimer();
+        timer = new Timer();
+        timerTask = new FixTimeout();
+        timer.schedule(timerTask, fixTimeout * 1000);
+        if (Settings.getInstance().getSetting("locDebug", false)) {
+            System.out.println("start fixTimeout timer");
         }
-        minSpeed = min;
     }
-
-    public int getMaxInterval() {
-        return maxInterval;
-    }
-
-    public void setMaxInterval(int max) {
-        if (max < 0) {
-            max = 0;
+    
+    private void stopTimer() {
+        if (timer != null) {
+            timer.cancel();
         }
-        maxInterval = max;
+        timeout = false;
     }
+    
+    private void setLED(boolean on) {
+        if (Settings.getInstance().getSetting("locDebug", false)) {
+            System.out.println("Setting LED: " + on);
+        }
+        try {
+            userLed.setLed(on);
+        } catch (IOException ioe) {
+            System.err.println("IOException UserLed.setLed");
+        }
+    }
+    
+    public boolean isFix() {
+        return fix;
+    }
+    
+    public Date dateLastFix() {
+        if (currentLocation != null) {
+            return currentLocation.date;
+        } else if (lastReportedLocation != null) {
+            return lastReportedLocation.date;
+        }
+        return null;
+    }
+    
+/**
+RMC - Recommended Minimum Navigation Information
 
-    public boolean handleNMEAString(String nmea) {
-        /*
-         NMEA string example:
-         $,CHORAL1,A,07,060217,174624,4540.1420,N,01155.8320,E,12.6,0.06,95.6,012768,4.3V,E,01,00,FFFFFFFF*76
+                                                            12 
+        1         2 3       4 5        6 7   8   9    10  11| 
+        |         | |       | |        | |   |   |    |   | | 
+ $--RMC,hhmmss.ss,A,llll.ll,a,yyyyy.yy,a,x.x,x.x,xxxx,x.x,a*hh<CR><LF>
 
-         Field name      Example Unit Definition Dimension
-         0   Header          $       Packet identifier Max 15 chars
-         1   Device ID       CHORAL1 Device identifier Max 15 chars
-         2   GPS Valid data  A A = valid, V = invalid 1 char
-         3   NumSat          07 Satellites number 2 chars
-         4   Date            060217 Date yymmdd 6 chars
-         5   Time            174624 Time hhmmss 6 chars
-         6   Latitude        4540.1420 deg ddmm.mmmm 9 chars
-         7   Indicator       N/S N N = nord, S = sud 1 char
-         8   Longitude       01155.8320 deg dddmm.mmmm 9 chars
-         9   Indicator       E/W E E = est, W = ovest 1 chars
-         10  Course          12.6 deg Course Max 6 chars
-         11  Speed           0.06 knots Speed over ground Max 6 chars
-         12  Altitude        95.6 msl Altitude sea level Max 6 chars
-         13  Distance        012768 m Incremental distance 6 chars
-         14  Vsupply         4.3V V Internal voltage 4 chars
-         15  Indicator       E/B E Indicates if external power supply is connected E or if the device is working on battery B 1 char
-         16  Digital input   01 Bit-coded input values. LSB is associated to input 1 1 byte
-         17  Digital output  00 Bit-coded output values. LSB is associated to output 1 1 byte
-         18a Analogue input  FFFFFFFF 16 Bit-coded analogue values. LSHW is associated to AI1 4 byte
-         18b Separator       * '*' 1 char
-         18c Checksum        76 NMEA standard checksum 2 chars
-         */
-
-        if (Settings.getInstance().getSetting("debug", false)) {
-            System.out.println("LocationManager.handleNMEAString: " + nmea);
+ Field Number:  
+  1) UTC Time 
+  2) Status, V = Navigation receiver warning, P = Precise
+  3) Latitude 
+  4) N or S 
+  5) Longitude 
+  6) E or W 
+  7) Speed over ground, knots 
+  8) Track made good, degrees true 
+  9) Date, ddmmyy 
+ 10) Magnetic Variation, degrees 
+ 11) E or W 
+ 12) Checksum
+ */
+    public void processGPRMCString(String gprmc) {
+        if (Settings.getInstance().getSetting("locDebug", false)) {
+            System.out.println("LocationManager.processGPRMCString: " + gprmc.substring(gprmc.indexOf("$GPRMC")));
+        }
+        
+        rmc = gprmc.substring(gprmc.indexOf("$GPRMC"));
+        int pos = rmc.indexOf("\r\n");
+        if (pos >= 0) {
+            rmc = rmc.substring(0, pos);
         }
 
-        String[] parts = StringSplitter.split(nmea, ",");
-        if (parts.length >= 19) {
-            if (parts[2].equalsIgnoreCase("A")) {
-                try {
-                    double lat;
-                    lat = Double.parseDouble(parts[6].substring(0, 2))
-                            + Double.parseDouble(parts[6].substring(2)) / 60;
-                    if (parts[7].equalsIgnoreCase("S")) {
-                        lat *= -1;
-                    }
-                    long latLong = (long)(lat * 1000000);
-                    lat = latLong / 1000000.0;
+        if (Settings.getInstance().getSetting("raw", false)) {
+            SocketGPRSThread.getInstance().put(
+                    Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                    + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI())
+                    + "/raw",
+                    Settings.getInstance().getSetting("qos", 1),
+                    Settings.getInstance().getSetting("retain", true),
+                    rmc.getBytes()
+            );
+        }
 
-                    double lon;
-                    lon = Double.parseDouble(parts[8].substring(0, 3))
-                            + Double.parseDouble(parts[8].substring(3)) / 60;
-                    if (parts[9].equalsIgnoreCase("W")) {
-                        lon *= -1;
-                    }
-                    long lonLong = (long)(lon * 1000000);
-                    lon = lonLong / 1000000.0;
-                    
-                    double course;
-                    course = Double.parseDouble(parts[10]);
-
-                    double speed;
-                    speed = Double.parseDouble(parts[11]);
-                    speed *= 1.852; // knots/h -> km/h
-                    long speedLong = (long)(speed * 1000000);
-                    speed = speedLong / 1000000.0;
-
-                    double altitude;
-                    altitude = Double.parseDouble(parts[12]);
-                    
-                    long distance;
-                    distance = Long.parseLong(parts[13]);
-                    
-                    String battery;
-                    battery = parts[15].concat(parts[14]);
-
-                    currentLocation = new Location();
-                    currentLocation.date = new DateParser(parts[4], parts[5]).getDate();
-                    if (currentLocation.date == null) {
-                        throw new NumberFormatException();
-                    }
-                    currentLocation.longitude = lon;
-                    currentLocation.latitude = lat;
-                    currentLocation.course = course;
-                    currentLocation.speed = speed;
-                    currentLocation.altitude = altitude;
-                    currentLocation.distance = distance;
-                    currentLocation.battery = battery;
-
-                    if (firstLocation == null) {
-                        firstLocation = currentLocation;
-                    }
-
-                } catch (NumberFormatException nfe) {
-                    System.err.println("NumberFormatException");
-                    return false;
-                } catch (ArrayIndexOutOfBoundsException aioobe) {
-                    System.err.println("ArrayIndexOutOfBoundsException");
-                    return false;
+        String[] components = StringSplitter.split(rmc, ",");
+        if (components.length == 13) {
+            try {
+                tempDate = new DateParser(components[9], components[1].substring(0,6)).getDate();
+                if (Settings.getInstance().getSetting("locDebug", false)) {
+                    System.out.println("LocationManager tempDate: " + tempDate);
                 }
-
-                if (lastReportedLocation != null) {
-                    if (currentLocation.date.getTime() / 1000 - lastReportedLocation.date.getTime() / 1000 < maxInterval) {
-                        if (currentLocation.distance(lastReportedLocation) < minDistance) {
-                            if (currentLocation.speed < minSpeed) {
-                                return false;
-                            } else {
-                                reason = "s";
-                                return true;
-                            }
-                        } else {
-                            reason = "d";
-                            return true;
-                        }
-                    } else {
-                        reason = "t";
-                        return true;
+                
+                if (fix || timeout) {
+                    if (!components[2].equalsIgnoreCase("A")) {
+                        fix = false;
+                        setLED(false);
+                        startTimer();
                     }
+
                 } else {
-                    reason = "f";
-                    return true;
+                    if (components[2].equalsIgnoreCase("A")) {
+                        fix = true;
+                        setLED(true);
+                        stopTimer();
+                    }
                 }
+
+                if (components[3].length() > 2) {
+                tempLat = Double.parseDouble(components[3].substring(0, 2))
+                        + Double.parseDouble(components[3].substring(2)) / 60;
+                if (components[4].equalsIgnoreCase("S")) {
+                    tempLat *= -1;
+                }
+                {
+                    long latLong = (long) (tempLat * 1000000);
+                    tempLat = latLong / 1000000.0;
+                }
+                } else {
+                    tempLat = 0.0;
+                }
+                
+                if (components[5].length() > 3) {
+                tempLon = Double.parseDouble(components[5].substring(0, 3))
+                        + Double.parseDouble(components[5].substring(3)) / 60;
+                if (components[6].equalsIgnoreCase("W")) {
+                    tempLon *= -1;
+                }
+                {
+                    long lonLong = (long) (tempLon * 1000000);
+                    tempLon = lonLong / 1000000.0;
+                }
+                } else {
+                    tempLon = 0.0;
+                }
+
+                if (components[8].length() > 0) {
+                    tempCog = Double.parseDouble(components[8]);                
+                } else {
+                    tempCog = 0.0;
+                }
+
+                if (components[7].length() > 0) {
+                tempVel = Double.parseDouble(components[7]);
+                tempVel *= 1.852; // knots/h -> km/h
+                {
+                    long speedLong = (long) (tempVel * 1000000);
+                    tempVel = speedLong / 1000000.0;
+                }
+                } else {
+                    tempVel = 0.0;
+                }
+            } catch (NumberFormatException nfe) {
+                System.err.println("RMC NumberFormatException");
+                rmc = null;
+                return;
+            } catch (StringIndexOutOfBoundsException sioobe) {
+                System.err.println("RMC StringIndexOutOfBoundsException");
+                rmc = null;
+                return;
+            } catch (ArrayIndexOutOfBoundsException aioobe) {
+                System.err.println("RMC ArrayIndexOutOfBoundsException");
+                rmc = null;
+                return;
+            }
+        }
+    }
+/**
+GGA - Global Positioning System Fix Data, Time, Position and fix related data fora GPS receiver.
+
+                                                      11 
+        1         2       3 4        5 6 7  8   9  10 |  12 13  14   15 
+        |         |       | |        | | |  |   |   | |   | |   |    | 
+ $--GGA,hhmmss.ss,llll.ll,a,yyyyy.yy,a,x,xx,x.x,x.x,M,x.x,M,x.x,xxxx*hh<CR><LF>
+
+ Field Number:  
+  1) Universal Time Coordinated (UTC) 
+  2) Latitude 
+  3) N or S (North or South) 
+  4) Longitude 
+  5) E or W (East or West) 
+  6) GPS Quality Indicator, 
+     0 - fix not available, 
+     1 - GPS fix, 
+     2 - Differential GPS fix 
+  7) Number of satellites in view, 00 - 12 
+  8) Horizontal Dilution of precision 
+  9) Antenna Altitude above/below mean-sea-level (geoid)  
+ 10) Units of antenna altitude, meters 
+ 11) Geoidal separation, the difference between the WGS-84 earth 
+     ellipsoid and mean-sea-level (geoid), "-" means mean-sea-level 
+     below ellipsoid 
+ 12) Units of geoidal separation, meters 
+ 13) Age of differential GPS data, time in seconds since last SC104 
+     type 1 or 9 update, null field when DGPS is not used 
+ 14) Differential reference station ID, 0000-1023 
+ 15) Checksum
+*/
+    public void processGPGGAString(String gpgga) {
+        if (Settings.getInstance().getSetting("locDebug", false)) {
+            System.out.println("LocationManager.processGPGGAString: " + gpgga.substring(gpgga.indexOf("$GPGGA")));
+        }
+        gga = gpgga.substring(gpgga.indexOf("$GPGGA"));
+        int pos = gga.indexOf("\r\n");
+        if (pos >= 0) {
+            gga = gga.substring(0, pos);
+        }
+
+        if (Settings.getInstance().getSetting("raw", false)) {
+            SocketGPRSThread.getInstance().put(
+                    Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                    + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI())
+                    + "/raw",
+                    Settings.getInstance().getSetting("qos", 1),
+                    Settings.getInstance().getSetting("retain", true),
+                    gga.getBytes()
+            );
+        }
+
+        String[] components = StringSplitter.split(gga, ",");
+        if (components.length == 15) {
+            try {
+                tempNumSat = Integer.parseInt(components[7]);
+
+                tempAlt = Double.parseDouble(components[9]);
+                {
+                    long altitudeLong = (long) (tempAlt * 1000000);
+                    tempAlt = altitudeLong / 1000000.0;
+                }
+            } catch (NumberFormatException nfe) {
+                System.err.println("GGA NumberFormatException");
+                return;
+            } catch (ArrayIndexOutOfBoundsException aioobe) {
+                System.err.println("GGA ArrayIndexOutOfBoundsException");
+                return;
+            }
+            if (fix && rmc != null) {
+                rollLocation(tempDate, tempLon, tempLat, tempCog, tempVel, tempAlt);
+            }
+        }        
+    }
+
+    private void rollLocation(Date date, double lon, double lat, double cog, double vel, double alt) {
+        
+        int minDistance = Settings.getInstance().getSetting("minDistance", 100);
+        int minSpeed = Settings.getInstance().getSetting("minSpeed", 5);
+        int maxInterval = Settings.getInstance().getSetting("maxInterval", 60);
+        int minInterval = Settings.getInstance().getSetting("minInterval", 1800);
+        
+        currentLocation = new Location();
+        currentLocation.date = date;
+        currentLocation.longitude = lon;
+        currentLocation.latitude = lat;
+        currentLocation.course = cog;
+        currentLocation.speed = vel;
+        currentLocation.altitude = alt;
+
+        if (firstLocation == null) {
+            firstLocation = currentLocation;
+            travel = 0.0;
+        }
+        
+        if (lastReportedLocation != null) {
+            double distance = lastReportedLocation.distance(currentLocation);
+            boolean transitionFromMoveToPark = false;
+            
+            if (vel > minSpeed || distance > minDistance) {
+                stationary = false;
+                travel += lastReportedLocation.distance(currentLocation);
             } else {
-                return false;
+                if (!stationary) {
+                    transitionFromMoveToPark = true;
+                }
+                stationary = true;
+            }
+        
+            long timeSinceLast = currentLocation.date.getTime() / 1000 - lastReportedLocation.date.getTime() / 1000;
+            
+            if ((stationary && timeSinceLast > minInterval)
+                    || (!stationary && timeSinceLast > maxInterval)
+                    || transitionFromMoveToPark) {
+                reason = (stationary ? transitionFromMoveToPark ? "p": "T" : "t");
+                String[] fields = StringSplitter.split(Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,battery"), ",");
+                SocketGPRSThread.getInstance().put(
+                        Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                        + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI()),
+                        Settings.getInstance().getSetting("qos", 1),
+                        Settings.getInstance().getSetting("retain", true),
+                        getJSONString(fields).getBytes()
+                );
             }
         } else {
-            return false;
+            reason = "f";
+            String[] fields = StringSplitter.split(Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,battery"), ",");
+            SocketGPRSThread.getInstance().put(
+                    Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                    + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI()),
+                    Settings.getInstance().getSetting("qos", 1),
+                    Settings.getInstance().getSetting("retain", true),
+                    getJSONString(fields).getBytes()
+            );
         }
     }
-
+    
     private boolean isInStringArray(String string, String[] stringArray) {
         for (int i = 0; i < stringArray.length; i++) {
             if (string.equals(stringArray[i])) {
@@ -195,8 +386,8 @@ public class LocationManager {
         }
         return false;
     }
-    
-    public String getJSONString(String[] fields) {
+
+    private String getJSONString(String[] fields) {
         if (currentLocation != null) {
             lastReportedLocation = currentLocation;
             currentLocation = null;
@@ -205,7 +396,7 @@ public class LocationManager {
             return null;
         }
     }
-    
+
     public String getlastJSONString(String[] fields) {
         if (currentLocation != null) {
             return JSONString(currentLocation, fields, "m");
@@ -213,7 +404,7 @@ public class LocationManager {
             return JSONString(lastReportedLocation, fields, "m");
         }
     }
-    
+
     private String JSONString(Location location, String[] fields, String reason) {
         if (location != null) {
             String json;
@@ -222,21 +413,21 @@ public class LocationManager {
             json = json.concat(",\"tst\":\"" + (location.date.getTime() / 1000) + "\"");
             json = json.concat(",\"lon\":\"" + location.longitude + "\"");
             json = json.concat(",\"lat\":\"" + location.latitude + "\"");
-            
+
             if (isInStringArray("course", fields)) {
-                            json = json.concat(",\"cog\":\"" + location.course + "\"");
+                json = json.concat(",\"cog\":\"" + location.course + "\"");
             }
             if (isInStringArray("speed", fields)) {
-                            json = json.concat(",\"vel\":\"" + location.speed + "\"");
+                json = json.concat(",\"vel\":\"" + location.speed + "\"");
             }
             if (isInStringArray("altitude", fields)) {
-                            json = json.concat(",\"alt\":\"" + location.altitude + "\"");
+                json = json.concat(",\"alt\":\"" + location.altitude + "\"");
             }
             if (isInStringArray("distance", fields)) {
-                            json = json.concat(",\"dist\":\"" + location.distance + "\"");
+                json = json.concat(",\"dist\":\"" + (long)travel + "\"");
             }
             if (isInStringArray("battery", fields)) {
-                            json = json.concat(",\"batt\":\"" + location.battery + "\"");
+                json = json.concat(",\"batt\":\"" + BatteryManager.getInstance().getExternalVoltageString() + "\"");
             }
 
             json = json.concat("}");
@@ -245,33 +436,34 @@ public class LocationManager {
             return null;
         }
     }
-    
+
     public String getLastHumanString() {
         Location location = null;
         if (currentLocation != null) {
-             location = currentLocation;
+            location = currentLocation;
         } else if (lastReportedLocation != null) {
             location = lastReportedLocation;
         }
         if (location != null) {
             String human;
-            
+
             /*
-            * dow mon dd hh:mm:ss zzz yyyy
-            * MON JAN 01 16:54:07 UTC 2014
-            * 0123456789012345678901234567
-            * 0         1         2
-            */
+             * dow mon dd hh:mm:ss zzz yyyy
+             * MON JAN 01 16:54:07 UTC 2014
+             * 0123456789012345678901234567
+             * 0         1         2
+             */
             String s = location.date.toString();
-            
+
             human = s.substring(4, 19) + "\r\n";
             human = human.concat("Latitude " + location.latitude + "\r\n");
-            human = human.concat("Longitude " + location.longitude+ "\r\n");
+            human = human.concat("Longitude " + location.longitude + "\r\n");
             human = human.concat("Altitude " + location.altitude + "m\r\n");
             human = human.concat("Speed " + location.speed + "kph\r\n");
             human = human.concat("Course " + location.course + "\r\n");
-            human = human.concat("Distance " + location.distance + "m\r\n");
- 
+            human = human.concat("Distance " + (long)travel + "m\r\n");
+            human = human.concat("Battery " + BatteryManager.getInstance().getExternalVoltageString() + "\r\n");
+
             return human;
         } else {
             return null;

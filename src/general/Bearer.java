@@ -21,8 +21,8 @@ public class Bearer implements BearerControlListener {
     private Bearer() {
         GPRSConnectOptions.getConnectOptions().setAPN(Settings.getInstance().getSetting("apn", "internet"));
         GPRSConnectOptions.getConnectOptions().setBearerType("gprs");
-        
-
+        GPRSConnectOptions.getConnectOptions().setUser(Settings.getInstance().getSetting("apnUser", ""));
+        GPRSConnectOptions.getConnectOptions().setPasswd(Settings.getInstance().getSetting("apnPassword", ""));
     }
     
     public static Bearer getInstance() {

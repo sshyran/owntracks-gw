@@ -11,6 +11,7 @@ package general;
  * @author christoph
  */
 public class Mailboxes {
+    public static String UnderVoltage = "UnderVoltage";
 
     final private int NUMBEROFMAILBOXES = 11;
     final private int SIZEOFMAILBOXES = 20;

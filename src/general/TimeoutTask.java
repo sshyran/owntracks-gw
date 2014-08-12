@@ -54,86 +54,12 @@ public class TimeoutTask extends TimerTask implements GlobCost {
         try {
 
             /*
-             * FIXtimeout 
-             */
-            if (timeoutType.equalsIgnoreCase(FIXgpsTimeout)) {
-
-                //System.out.println("TimeoutTask, FIXgpsTimeout: STARTED");
-				/*
-                 * If there is a valid FIX do nothing at timeout expiration
-                 */
-                if (InfoStato.getInstance().getValidFIX() == true) {
-
-                    if (Settings.getInstance().getSetting("generalDebug", false)) {
-                        System.out.println("TimeoutTask, FIXgpsTimeout: FIXtimeout EXPIRED but FIX found");
-                    }
-
-                } else {
-
-                    if (Settings.getInstance().getSetting("generalDebug", false)) {
-                        System.out.println("TimeoutTask, FIXgpsTimeout: FIXtimeout EXPIRED");
-                    }
-
-                    // Set that 'FIXtimeout' is expired
-                    InfoStato.getInstance().setIfIsFIXtimeoutExpired(true);
-
-                } //if
-
-            } //FIXtimeout
-
-            /*
-             * FIXgprsTimeout 
-             */
-            if (timeoutType.equalsIgnoreCase(FIXgprsTimeout)) {
-
-                if (Settings.getInstance().getSetting("generalDebug", false)) {
-                    System.out.println("TimeoutTask, FIXgprsTimeout: FIXgprsTimeout EXPIRED");
-                }
-
-                // Set that 'FIXgprsTimeout' is expired
-                InfoStato.getInstance().setIfIsFIXgprsTimeoutExpired(true);
-
-                // Send msg to TrackingGPRS mailbox
-                Mailboxes.getInstance(3).write(timeoutExpired);
-
-            } //FIXgprsTimeout
-
-            /*
-             * CHIAVEtimeout
-             */
-            if (timeoutType.equalsIgnoreCase(CHIAVEtimeout)) {
-
-                //System.out.println("TimeoutTask, CHIAVEtimeout: STARTED");
-				/*
-                 * At timeout expiration, ENABLE again the key usage
-                 */
-                InfoStato.getInstance().setInibizioneChiave(false);
-
-            } //CHIAVEtimeout
-
-            /*
-             * BatteryTimeout
-             */
-            if (timeoutType.equalsIgnoreCase(BatteryTimeout)) {
-
-                //System.out.println("TimeoutTask, BatteryTimeout: STARTED");
-                // Send command AT^SBV 
-                SemAT.getInstance().getCoin(5);
-                //System.out.println("***   TimeoutTask, BatteryTimeout: EXEC COMMAND AT^SBV");
-                InfoStato.getInstance().writeATCommand("AT^SBV\r");
-                SemAT.getInstance().putCoin();
-
-            } //BatteryTimeout
-
-            /*
              * Network registration
              */
             if (timeoutType.equalsIgnoreCase(RegTimeout)) {
 
                 // Send command AT+COPS? 
-                SemAT.getInstance().getCoin(5);
-                InfoStato.getInstance().writeATCommand("AT+COPS?\r");
-                SemAT.getInstance().putCoin();
+                ATManager.getInstance().executeCommand("AT+COPS?\r");
 
                 //mem1 = r.freeMemory();
                 //System.out.println("***Free memory before garbage collection: " + mem1);
@@ -156,9 +82,6 @@ public class TimeoutTask extends TimerTask implements GlobCost {
 
             } //CSDtimeout
 
-            /*
-             * FIXgprsTimeout 
-             */
             if (timeoutType.equalsIgnoreCase(trackTimeout)) {
 
                 /*

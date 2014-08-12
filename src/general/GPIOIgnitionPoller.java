@@ -1,5 +1,5 @@
 /*	
- * Class 	TestChiave
+ * Class 	GPIOIgnitionPoller
  * 
  * This software is developed for Choral devices with Java.
  * Copyright Choral srl. All Rights reserved. 
@@ -14,13 +14,14 @@ package general;
  * @author matteobo
  *
  */
-public class TestChiave extends Thread implements GlobCost {
+public class GPIOIgnitionPoller extends Thread implements GlobCost {
 
+    public boolean ignition;
     /* 
      * constructors
      */
-    public TestChiave() {
-        //System.out.println("Th*TestChiave: CREATED");
+    public GPIOIgnitionPoller() {
+        //System.out.println("Th*GPIOIgnitionPoller: CREATED");
     }
 
     /*
@@ -33,66 +34,48 @@ public class TestChiave extends Thread implements GlobCost {
      */
     public void run() {
 
-		//System.out.println("Th*TestChiave: STARTED");
+		//System.out.println("Th*GPIOIgnitionPoller: STARTED");
         try {
 
-			//System.out.println("Th*TestChiave: monitoring key GPIO");
+			//System.out.println("Th*GPIOIgnitionPoller: monitoring key GPIO");
             /*
              * Enables polling on key GPIO and check the initial value
              */
-            // reserve AT resource
-            SemAT.getInstance().getCoin(5);
 
             /*
              * GPIO init
              */
-            InfoStato.getInstance().writeATCommand("at^scpin=1,6,0\r");
+            ATManager.getInstance().executeCommand("at^scpin=1,6,0\r");
             /*
              * Activate GPIO n.1 and n.3
              */
-            InfoStato.getInstance().writeATCommand("at^scpin=1,0,0\r");
-            InfoStato.getInstance().writeATCommand("at^scpin=1,2,0\r");
+            ATManager.getInstance().executeCommand("at^scpin=1,0,0\r");
+            ATManager.getInstance().executeCommand("at^scpin=1,2,0\r");
 
             /*
              * Activate polling
              */
-            InfoStato.getInstance().writeATCommand("at^scpol=1,6\r");
+            ATManager.getInstance().executeCommand("at^scpol=1,6\r");
 
             /*
              * Activate polling for GPIO n.1 and n.3
              */
-            InfoStato.getInstance().writeATCommand("at^scpol=1,0\r");
-            InfoStato.getInstance().writeATCommand("at^scpol=1,2\r");
+            ATManager.getInstance().executeCommand("at^scpol=1,0\r");
+            ATManager.getInstance().executeCommand("at^scpol=1,2\r");
 
             /*
              * Check GPIO initial values
              */
-            InfoStato.getInstance().setATexec(true);
             InfoStato.getInstance().setGPIOnumberTEST(7);
-            Mailboxes.getInstance(2).write("at^sgio=6\r");
-            while (InfoStato.getInstance().getATexec()) {
-                Thread.sleep(whileSleep);
-            }
-
+            ATManager.getInstance().executeCommand("at^sgio=6\r");
             /*
              * Check GPIO n.1 and n.3 initial values
              */
-            InfoStato.getInstance().setATexec(true);
             InfoStato.getInstance().setGPIOnumberTEST(1);
-            Mailboxes.getInstance(2).write("at^sgio=0\r");		//GPIO1
-            while (InfoStato.getInstance().getATexec()) {
-                Thread.sleep(whileSleep);
-            }
+            ATManager.getInstance().executeCommand("at^sgio=0\r");		//GPIO1
 
-            InfoStato.getInstance().setATexec(true);
             InfoStato.getInstance().setGPIOnumberTEST(3);
-            Mailboxes.getInstance(2).write("at^sgio=2\r");		//GPIO3
-            while (InfoStato.getInstance().getATexec()) {
-                Thread.sleep(whileSleep);
-            }
-
-            // Release At resource
-            SemAT.getInstance().putCoin();
+            ATManager.getInstance().executeCommand("at^sgio=2\r");		//GPIO3
 
             // Notify to AppMain that polling is enabled
             InfoStato.getInstance().setPollingAttivo(true);
@@ -104,14 +87,8 @@ public class TestChiave extends Thread implements GlobCost {
                 // Pause
                 Thread.sleep(whileSleepGPIO);
 
-                SemAT.getInstance().getCoin(5);
-                InfoStato.getInstance().setATexec(true);
                 InfoStato.getInstance().setGPIOnumberTEST(7);
-                Mailboxes.getInstance(2).write("at^sgio=6\r");
-                while (InfoStato.getInstance().getATexec()) {
-                    Thread.sleep(whileSleep);
-                }
-                SemAT.getInstance().putCoin();
+                ATManager.getInstance().executeCommand("at^sgio=6\r");
 
                 /*
                  * KEY ACTIVATED (GPIO = "0")
@@ -122,7 +99,7 @@ public class TestChiave extends Thread implements GlobCost {
                     if (Settings.getInstance().getSetting("keyDebug", false)) {
                         System.out.println("Th*TestChiave: KEY ACTIVATED!!!");
                     }
-                    Mailboxes.getInstance(0).write(msgChiaveAttivata);
+                    ignition = true;
 
                     // stop send of other messages
                     InfoStato.getInstance().setGPIOchiave(-1);
@@ -133,13 +110,7 @@ public class TestChiave extends Thread implements GlobCost {
                  */ else if (InfoStato.getInstance().getGPIOchiave() == 1) {
 
                     // Send msg to AppMain
-                    Mailboxes.getInstance(0).write(msgChiaveDisattivata);
-                    /*SemAT.getInstance().getCoin(5);
-                     InfoStato.getInstance().setATexec(true);
-                     Mailboxes.getInstance(2).write("at^spio=0\r");
-                     while(InfoStato.getInstance().getATexec()) { Thread.sleep(whileSleep); }
-                     SemAT.getInstance().putCoin();
-                     */
+                     ignition = false;
                     if (Settings.getInstance().getSetting("keyDebug", false)) {
                         System.out.println("Th*TestChiave: KEY DEACTIVATED!!!");
                     }

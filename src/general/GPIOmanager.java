@@ -28,11 +28,8 @@ public class GPIOmanager extends Thread implements GlobCost {
      */
     MovSens move;
     Can can;
-    UserLed led;
     PowerManager powerObj;
-    private int wdCount = 0;
     private int waitVinCounter = 0;
-    private boolean gpsLedState = false;
 
     /* 
      * constructors
@@ -41,7 +38,6 @@ public class GPIOmanager extends Thread implements GlobCost {
         //System.out.println("Th*GPIOmanager: CREATED");
         move = new MovSens();
         can = new Can();
-        led = new UserLed();
         powerObj = new PowerManager();
     }
 
@@ -55,28 +51,9 @@ public class GPIOmanager extends Thread implements GlobCost {
             try {
 
 				// It is assumed that the GPIO driver is already active!
-                /*
-                 * INIT GPIO WATCHDOG
-                 */
-                SemAT.getInstance().getCoin(5);
-				// open GPIO n.6 and init to "0"
-                //System.out.println("Th*GPIOmanager: activating GPIO n.6...");
-                InfoStato.getInstance().writeATCommand("at^scpin=1,5,1,0\r");
-                SemAT.getInstance().putCoin();
-
                 while (true) {
-                    if (!InfoStato.getInstance().getGPSLive() && wdCount >= 200) {
-                        InfoStato.getInstance().setReboot();
-                        wdCount = 0;
-                    } else if (InfoStato.getInstance().getGPSLive()) {
-                        //System.out.println("Refresh GPS " + wdCount);
-                        InfoStato.getInstance().setGPSLive(false);
-                        wdCount = 0;
-                    }
-                    wdCount++;
-
                     /*
-                     * Blink of led related to GPS satellite number
+                     * Blink of led related to GPS satellite number ???
                      */
                     if (InfoStato.getInstance().getAttivaSensore() == true) {
                         while (!InfoStato.getMicroSemaphore()) {
@@ -105,17 +82,6 @@ public class GPIOmanager extends Thread implements GlobCost {
                         InfoStato.getInstance().setDisattivaSensore(false);
 
                     } //DisattivaSensore
-
-                    if (!Settings.getInstance().getSetting("movState", "OFF").equals("GPSOFF")) {
-                        if (gpsLedState != InfoStato.getInstance().getGpsLed()) {
-                            gpsLedState = InfoStato.getInstance().getGpsLed();
-                            try {
-                                led.setLed(gpsLedState);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
 
                     waitVinCounter++;
                     Thread.sleep(whileSleep);

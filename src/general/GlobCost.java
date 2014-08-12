@@ -69,16 +69,11 @@ public interface GlobCost {
      */
     public static final String msgClose = "closeApp";
     public static final String msgResponseATOK = "ResponseAT,OK";
-    public static final String msgFIX = "validFIX";
-    public static final String msgFIXgprs = "validFIXgprs";
-    public static final String msgFIXtimeoutEXPIRED = "FIXtimeoutEXPIRED";
-    public static final String msgFIXgprsTimeoutEXPIRED = "FIXgprsTimeoutEXPIRED";
     public static final String msgChiaveAttivata = "KeyActivated";
     public static final String msgChiaveDisattivata = "KeyDeactivated";
     public static final String msgRING = "RING";
     public static final String msgBattScarica = "LowBattery";
     public static final String msgSMStrack = "TrackingFromSMS";
-    public static final String msgCloseGPRS = "closeGPRS";
     public static final String rebootTrack = "rebootTrack";
     public static final String msgREBOOT = "RebootAIR";
     public static final String msgALR1 = "alarm1";
@@ -95,11 +90,8 @@ public interface GlobCost {
     public static final String trackAlive = "trackAlive";
     public static final String trackSMS = "TrackingFromSMS";
     public static final String timeoutExpired = "TimeoutEXPIRED";
-    public static final String invioCompletato = "SendGPRSstringsCompleted";
     public static final String stopTrack = "SospendiTracking";
     public static final String exitTrack = "EsciDalTracking";
-    public static final String gprsTimeoutStart = "gprsTimeoutStart";
-    public static final String gprsTimeoutStop = "gprsTimeoutStop";
     public static final String trackCodice = "trackCode";
     public static final String trackUrcSim = "trackUrcSim";
     /**
@@ -121,8 +113,6 @@ public interface GlobCost {
 
     /* Timeout settings */
     // Timeout types
-    public static final String FIXgpsTimeout = "FIXgpsTimeout";
-    public static final String FIXgprsTimeout = "FIXgprsTimeout";
     public static final String BatteryTimeout = "BatteryTimeout";
     public static final String RegTimeout = "RegTimeout";
     public static final String CSDtimeout = "CSDTimeout";
@@ -148,11 +138,6 @@ public interface GlobCost {
      * Range for CSD WatchDog control (in seconds)
      */
     public static final int CSDTOvalue = 30;
-
-    /**
-     * Battery low threshold
-     */
-    public static final int VbattSoglia = 3599;
 
     /**
      * Time for motion sensor activation (in ms)

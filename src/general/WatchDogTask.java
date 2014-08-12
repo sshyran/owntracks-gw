@@ -24,7 +24,8 @@ public class WatchDogTask extends TimerTask {
     public boolean GPRSRunning;
     
     public WatchDogTask() {
-        
+        ATManager.getInstance().executeCommand("at^scpin=1,5,1,0\r");
+
         timer = new Timer();
         timer.scheduleAtFixedRate(this, delaySec * 1000, periodSec * 1000);
     }
@@ -37,23 +38,19 @@ public class WatchDogTask extends TimerTask {
         if (gpsRunning && GPRSRunning) {
             gpsRunning = false;
             GPRSRunning = false;
-
-            SemAT.getInstance().getCoin(5);
             
             try {
 
-                InfoStato.getInstance().writeATCommand("at^ssio=5,1\r");
+                ATManager.getInstance().executeCommand("at^ssio=5,1\r");
                 Thread.sleep(holdSec * 1000);
-                InfoStato.getInstance().writeATCommand("at^ssio=5,0\r");
+                ATManager.getInstance().executeCommand("at^ssio=5,0\r");
 
-                InfoStato.getInstance().writeATCommand("at^ssio=5,1\r");
+                ATManager.getInstance().executeCommand("at^ssio=5,1\r");
                 Thread.sleep(holdSec * 1000);
-                InfoStato.getInstance().writeATCommand("at^ssio=5,0\r");
+                ATManager.getInstance().executeCommand("at^ssio=5,0\r");
             
             } catch (InterruptedException ie) {
             }
-            
-            SemAT.getInstance().putCoin();
         }
     }
 }

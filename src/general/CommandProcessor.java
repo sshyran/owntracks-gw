@@ -5,7 +5,6 @@ import com.cinterion.io.ATCommandFailedException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.Enumeration;
 import javax.microedition.io.Connector;
@@ -127,7 +126,8 @@ public class CommandProcessor implements GlobCost {
                     settings.getSetting("fields", "course,speed,altitude,distance,battery"), ",");
             String json = locationManager.getlastJSONString(fields);
             if (json != null) {
-                MQTTHandler.getInstance().publish(settings.getSetting("publish", "owntracks/gw/")
+                SocketGPRSThread.getInstance().put(
+                    settings.getSetting("publish", "owntracks/gw/")
                     + settings.getSetting("clientID", InfoStato.getInstance().getIMEI()),
                     settings.getSetting("qos", 1),
                     settings.getSetting("retain", true),
@@ -140,18 +140,9 @@ public class CommandProcessor implements GlobCost {
         } else if (command.equalsIgnoreCase(reboot)) {
             closeCommand(atThread);
             if (atThread) {
-                try {
-                    ATCommand atc = new ATCommand(false, false, false, false, false, false);
-                    atc.send("AT+CFUN=1,1\r");
-                } catch (ATCommandFailedException atcfe) {
-                    atcfe.printStackTrace();
-                } catch (IllegalStateException ise) {
-                    ise.printStackTrace();
-                }
+                BatteryManager.getInstance().reboot();
             } else {
-                SemAT.getInstance().getCoin(5);
-                InfoStato.getInstance().writeATCommand("AT+CFUN=1,1\r");
-                SemAT.getInstance().putCoin();
+                BatteryManager.getInstance().reboot();
             }
             message = message.concat("rebooting");
             return true;
@@ -172,8 +163,8 @@ public class CommandProcessor implements GlobCost {
 
         } else if (command.equalsIgnoreCase(reconnect)) {
             message = message.concat("reconnecting");
-            InfoStato.getInstance().setCloseGPRS(true);
-            Mailboxes.getInstance(3).write(rebootTrack);
+            SocketGPRSThread.getInstance().close();
+            SocketGPRSThread.getInstance().open();
             return true;
 
         } else if (command.equalsIgnoreCase(set)) {
@@ -255,11 +246,11 @@ public class CommandProcessor implements GlobCost {
         message = message.concat(";CREG:" + InfoStato.getInstance().getCREG());
         message = message.concat(";CGREG:" + InfoStato.getInstance().getCGREG());
         message = message.concat(";ERR:" + InfoStato.getInstance().getERROR());
-        message = message.concat(";BATT:" + InfoStato.getInstance().getBatteryVoltage());
-        message = message.concat(";t1:" + InfoStato.getInstance().getTask1Timer());
+        message = message.concat(";BATT:" + BatteryManager.getInstance().getBatteryVoltage());
+        message = message.concat(";EXTV:" + BatteryManager.getInstance().getExternalVoltage());
         message = message.concat(";t2:" + InfoStato.getInstance().getTask2Timer());
-        message = message.concat(";gpsQ:" + InfoStato.getInstance().gpsQ.size());
-        message = message.concat(";sgt:" + (AppMain.getInstance().socketGPRSThread.isSending() ? "1" : "0"));
+        message = message.concat(";gpsQ:" + SocketGPRSThread.getInstance().qSize());
+        message = message.concat(";sgt:" + (SocketGPRSThread.getInstance().isSending() ? "1" : "0"));
         message = message.concat(";uFW:" + InfoStato.getInstance().getReleaseMicro());
         message = message.concat(";SW:" + Settings.getInstance().getSetting("MIDlet-Version", "unknown"));
         message = message.concat(";EG5:" + InfoStato.getInstance().getREV());
@@ -351,10 +342,8 @@ public class CommandProcessor implements GlobCost {
                 System.out.println("upgrade " + otap);
             }
 
-            SemAT.getInstance().getCoin(5);
-            InfoStato.getInstance().writeATCommand(otap);
-            InfoStato.getInstance().writeATCommand("AT^SJOTAP\r");
-            SemAT.getInstance().putCoin();
+            ATManager.getInstance().executeCommand(otap);
+            ATManager.getInstance().executeCommand("AT^SJOTAP\r");
             message = "upgrade " + otap;
             return true;
         } else {
@@ -438,9 +427,7 @@ public class CommandProcessor implements GlobCost {
     }
     boolean execCommand(String[] parameters) {
         if (parameters.length == 2) {
-            SemAT.getInstance().getCoin(5);
-            InfoStato.getInstance().writeATCommand(parameters[1] + "\r");
-            SemAT.getInstance().putCoin();
+            ATManager.getInstance().executeCommand(parameters[1] + "\r");
             message = "To see response set gsmDebug=1";
             return true;
         } else {

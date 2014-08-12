@@ -19,10 +19,7 @@ public class Location {
     public double latitude;
     public double course;
     public double speed;
-    public double altitude;
-    public long distance;
-    public String battery;
-    
+    public double altitude;    
     
     double acos(double a) {
         final double epsilon = 1.0E-7;

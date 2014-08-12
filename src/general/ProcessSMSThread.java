@@ -31,9 +31,7 @@ public class ProcessSMSThread extends Thread implements GlobCost {
         open();
                 
         while (true) {
-            SemAT.getInstance().getCoin(5);
-            InfoStato.getInstance().writeATCommand("AT+CPMS?\r");
-            SemAT.getInstance().putCoin();
+            ATManager.getInstance().executeCommand("AT+CPMS?\r");
 
             String message;
             do {
@@ -51,11 +49,9 @@ public class ProcessSMSThread extends Thread implements GlobCost {
     }
     
     void open() {
-        SemAT.getInstance().getCoin(5);
-        InfoStato.getInstance().writeATCommand("AT+CMGF=1\r");
-        InfoStato.getInstance().writeATCommand("AT+CPMS=\"MT\",\"MT\",\"MT\"\r");
-        InfoStato.getInstance().writeATCommand("AT+CNMI=1,1\r");
-        SemAT.getInstance().putCoin();
+        ATManager.getInstance().executeCommand("AT+CMGF=1\r");
+        ATManager.getInstance().executeCommand("AT+CPMS=\"MT\",\"MT\",\"MT\"\r");
+        ATManager.getInstance().executeCommand("AT+CNMI=1,1\r");
     }
 
     void processMessage(String message) {
@@ -122,14 +118,9 @@ public class ProcessSMSThread extends Thread implements GlobCost {
                 }
 
                 if (numberOfCurrentMessages > 0) {
-                    SemAT.getInstance().getCoin(5);
                     for (int i = 1; i <= numberOfStorageMessages; i++) {
-                        if (Settings.getInstance().getSetting("smsDebug", false)) {
-                            System.out.println("AT+CMGR: " + i);
-                        }
-                        InfoStato.getInstance().writeATCommand("AT+CMGR=" + i + "\r");
+                        ATManager.getInstance().executeCommand("AT+CMGR=" + i + "\r");
                     }
-                    SemAT.getInstance().putCoin();
                 }
             }
         }
@@ -174,13 +165,7 @@ public class ProcessSMSThread extends Thread implements GlobCost {
                     System.out.println("text >" + text + "<");
                 }               
                                 
-                SemAT.getInstance().getCoin(5);
-                InfoStato.getInstance().writeATCommand("AT+CMGD=" + index + "\r");
-                SemAT.getInstance().putCoin();
-                
-                if (Settings.getInstance().getSetting("smsDebug", false)) {
-                    System.out.println("AT+CMGD=");
-                }               
+                ATManager.getInstance().executeCommand("AT+CMGD=" + index + "\r");
 
                 CommandProcessor commandProcessor = CommandProcessor.getInstance();
                 String response;
@@ -199,10 +184,8 @@ public class ProcessSMSThread extends Thread implements GlobCost {
                     response = response.substring(0, 140);
                 }
 
-                SemAT.getInstance().getCoin(5);
-                InfoStato.getInstance().writeATCommand("AT+CMGS=" + telephoneNo + "\r");
-                InfoStato.getInstance().writeATCommand(response + "\032");
-                SemAT.getInstance().putCoin();
+                ATManager.getInstance().executeCommand("AT+CMGS=" + telephoneNo + "\r");
+                ATManager.getInstance().executeCommand(response + "\032");
             }
         }                
     }   

@@ -70,12 +70,7 @@ public class UpdateCSD extends Thread implements GlobCost {
 
         try {
 
-            // Disable KEY
-            InfoStato.getInstance().setInibizioneChiave(true);
             InfoStato.getInstance().setCSDattivo(true);
-
-            // Reserve AT resource
-            SemAT.getInstance().getCoin(5);
 
             if (InfoStato.getInstance().getCSDWatchDog() == false) { // If timeout expired -> exit
                 closeSession = true;
@@ -155,14 +150,10 @@ public class UpdateCSD extends Thread implements GlobCost {
                 if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*UpdateCSD: I'm releasing CSD call");
                 }
-                InfoStato.getInstance().setATexec(true);
-                Mailboxes.getInstance(2).write("ATH\r");
-                while (InfoStato.getInstance().getATexec()) {
-                    if (InfoStato.getInstance().getCSDWatchDog() == false) {
-                        break;
-                    }
+                ATManager.getInstance().executeCommand("ATH\r");
+                while (InfoStato.getInstance().getCSDWatchDog()) {
                     Thread.sleep(whileSleep);
-                } //while	
+                }	
 
             } //if
 
@@ -174,16 +165,133 @@ public class UpdateCSD extends Thread implements GlobCost {
             //System.out.println("UpdateCSD: InterruptedException");
         } //catch
 
-        // Release AT resource
-        SemAT.getInstance().putCoin();
-
         // Enable KEY
-        InfoStato.getInstance().setInibizioneChiave(false);
         InfoStato.getInstance().setCSDattivo(false);
 
         if (Settings.getInstance().getSetting("generalDebug", false)) {
             System.out.println("Th*UpdateCSD: END");
         }
     }
+//#ifdef TODO
+//#                             /*
+//#                          * Operations on ATCommand for CSD protocol
+//#                          */
+//#                         // Open IN/OUT stream for CSD
+//#                         if (comandoAT.indexOf(csdOpen) >= 0) {
+//#                             dataOut = ATCMD.getDataOutputStream();
+//#                             dataIn = ATCMD.getDataInputStream();
+//#                             if (Settings.getInstance().getSetting("gsmDebug", false)) {
+//#                                 System.out.println("Th*ATsender: Stream CSD aperto");
+//#                             }
+//#                         } //csdOpen
+//#                         // Write on CSD output channel
+//#                         else if (comandoAT.indexOf(csdWrite) >= 0) {
+//#                             try {
+//#                                 dataOut.write((comandoAT.substring(comandoAT.indexOf(csdWrite) + csdWrite.length())).getBytes());
+//#                             } catch (IOException ioe) {
+//#                                 System.out.println("Th*ATsender: IOException");
+//#                             }
+//#                         } //csdWrite
+//#                         // Read from CSD input channel
+//#                         else if (comandoAT.indexOf(csdRead) >= 0) {
+//# 
+//#                             /*
+//#                              * Start CSD read cycle
+//#                              * (to do: stop application until CSD call is closed)
+//#                              */
+//#                             try {
+//# 
+//#                                 // If CSD PWD is null, no authentication required
+//#                                 //if (InfoStato.getInstance().getInfoFileString(PasswordCSD).equalsIgnoreCase("")) {
+//#                                 //    auth = true;
+//#                                 //    if (Settings.getInstance().getSetting("generalDebug", false) {
+//#                                 //        System.out.println("Th*ATManager: no authentication required because PWD is null");
+//#                                 //    }
+//#                                 //}
+//# 
+//#                                 while (true) {
+//# 
+//#                                     try {
+//# 
+//#                                         /*
+//#                                          * Read command
+//#                                          */
+//#                                         rcv = 0;
+//#                                         comCSD = "";
+//#                                         do {
+//#                                             rcv = dataIn.read();
+//#                                             if (rcv != '\n') {
+//#                                                 if (Settings.getInstance().getSetting("generalDebug", false)) {
+//#                                                     if (rcv >= 0) {
+//#                                                         System.out.print((char) rcv);
+//#                                                     }
+//#                                                 }
+//#                                                 // update string read from CSD
+//#                                                 if ((byte) rcv != '\r') {
+//#                                                     dataOut.write((byte) rcv);
+//#                                                     comCSD = comCSD + (char) rcv;
+//#                                                 } else {
+//#                                                     dataOut.write("\r\n".getBytes());
+//#                                                 }
+//#                                             }
+//#                                         } while ((char) rcv != '\r');
+//#                                         // If '\r' received, process command	
+//#                                         if (Settings.getInstance().getSetting("generalDebug", false)) {
+//#                                             System.out.println("Th*ATsender, CSD command received: " + comCSD + "***");
+//#                                         }
+//# 
+//#                                         /*
+//#                                          * Command processing
+//#                                          */
+//# 						    			//** Messages accepted with or without authentication **//	
+//#                                          if (comCSD.startsWith("$")) {
+//#                                             CommandProcessor commandProcessor = CommandProcessor.getInstance();
+//#                                             try {
+//#                                                 if (commandProcessor.execute(comCSD.substring(1), true)) {
+//#                                                     dataOut.write((commandProcessor.message + "\r\n").getBytes());
+//#                                                 } else {
+//#                                                     dataOut.write(("NACK: " + commandProcessor.message + "\r\n").getBytes());
+//#                                                 }
+//#                                             } catch (IOException ioe) {
+//#                                                 if (Settings.getInstance().getSetting("generalDebug", false)) {
+//#                                                     System.out.println("Th*ATsender: IOException");
+//#                                                 }
+//# 
+//#                                             }
+//#                                         }
+//# 
+//#                                         if (Settings.getInstance().getSetting("display", false)) {
+//#                                             dataOut.write((InfoStato.getInstance().getRMCTrasp()).getBytes());
+//#                                             dataOut.write((InfoStato.getInstance().getGGATrasp()).getBytes());
+//#                                         }
+//# 
+//#                                     } catch (StringIndexOutOfBoundsException siobe) {
+//#                                         if (Settings.getInstance().getSetting("generalDebug", false)) {
+//#                                             System.out.println("Th*ATsender: CSD exception");
+//#                                         }
+//#                                         dataOut.write("Command ERROR\n\r".getBytes());
+//#                                     }
+//# 
+//#                                 } //while(true)
+//# 
+//#                             } catch (IOException ioe) {
+//#                                 if (Settings.getInstance().getSetting("generalDebug", false)) {
+//#                                     System.out.println("Th*ATsender: IOException");
+//#                                 }
+//#                             }
+//# 
+//#                             // At the end of stream use, set ATexec = false
+//#                             InfoStato.getInstance().setATexec(false);
+//# 
+//#                             // Indicates that CSD connection isn't in use yet, to close UpdateSCD
+//#                             InfoStato.getInstance().setCSDconnect(false);
+//# 
+//#                             // Authentication non più valida
+//#                             auth = false;
+//# 
+//#                         } //csdRead			
+//# 
+//#     
+//#endif
 }
 

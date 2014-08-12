@@ -15,7 +15,7 @@ public class DateParser {
 
     private Date date;
 
-    public DateParser(String YYMMDD, String HHMMSS) {
+    public DateParser(String DDMMYY, String HHMMSS) {
         long timeStamp = 0;
 
         int sYear;
@@ -26,9 +26,9 @@ public class DateParser {
         int sSecond;
 
         try {
-            sYear = Integer.parseInt(YYMMDD.substring(0, 2));
-            sMonth = Integer.parseInt(YYMMDD.substring(2, 4));
-            sDay = Integer.parseInt(YYMMDD.substring(4));
+            sDay = Integer.parseInt(DDMMYY.substring(0, 2));
+            sMonth = Integer.parseInt(DDMMYY.substring(2, 4));
+            sYear = Integer.parseInt(DDMMYY.substring(4));
             sHour = Integer.parseInt(HHMMSS.substring(0, 2));
             sMinute = Integer.parseInt(HHMMSS.substring(2, 4));
             sSecond = Integer.parseInt(HHMMSS.substring(4));
@@ -70,10 +70,10 @@ public class DateParser {
                 }
                 timeStamp += (sDay - 1) * 24L * 3600L + sHour * 3600L + sMinute * 60L + sSecond;
             } else {
-                System.err.println("Illegal date/time " + YYMMDD + " " + HHMMSS);
+                System.err.println("Illegal date/time " + DDMMYY + " " + HHMMSS);
             }
         } catch (NumberFormatException nfe) {
-            System.err.println("NumberFormatException " + YYMMDD + " " + HHMMSS);
+            System.err.println("NumberFormatException " + DDMMYY + " " + HHMMSS);
         }
         date = new Date(timeStamp * 1000L);
     }

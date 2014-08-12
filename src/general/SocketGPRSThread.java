@@ -22,6 +22,8 @@ public class SocketGPRSThread extends Thread implements GlobCost {
 
     public boolean terminate = false;
     private boolean sending = false;
+    
+    private Queue gpsQ;
 
     public boolean isSending() {
         return sending;
@@ -31,19 +33,51 @@ public class SocketGPRSThread extends Thread implements GlobCost {
         if (Settings.getInstance().getSetting("generalDebug", false)) {
             System.out.println("TT*SocketGPRStask: CREATED");
         }
+        gpsQ = new Queue(100, "gpsQ");
+    }
+    
+    public static SocketGPRSThread getInstance() {
+        return SocketGPRSThreadHolder.INSTANCE;
     }
 
-    boolean open() {
+    private static class SocketGPRSThreadHolder {
+
+        private static final SocketGPRSThread INSTANCE = new SocketGPRSThread();
+    }
+
+
+    class Publish {
+        public String topic;
+        public byte[] payload;
+        public boolean retain;
+        public int qos;
+    }
+    
+    public synchronized boolean put(String topic, int qos, boolean retain, byte[] payload) {
+        Publish publish = new Publish();
+        publish.topic = topic;
+        publish.payload = payload;
+        publish.retain = retain;
+        publish.qos = qos;
+        boolean putResult = gpsQ.put(publish);
+        if (Settings.getInstance().getSetting("gprsDebug", false)) {
+            System.out.println("gpsQ.size " + qSize());
+        }
+        return putResult;
+    }
+    
+    public synchronized int qSize() {
+        return gpsQ.size();
+    }
+    
+    public void open() {
         try {
-            SemAT.getInstance().getCoin(5);
-            InfoStato.getInstance().writeATCommand("at^smong\r");
-            InfoStato.getInstance().writeATCommand("at+cgatt=1\r");
-            SemAT.getInstance().putCoin();
+            ATManager.getInstance().executeCommand("at^smong\r");
+            ATManager.getInstance().executeCommand("at+cgatt=1\r");
         } catch (Exception e) {
         }
 
         if (!MQTTHandler.getInstance().isConnected()) {
-            SemAT.getInstance().getCoin(5);
             MQTTHandler.getInstance().init(
                     Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI()),
                     Settings.getInstance().getSetting("host", "tcp://localhost") + ":" + Settings.getInstance().getSetting("port", 1883),
@@ -64,41 +98,40 @@ public class SocketGPRSThread extends Thread implements GlobCost {
                     Settings.getInstance().getSetting("subscriptionQos", 1)
             );
             MQTTHandler.getInstance().connectToBroker();
-            SemAT.getInstance().putCoin();
         }
-        return MQTTHandler.getInstance().isConnected();
+        sending = MQTTHandler.getInstance().isConnected(); 
     }
 
-    void close() {
-        SemAT.getInstance().getCoin(5);
+    public void close() {
         MQTTHandler.getInstance().disconnect();
-        SemAT.getInstance().putCoin();
-
         InfoStato.getInstance().setEnableCSD(true);
-
-        SemAT.getInstance().getCoin(5);
-        InfoStato.getInstance().writeATCommand("at+cgatt=0\r");
-        SemAT.getInstance().putCoin();
+        ATManager.getInstance().executeCommand("at+cgatt=0\r");
+        sending = false;
     }
 
     public void run() {
-
         while (!terminate) {
-            String message = null;
+            Publish publish = null;
 
-            if (Settings.getInstance().getSetting("generalDebug", false)) {
+            if (Settings.getInstance().getSetting("gprsDebug", false)) {
                 System.out.println("SocketGPRS tracking " + Settings.getInstance().getSetting("tracking", false));
             }
             if (!sending) {
-                sending = open();
+                open();
             }
             if (sending) {
-                if (message == null) {
-                    message = (String) InfoStato.getInstance().gpsQ.get();
+                if (publish == null) {
+                    if (Settings.getInstance().getSetting("gprsDebug", false)) {
+                        System.out.println("gpsQ.size " + qSize());
+                    }
+                    publish = (Publish)gpsQ.get();
+                    if (Settings.getInstance().getSetting("gprsDebug", false)) {
+                        System.out.println("gpsQ.size " + qSize());
+                    }
                 }
-                if (message != null) {
-                    if (processMessage(message)) {
-                        message = null;
+                if (publish != null) {
+                    if (processMessage(publish)) {
+                        publish = null;
                     } else {
                         sending = false;
                         try {
@@ -119,43 +152,11 @@ public class SocketGPRSThread extends Thread implements GlobCost {
         close();
     }
 
-    boolean processMessage(String message) {
-        if (Settings.getInstance().getSetting("raw", true)) {
-            SemAT.getInstance().getCoin(5);
-            MQTTHandler.getInstance().publish(Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                    + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI())
-                    + "/raw",
-                    Settings.getInstance().getSetting("qos", 1),
-                    Settings.getInstance().getSetting("retain", true),
-                    message.getBytes());
-            SemAT.getInstance().putCoin();
+    boolean processMessage(Publish publish) {
+        if (Settings.getInstance().getSetting("gprsDebug", false)) {
+            System.out.println("processMessage: " + publish.topic);
         }
-
-        if (!MQTTHandler.getInstance().isConnected()) {
-            return false;
-        }
-
-        LocationManager.getInstance().setMinDistance(Settings.getInstance().getSetting("minDistance", 0));
-        LocationManager.getInstance().setMaxInterval(Settings.getInstance().getSetting("maxInterval", 0));
-        LocationManager.getInstance().setMinSpeed(Settings.getInstance().getSetting("minSpeed", 0));
-
-        if (LocationManager.getInstance().handleNMEAString(message)) {
-            String[] fields = StringSplitter.split(
-                    Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,battery"), ",");
-            String json = LocationManager.getInstance().getJSONString(fields);
-            if (json != null) {
-                SemAT.getInstance().getCoin(5);
-                MQTTHandler.getInstance().publish(Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                        + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI()),
-                        Settings.getInstance().getSetting("qos", 1),
-                        Settings.getInstance().getSetting("retain", true),
-                        json.getBytes());
-                SemAT.getInstance().putCoin();
-                if (!MQTTHandler.getInstance().isConnected()) {
-                    return false;
-                }
-            }
-        }
-        return true;
+        MQTTHandler.getInstance().publish(publish.topic, publish.qos, publish.retain, publish.payload);
+        return MQTTHandler.getInstance().isConnected();
     }
 }
