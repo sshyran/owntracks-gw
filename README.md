@@ -11,7 +11,7 @@ The [Choral Greenwich](http://www.choral.it/greenwich) is a Java based GPS- and 
 {
     "_type": "location",
     "alt": "160.0",
-    "batt": "E4.4V",
+    "batt": "12.2V",
     "cog": "0.0",
     "dist": "18903",
     "lat": "xx.xxxxxx",
