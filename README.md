@@ -22,8 +22,8 @@ The [Choral Greenwich](http://www.choral.it/greenwich) is a Java based GPS- and 
 }
 ```
 
-Features
---------
+Features of the OwnTracks Edition
+---------------------------------
 
 * Message payloads compatible with [OwnTracks' JSON](https://github.com/owntracks/owntracks/wiki/JSON) which means you can use the OwnTracks apps to display location data.
 * Location updates on a per/time and per/moved distance basis. For example, publish location after vehicle has moved 200 meters or at most 120 seconds, whichever comes first.
@@ -35,7 +35,8 @@ Features
 * [Over the Air upgrades](OTAP.md) (OTA)
 * MQTT Last Will and Testament (LWT) messages for monitoring
 * The [OwnTracks Live Map](https://github.com/owntracks/contrib/tree/master/osm-leaf) has support for the additional JSON elements provided by Greenwich.
-* [GPIO support](GPIO.md)
+* Configurable MQTT client-ID which defaults to the device's [IMEI](http://en.wikipedia.org/wiki/International_Mobile_Station_Equipment_Identity).
+* [GPIO states](GPIO.md) published over MQTT.
 
 Requirements
 ------------
