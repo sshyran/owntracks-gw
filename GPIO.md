@@ -8,7 +8,9 @@ Greenwich devices have up to five user-programmable [GPIO](http://en.wikipedia.o
 
 Each input has an allowed volate range von +- VIN (9-32V) with Low being recognized at `<0.5V` and High at `>3.0V`.
 
-The OwnTracks-Edition of the software surfaces the state (HIGH/LOW) of these pins into MQTT publishes by publishing a payload of `1` or `0` depending on the pin's state. The topic used for publishing is the general topic of the device with `/gpio/<pin>` appended to it:
+The OwnTracks-Edition of the software surfaces the state (HIGH/LOW) of these pins into MQTT publishes by publishing a payload of `0` or `1`, respectively, depending on the pin's state. Note, that the internal state is inverted compared to the external level; this is supposed to be typical for embedded devices. In other words, the published payload is `0` for HIGH and `1` for LOW.
+
+The topic used for publishing is the general topic of the device with `/gpio/<pin>` appended to it:
 
 ```
 owntracks/gw/GWCAR-jp/gpio/1 1
