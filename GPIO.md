@@ -6,9 +6,9 @@ This is the 14pin Molex connector seen from the back (i.e. plugged into the Gree
 
 ![Molex connector](assets/molex.png)
 
-* Pin S1-5 (GPIO1), light-blue cable
-* Pin S1-12 (GPIO3), grey cable
-* Pin S1-11 (GPIO7), green _ignition_ cable (normally connected to fuse)
+* `GPIO1`, Pin S1-5, light-blue cable
+* `GPIO3`, Pin S1-12, grey cable
+* `GPIO7`, Pin S1-11, green _ignition_ cable (normally connected to fuse)
 
 Each input has an allowed volate range von +- VIN (9-32V) with Low being recognized at `<0.5V` and High at `>3.0V`.
 
