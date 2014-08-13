@@ -16,10 +16,6 @@ package general;
  */
 public interface GlobCost {
 
-    /**
-     * Test environment true = test false = normal operation of the application
-     */
-    public static final boolean TESTenv = false;
     public static final boolean movsens = false;
     
     boolean debug = true;

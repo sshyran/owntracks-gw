@@ -104,28 +104,9 @@ public class ATManager implements GlobCost, ATCommandListener, ATCommandResponse
         /*
          * Analyze answer for polling on key GPIO
          */
-        if (event.indexOf("^SCPOL: 6") >= 0) {
-            int SCPOLvalue = Integer.parseInt(event.substring(event.indexOf(",") + 1, event.indexOf(",") + 2));
-            InfoStato.getInstance().setGPIOchiave(SCPOLvalue);
-            InfoStato.getInstance().setDigitalIN(SCPOLvalue, 0);
-        } //GPIO7
-
-        /*
-         * Analyze answer for polling on GPIO digital inputs
-         */
-        // digital input 1 (GPIO1)
-        if (event.indexOf("^SCPOL: 0") >= 0) {
-            int SCPOLvalue = Integer.parseInt(event.substring(event.indexOf(",") + 1, event.indexOf(",") + 2));
-            InfoStato.getInstance().setDigitalIN(SCPOLvalue, 1);
-            //Mailboxes.getInstance(0).write(msgALR1);
-        } //GPIO1
-
-        // digital input 2 (GPIO3)
-        if (event.indexOf("^SCPOL: 2") >= 0) {
-            int SCPOLvalue = Integer.parseInt(event.substring(event.indexOf(",") + 1, event.indexOf(",") + 2));
-            InfoStato.getInstance().setDigitalIN(SCPOLvalue, 2);
-            //Mailboxes.getInstance(0).write(msgALR2);
-        } //GPIO3
+        if (event.indexOf("^SCPOL: ") >= 0) {
+            GPIOInputManager.getInstance().processSCPOL(event);
+        }
 
         /* 
          * RING operations
@@ -238,47 +219,10 @@ public class ATManager implements GlobCost, ATCommandListener, ATCommandResponse
             InfoStato.getInstance().setIMEI(response.substring(response.indexOf("+CGSN\r\r\n") + "+CGSN\r\r\n".length(), response.indexOf("OK") - 4));
         } //IMEI
 
-        /*
-         * Answer to read of GPIO key
-         */
         if (response.indexOf("^SGIO") >= 0) {
-            //InfoStato.getInstance().setATexec(false);		// AT resource is free, no one AT command executing
-            int SGIOvalue = Integer.parseInt(response.substring(response.indexOf("^SGIO") + 7, response.indexOf("^SGIO") + 8));
-
-            /*
-             * GPIO key
-             */
-            // GPIO n.7
-            if (InfoStato.getInstance().getGPIOnumberTEST() == 7) {
-
-                // if SGIOvalue = "0" -> key active -> set value
-                if (SGIOvalue == 0) {
-                    InfoStato.getInstance().setGPIOchiave(0);
-                    InfoStato.getInstance().setDigitalIN(0, 0);
-                    InfoStato.getInstance().setTipoRisveglio(risveglioChiave);
-                    //System.out.println("ATListenerStd: power up due to key activation!!");
-                } // if SGIOvalue = "1" -> key not active -> no set value -> set '-1'
-                else {
-                    InfoStato.getInstance().setGPIOchiave(1);
-                    InfoStato.getInstance().setDigitalIN(1, 0);
-                }
-
-            } //GPIO7
-
-            /*
-             * Digital input
-             */
-            // Input 1 = GPIO n.1
-            if (InfoStato.getInstance().getGPIOnumberTEST() == 1) {
-                InfoStato.getInstance().setDigitalIN(SGIOvalue, 1);
-            } //Input 1
-            // Input 2 = GPIO n.3
-            else if (InfoStato.getInstance().getGPIOnumberTEST() == 3) {
-                InfoStato.getInstance().setDigitalIN(SGIOvalue, 2);
-            } //Input 2
-
-        } //^SGIO
-
+            GPIOInputManager.getInstance().processSGIO(response);
+        }
+ 
         /* 
          * Operation on ^SBV (battery control)
          * example: ^SBV: 4400 
