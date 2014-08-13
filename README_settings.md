@@ -69,6 +69,13 @@ login expires after "loginTimeout" (settings) seconds
 | apnUser     |        |          | reboot   | GPRS access point user id  |
 | apnPassword |        |          | reboot   | GPRS access point password |
 
+### Device
+
+| Key         | Values   | Default  | Validity | Description                |
+|:------------|:--------:|:--------:|---------:|:---------------------------|
+| sleep       | 0...     | 21600(6h)| reboot   | sleep after device off     |
+| motion      | 0,1..255 | 4        | reboot   | sensivity for motion sensor, 0=off, 1 highest sensitivity|
+
 ### MQTT
 
 | Key  | Values | Default | Validity | Description |
@@ -104,15 +111,11 @@ login expires after "loginTimeout" (settings) seconds
 
 | Key  | Values | Default | Validity | Description |
 |:-----|:------:|:-------:|---------:|:------------|
-| tracking         | 0/1   | 0        | immediate | tracking on/off |
-| output           | USB/IP | IP      | immediate | destination of tracking output |
-| format           | NMEA/USR | U     | immediate | format of tracking output |
-| header           |       | $        | immediate | header in CSV tracking output |
-| minSpeed         | 0-... | 0        | immediate | minimum speed for next location publish in km/h |
-| minDistance      | 0-... | 0        | immediate | distance before next location is published in meters |
-| maxInterval      | 0-... | 0        | immediate | maximum time before before next location is published in seconds |
-| fields           |       | course,speed,altitude,distance,battery | immediate |
-| comma separated list of optional fields in publish message |
+| minSpeed         | 0-... | 0        | immediate | minimum speed in km/h to switch to move move|
+| minDistance      | 0-... | 0        | immediate | distance sincde last publis in meters to switch to move mode|
+| maxInterval      | 0-... | 0        | immediate | maximum time before before next publish in move mode in seconds |
+| minInterval      | 0-... | 0        | immediate | minimum time before before publish in stationary mode in seconds |
+| fields           |       | course,speed,altitude,distance,battery | immediate | comma separated list of optional fields in publish message |
 
 locations are published when tracking is on and maxInterval has passed or minSpeed or minDistance are exceeded
 
