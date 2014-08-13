@@ -2,9 +2,11 @@
 
 Greenwich devices have up to five user-programmable [GPIO](http://en.wikipedia.org/wiki/General-purpose_input/output) pins, depending on the model, but at least three are available on the entry-level "Java" version:
 
-* Pin S1-5 (GPIO1)
-* Pin S1-12 (GPIO3)
-* Pin S1-11 (Ignition)
+* Pin S1-5 (GPIO1), light-blue cable
+* Pin S1-12 (GPIO3), grey cable
+* Pin S1-11 (Ignition), green cable (normally connected to fuse)
+
+Each input has an allowed volate range von +- VIN (9-32V) with Low being recognized at `<0.5V` and High at `>3.0V`.
 
 The OwnTracks-Edition of the software surfaces the state (HIGH/LOW) of these pins into MQTT publishes by publishing a payload of `1` or `0` depending on the pin's state. The topic used for publishing is the general topic of the device with `/gpio/<pin>` appended to it:
 
