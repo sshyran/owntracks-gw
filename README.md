@@ -37,6 +37,14 @@ Features of the OwnTracks Edition
 * The [OwnTracks Live Map](https://github.com/owntracks/contrib/tree/master/osm-leaf) has support for the additional JSON elements provided by Greenwich.
 * Configurable MQTT client-ID which defaults to the device's [IMEI](http://en.wikipedia.org/wiki/International_Mobile_Station_Equipment_Identity).
 * [GPIO states](GPIO.md) published over MQTT.
+* Power-up handling:
+  - when ignition is switched on
+  - when movement with the builtin accelerometer is detected
+  - alarm clock
+* Power-down handling
+  - when ignition is switched off
+  - movement sensor detects the device is stationary
+  - alarm clock
 
 Requirements
 ------------
