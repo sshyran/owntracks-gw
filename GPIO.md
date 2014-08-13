@@ -2,6 +2,10 @@
 
 Greenwich devices have up to five user-programmable [GPIO](http://en.wikipedia.org/wiki/General-purpose_input/output) pins, depending on the model, but at least three are available on the entry-level "Java" version:
 
+This is the 14pin Molex connector seen from the back (i.e. plugged into the Greenwich)
+
+![Molex connector](assets/molex.png)
+
 * Pin S1-5 (GPIO1), light-blue cable
 * Pin S1-12 (GPIO3), grey cable
 * Pin S1-11 (Ignition), green cable (normally connected to fuse)
