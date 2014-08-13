@@ -111,11 +111,9 @@ public class SocketGPRSThread extends Thread implements GlobCost {
 
     public void run() {
         while (!terminate) {
+            AppMain.getInstance().watchDogTask.GPRSRunning = true;
             Publish publish = null;
 
-            if (Settings.getInstance().getSetting("gprsDebug", false)) {
-                System.out.println("SocketGPRS tracking " + Settings.getInstance().getSetting("tracking", false));
-            }
             if (!sending) {
                 open();
             }
@@ -146,7 +144,6 @@ public class SocketGPRSThread extends Thread implements GlobCost {
                     }
                 }
             }
-            AppMain.getInstance().watchDogTask.GPRSRunning = true;
             Thread.yield();
         }
         close();

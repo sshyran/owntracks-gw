@@ -20,7 +20,7 @@ import javax.microedition.io.*;
  * @author matteoBo
  *
  */
-public class CommGPSThread extends Thread implements GlobCost {
+public class CommGPSThread extends Thread {
 
     private static final int[] PWRON = {181, 98, 6, 17, 2, 0, 0, 0, 25, 129, 181, 98, 6, 9, 13, 0, 0, 0, 0, 0, 255, 255, 0, 0, 0, 0, 0, 0, 7, 33, 175};
     private static final int[] PWRLOW = {181, 98, 6, 17, 2, 0, 0, 1, 26, 130, 181, 98, 6, 9, 13, 0, 0, 0, 0, 0, 255, 255, 0, 0, 0, 0, 0, 0, 7, 33, 175};
@@ -52,7 +52,7 @@ public class CommGPSThread extends Thread implements GlobCost {
         OutputStream os;
 
         try {
-            connGPS = (CommConnection) Connector.open(COMgps);
+            connGPS = (CommConnection) Connector.open("comm:com1;baudrate=9600;bitsperchar=8;blocking=on");
             is = connGPS.openInputStream();
             os = connGPS.openOutputStream();
         } catch (IOException e) {
@@ -65,6 +65,8 @@ public class CommGPSThread extends Thread implements GlobCost {
             init_GPS(os);
 
             while (!terminate) {
+                AppMain.getInstance().watchDogTask.gpsRunning = true;
+
                 if (is.available() > 0) {
                     int c;
                     String line = "";
@@ -88,8 +90,6 @@ public class CommGPSThread extends Thread implements GlobCost {
                         // ignore
                     }
                 }
-                AppMain.getInstance().watchDogTask.gpsRunning = true;
-
                 try {
                     Thread.sleep(loopSleep);
                 } catch (InterruptedException ie) {

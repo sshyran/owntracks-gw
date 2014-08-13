@@ -2,9 +2,9 @@ package general;
 
 public class GPIOInputManager {
 
-    public boolean gpio1;
-    public boolean gpio3;
-    public boolean gpio7;
+    public int gpio1;
+    public int gpio3;
+    public int gpio7;
 
     public GPIOInputManager() {
         /*
@@ -80,7 +80,7 @@ public class GPIOInputManager {
                     value = -1;
                 }
 
-                process(ioID, (value == 1));
+                process(ioID, value);
             }
         }
     }
@@ -131,11 +131,11 @@ public class GPIOInputManager {
             } else {
                 ioID = -1;
             }            
-            process(ioID, (value == 1));
+            process(ioID, value);
         }
     }
     
-    private void process(int ioID, boolean value) {
+    private void process(int ioID, int value) {
         switch (ioID) {
             case 0:
                 gpio1 = value;
@@ -144,7 +144,7 @@ public class GPIOInputManager {
                     + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI())
                     + "/gpio/1",
                     Settings.getInstance().getSetting("qos", 1),
-                    Settings.getInstance().getSetting("retain", false),
+                    Settings.getInstance().getSetting("retain", true),
                     ("" + value).getBytes()
                 );
                 break;
@@ -155,7 +155,7 @@ public class GPIOInputManager {
                     + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI())
                     + "/gpio/3",
                     Settings.getInstance().getSetting("qos", 1),
-                    Settings.getInstance().getSetting("retain", false),
+                    Settings.getInstance().getSetting("retain", true),
                     ("" + value).getBytes()
                 );
                 break;
@@ -166,7 +166,7 @@ public class GPIOInputManager {
                     + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI())
                     + "/gpio/7",
                     Settings.getInstance().getSetting("qos", 1),
-                    Settings.getInstance().getSetting("retain", false),
+                    Settings.getInstance().getSetting("retain", true),
                     ("" + value).getBytes()
                 );
                 break;

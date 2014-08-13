@@ -24,32 +24,28 @@ public class InfoStato implements GlobCost {
      */
     private static InfoMicro infoGW = null;
 
-    private boolean ATexec = false;		// resource is free at startup
     private int numSMS, maxSMS;
     private int codSMS = -1;
     //private boolean validSMS = false;
     private String numTelSMS = null;
-    private String opMode = null;
     private String validOP = "no rete";
     private int GPIOvalue;
     private int digInput0 = 0;
     private int digInput1 = 0;
     private int digInput2 = 0;
     private int digInput3 = 0;
-    private boolean cala = false;
     private boolean CSDWatchDog = false;
     private boolean attivazioneSensore = false;
     private boolean disattivazioneSensore = false;
     private boolean attivazionePolling = false;
     private String STATOexecApp;
-    private String tipoRisveglio;
     private boolean appSTANDBY = false;
     private boolean enableCSD = false;
     private boolean CSDconnect = false;
     private boolean CSDattivo = false;
     private boolean trackingInCorso = false;
     private boolean SMSsent = false;
-    private String numSat, rssiCSQ;
+    private String numSat;
     private String imei;
     private String value1, value2, value3, value4, value5, value6, value7;
     private String temp;
@@ -433,26 +429,6 @@ public class InfoStato implements GlobCost {
     }
 
     /**
-     * To set busy the AT resource
-     *
-     * @param	newValue	'true' if busy, 'false' if free
-     * @return	'OK'
-     */
-    public synchronized String setATexec(boolean newValue) {
-        ATexec = newValue;
-        return "OK";
-    }
-
-    /**
-     * To verify if AT resource is busy
-     *
-     * @return	'true' if busy, 'false' otherwise
-     */
-    public synchronized boolean getATexec() {
-        return ATexec;
-    }
-
-    /**
      * To get number of SMS in memory
      *
      * @return	total number of SMS in memory
@@ -537,24 +513,6 @@ public class InfoStato implements GlobCost {
     }
 
     /**
-     * To set GSM coverage indication
-     *
-     * @param	value	GSM coverage indication
-     */
-    public synchronized void setCSQ(String value) {
-        rssiCSQ = value;
-    }
-
-    /**
-     * To get GSM coverage indication
-     *
-     * @return	GSM coverage indication
-     */
-    public synchronized String getCSQ() {
-        return rssiCSQ;
-    }
-
-    /**
      * To set module IMEI
      *
      * @param	value	IMEI
@@ -579,31 +537,6 @@ public class InfoStato implements GlobCost {
      */
     public synchronized void setNumSat(String value) {
         numSat = value;
-    }
-
-    /**
-     * To set module operating mode, based on input parameter, to control
-     * ^SYSSTART
-     *
-     * @param	mode	operating mode, may be 'NORMAL' or 'AIRPLANE'
-     * @return	'NORMAL' or 'AIRPLANE'
-     */
-    public synchronized String setOpMode(String mode) {
-        if (mode.equalsIgnoreCase("NORMAL")) {
-            opMode = "NORMAL";
-        } else if (mode.equalsIgnoreCase("AIRPLANE")) {
-            opMode = "AIRPLANE";
-        } //if
-        return opMode;
-    }
-
-    /**
-     * To get module operating mode
-     *
-     * @return	'NORMAL' or 'AIRPLANE'
-     */
-    public synchronized String getOpMode() {
-        return opMode;
     }
 
     /**
@@ -871,24 +804,6 @@ public class InfoStato implements GlobCost {
     }
 
     /**
-     * To set awakening	type
-     *
-     * @param	value	awakening type
-     */
-    public synchronized void setTipoRisveglio(String value) {
-        tipoRisveglio = value;
-    }
-
-    /**
-     * To get awakening type
-     *
-     * @return	awakening type
-     */
-    public synchronized String getTipoRisveglio() {
-        return tipoRisveglio;
-    }
-
-    /**
      * To set if application is in STAND-BY
      *
      * @param	value	'true' if application is in STAND-BY, 'false' otherwise
@@ -1067,24 +982,6 @@ public class InfoStato implements GlobCost {
      */
     public synchronized void setTRKstate(boolean value) {
         trackingInCorso = value;
-    }
-
-    /**
-     * To get indication about normal startup after +CALA
-     *
-     * @return	true if reboot needed
-     */
-    public synchronized boolean getCALA() {
-        return cala;
-    }
-
-    /**
-     * To set indication about normal startup after +CALA
-     *
-     * @return	true if reboot needed
-     */
-    public synchronized void setCALA(boolean x) {
-        cala = x;
     }
 
     /**
@@ -1391,21 +1288,4 @@ public class InfoStato implements GlobCost {
         }
         return release;
     }
-
-    /*
-    More or less a Macro used 100s of times throughout the code
-    
-    ! Note it is NOT synchronized, otherwise it would block forever !
-    */
-    public void writeATCommand(String command) {
-        setATexec(true);
-        Mailboxes.getInstance(2).write(command);
-        while (getATexec()) {
-            try {
-                Thread.sleep(whileSleep);
-            } catch (InterruptedException ie) {
-                ie.printStackTrace();
-            }
-        }
-    }
-} //InfoStato
+}

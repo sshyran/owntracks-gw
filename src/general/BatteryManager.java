@@ -43,6 +43,10 @@ public class BatteryManager {
         private static final BatteryManager INSTANCE = new BatteryManager();
     }
     
+    public boolean isBatteryVoltageLow() {
+        return batteryVoltage < LowVoltageThreshold;
+    }
+    
     public double getBatteryVoltage() {
         return batteryVoltage;
     }

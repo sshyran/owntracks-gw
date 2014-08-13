@@ -12,7 +12,7 @@ import java.io.IOException;
  */
 public class LocationManager {
 
-    final private int fixTimeout = 120;
+    final private int fixTimeout = 600;
     private Timer timer = null;
     private TimerTask timerTask = null;
     private boolean fix;
@@ -106,6 +106,10 @@ public class LocationManager {
     public boolean isFix() {
         return fix;
     }
+    
+    public boolean isTimeout() {
+        return timeout;
+    }
 
     public Date dateLastFix() {
         if (currentLocation != null) {
@@ -157,7 +161,7 @@ public class LocationManager {
                     System.out.println("LocationManager tempDate: " + tempDate);
                 }
 
-                if (fix || timeout) {
+                if (fix) {
                     if (!components[2].equalsIgnoreCase("A")) {
                         fix = false;
                         setLED(false);
@@ -169,7 +173,7 @@ public class LocationManager {
                         fix = true;
                         setLED(true);
                         stopTimer();
-                    }
+                    } 
                 }
 
                 if (components[3].length() > 2) {
@@ -445,9 +449,9 @@ public class LocationManager {
             human = s.substring(4, 19) + "\r\n";
             human = human.concat("Latitude " + location.latitude + "\r\n");
             human = human.concat("Longitude " + location.longitude + "\r\n");
-            human = human.concat("Altitude " + location.altitude + "m\r\n");
-            human = human.concat("Speed " + location.speed + "kph\r\n");
-            human = human.concat("Course " + location.course + "\r\n");
+            human = human.concat("Altitude " + (long)location.altitude + "m\r\n");
+            human = human.concat("Speed " + (long)location.speed + "kph\r\n");
+            human = human.concat("Course " + (long)location.course + "\r\n");
             human = human.concat("Distance " + (long) travel + "m\r\n");
             human = human.concat("Battery " + BatteryManager.getInstance().getExternalVoltageString() + "\r\n");
 

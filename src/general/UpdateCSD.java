@@ -91,7 +91,7 @@ public class UpdateCSD extends Thread implements GlobCost {
                 if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*UpdateCSD: I'm responding to the CSD call");
                 }
-                InfoStato.getInstance().setATexec(true);
+                //InfoStato.getInstance().setATexec(true);
                 Mailboxes.getInstance(2).write("ATA\r");
 
                 // Wait until CSD connection is established
@@ -111,7 +111,7 @@ public class UpdateCSD extends Thread implements GlobCost {
                 CSDTimeoutTask.cancel();
 
                 // Until only streams are used, set ATexec = true
-                InfoStato.getInstance().setATexec(true);
+                // InfoStato.getInstance().setATexec(true);
 
                 // With CSD connection, start input and output streams
                 if (Settings.getInstance().getSetting("generalDebug", false)) {

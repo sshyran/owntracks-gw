@@ -15,12 +15,6 @@ package general;
  *
  */
 public interface GlobCost {
-
-    public static final boolean movsens = false;
-    
-    boolean debug = true;
-	//remember to modify empty string "defaultGPS" and "posusr" for tests
-
     public static final String NMEA = "NMEA";
     public static final String CHORAL = "CHORAL";
 
@@ -90,22 +84,6 @@ public interface GlobCost {
     public static final String exitTrack = "EsciDalTracking";
     public static final String trackCodice = "trackCode";
     public static final String trackUrcSim = "trackUrcSim";
-    /**
-     * Keyword to send a valid command by SMS
-     */
-    //public static final String keySMS = "gps";
-    //public static final String keySMS1 = "reboot";
-    //public static final String keySMS2 = "state";
-
-    /**
-     * Settings for serial interface gps0
-     */
-    public static final String COMgps = "comm:com1;baudrate=9600;bitsperchar=8;blocking=on";
-
-    /**
-     * Settings for serial interface ASC0
-     */
-    public static final String ASC0 = "comm:com0;baudrate=115200;bitsperchar=8;blocking=on";
 
     /* Timeout settings */
     // Timeout types
@@ -119,11 +97,6 @@ public interface GlobCost {
      * Inhibition KEY duration after GPRS request (in seconds)
      */
     public static final int durataInibCHIAVE = 10;
-
-    /**
-     * Range for battery level control (in seconds)
-     */
-    public static final int batteryTOvalue = 60;
 
     /**
      * Range for network registration control (in seconds)

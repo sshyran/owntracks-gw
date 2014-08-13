@@ -241,7 +241,7 @@ public class CommandProcessor implements GlobCost {
     }
 
     boolean stateCommand(String[] parameters) {
-        message = "CSQ:" + InfoStato.getInstance().getCSQ() + "," + InfoStato.getInstance().getNumSat();
+        message = "NUMSAT:" + InfoStato.getInstance().getNumSat();
         message = message.concat(";BEARER:" + Bearer.getInstance().getBearerState());
         message = message.concat(";CREG:" + InfoStato.getInstance().getCREG());
         message = message.concat(";CGREG:" + InfoStato.getInstance().getCGREG());

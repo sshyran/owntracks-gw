@@ -1,5 +1,5 @@
 /*	
- * Class 	Seriale
+ * Class 	CommASC0Thread
  * 
  * This software is developed for Choral devices with Java.
  * Copyright Choral srl. All Rights reserved. 
@@ -18,16 +18,26 @@ import java.io.OutputStream;
 import javax.microedition.io.CommConnection;
 import javax.microedition.io.Connector;
 
-public class Seriale extends Thread implements GlobCost {
+public class CommASC0Thread extends Thread {
     OutputStream serialOut;
     InputStream serialIn;
 
-    public Seriale() {
+    private CommASC0Thread() {
     }
+
+    public static CommASC0Thread getInstance() {
+        return CommASC0ThreadHolder.INSTANCE;
+    }
+
+    private static class CommASC0ThreadHolder {
+
+        private static final CommASC0Thread INSTANCE = new CommASC0Thread();
+    }
+
 
     public void run() {
         try {
-            CommConnection connASC0 = (CommConnection) Connector.open(ASC0);
+            CommConnection connASC0 = (CommConnection) Connector.open("comm:com0;baudrate=115200;bitsperchar=8;blocking=on");
             serialIn = connASC0.openInputStream();
             serialOut = connASC0.openOutputStream();
         } catch (IOException ie) {

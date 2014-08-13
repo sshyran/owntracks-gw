@@ -12,7 +12,7 @@ import choral.io.MovListener;
 import com.cinterion.io.BearerControl;
 import java.util.*;
 import javax.microedition.midlet.*;
-import javax.microedition.rms.*;
+import java.io.IOException;
 
 /**
  * Main application class.
@@ -24,19 +24,20 @@ import javax.microedition.rms.*;
  */
 public class AppMain extends MIDlet implements GlobCost, MovListener {
 
-    /*
-     * local variables
-     */
     private String text;
     private String msgRicevuto = "";
-    private boolean GOTOstagePwDownSTANDBY = false;
-    private boolean elabBATT, elabPWD = false;
-    private boolean PowDown = false;
     private boolean restart = false;
     int timeToOff = 0;
 
     MovSens movSens;
     boolean moved = false;
+
+    public boolean airplaneMode = false;
+
+    final public int ignitionWakeup = 1;
+    final public int motionWakeup = 2;
+    final public int alarmWakeup = 3;
+    public int wakeupMode = motionWakeup;
 
     /**
      * <BR> Thread for update configuration parameters through CSD call.
@@ -46,14 +47,6 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
      * <BR> Thread for (received) SMS management.
      */
     ProcessSMSThread processSMSThread;
-    /**
-     * <BR> Thread for serial (ASC0) management.
-     */
-    Seriale th9;
-    /**
-     * <BR> Thread for UDP socket management.
-     */
-    //AccelerometerTask	th12;
 
     /*
      * file and recordstore
@@ -93,9 +86,6 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
         return AppMain.appMain;
     }
 
-    /*
-     * constructors 
-     */
     public AppMain() {
 
         CheckUpgrade fw = new CheckUpgrade("");
@@ -117,11 +107,10 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
         infoS = InfoStato.getInstance();
         mailboxes = Mailboxes.getInstance();
 
-        CommGPSThread commGPStrasparent = CommGPSThread.getInstance();
+        CommGPSThread.getInstance();
         processSMSThread = new ProcessSMSThread();
-        th9 = new Seriale();
-        SocketGPRSThread socketGPRSThread = SocketGPRSThread.getInstance();
-        //th12 = new AccelerometerTask();
+        CommASC0Thread.getInstance();
+        SocketGPRSThread.getInstance();
 
         BearerControl.addListener(Bearer.getInstance());
     }
@@ -175,22 +164,8 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
      */
     protected void startApp() throws MIDletStateChangeException {
         AppMain.appMain = this;
+
         try {
-
-            /* 
-             * [1] INITIALIZATION AND START OF THREADS
-             * 
-             */
-            // Set threads priority (default value=5, min=1, max=10)
-            CommGPSThread.getInstance().setPriority(5);
-            processSMSThread.setPriority(5);
-            th9.setPriority(5);
-            SocketGPRSThread.getInstance().setPriority(5);
-
-            /*
-             * [2] RECOVER SSYSTEM SETTINGS FROM CONFIGURATION FILE
-             * 
-             */
             if (Settings.getInstance().getSetting("mainDebug", false)) {
                 System.out.println("AppMain: Recover system settings in progress...");
             }
@@ -198,129 +173,44 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
             if (Settings.getInstance().getSetting("mainDebug", false)) {
                 System.out.println("AppMain: Last closing of application: " + closeMode);
             }
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: Last valid string: "
-                        + Settings.getInstance().getSetting("lastGPSValid", ""));
-            }
             Settings.getInstance().setSetting("closeMode", closeAppResetHW);
 
-            /*
-             * [3] DETERMINATION OF THE STATE WITH WHICH START THE APPLICATION
-             * 
-             */
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("GPS insensibility: " + Settings.getInstance().getSetting("minDistance", 0));
-                System.out.println("AppMain: Last CloseMode: " + closeMode);
-                System.out.print("AppMain: Determination of application state...");
-            }
-
-            /*
-             * By default it is supposed that the awakening with '^SYSTART' is due
-             * to the motion sensor, then if I verify that the key is activated
-             * then it means that it was due to the key
-             */
-            InfoStato.getInstance().setOpMode("NORMAL");
-            InfoStato.getInstance().setTipoRisveglio(risveglioMovimento);
-
-            // First execution after leaving the factory
             if (closeMode.equalsIgnoreCase(closeAppFactory)) {
                 InfoStato.getInstance().setSTATOexecApp(execFIRST);
-            } // Reboot after AIRPLANE MODE
-            else if (closeMode.equalsIgnoreCase(closeAIR)) {
+            } else if (closeMode.equalsIgnoreCase(closeAIR)) {
                 InfoStato.getInstance().setSTATOexecApp(execNORMALE);
-                // Set AIRPLANE MODE to deactivate radio parts of the module 
-                InfoStato.getInstance().setOpMode("AIRPLANE");
-                InfoStato.getInstance().setTipoRisveglio(risveglioCala);
-            } // Normal OK
-            else if (closeMode.equalsIgnoreCase(closeAppNormaleOK)) {
+                airplaneMode = true;
+                wakeupMode = alarmWakeup;
+            } else if (closeMode.equalsIgnoreCase(closeAppNormaleOK)) {
                 InfoStato.getInstance().setSTATOexecApp(execNORMALE);
-            } // Normal Timeout
-            else if (closeMode.equalsIgnoreCase(closeAppNormaleTimeout)) {
+            } else if (closeMode.equalsIgnoreCase(closeAppNormaleTimeout)) {
                 InfoStato.getInstance().setSTATOexecApp(execNORMALE);
-            } // Key deactivation FIRST
-            else if (closeMode.equalsIgnoreCase(closeAppDisattivChiaveFIRST)) {
+            } else if (closeMode.equalsIgnoreCase(closeAppDisattivChiaveFIRST)) {
                 InfoStato.getInstance().setSTATOexecApp(execNORMALE);
-            } // Key deactivation OK
-            else if (closeMode.equalsIgnoreCase(closeAppDisattivChiaveOK)) {
+            } else if (closeMode.equalsIgnoreCase(closeAppDisattivChiaveOK)) {
                 InfoStato.getInstance().setSTATOexecApp(execNORMALE);
-            } // Key deactivation Timeout
-            else if (closeMode.equalsIgnoreCase(closeAppDisattivChiaveTimeout)) {
+            } else if (closeMode.equalsIgnoreCase(closeAppDisattivChiaveTimeout)) {
                 InfoStato.getInstance().setSTATOexecApp(execNORMALE);
-            } // Motion sensor OK
-            else if (closeMode.equalsIgnoreCase(closeAppMovimentoOK)) {
+            } else if (closeMode.equalsIgnoreCase(closeAppMovimentoOK)) {
                 InfoStato.getInstance().setSTATOexecApp(execNORMALE);
-            } // Post Reset
-            else if (closeMode.equalsIgnoreCase(closeAppPostReset)) {
+            } else if (closeMode.equalsIgnoreCase(closeAppPostReset)) {
                 InfoStato.getInstance().setSTATOexecApp(execNORMALE);
-            } // Low battery
-            else if (closeMode.equalsIgnoreCase(closeAppBatteriaScarica)) {
+            } else if (closeMode.equalsIgnoreCase(closeAppBatteriaScarica)) {
                 InfoStato.getInstance().setSTATOexecApp(execNORMALE);
-            } // Hardware Reset
-            else if (closeMode.equalsIgnoreCase(closeAppResetHW)) {
+            } else if (closeMode.equalsIgnoreCase(closeAppResetHW)) {
                 InfoStato.getInstance().setSTATOexecApp(execPOSTRESET);
-            } // Closure due to low battery
-            else if (closeMode.equalsIgnoreCase(closeAppBatteriaScarica)) {
+            } else if (closeMode.equalsIgnoreCase(closeAppBatteriaScarica)) {
                 InfoStato.getInstance().setSTATOexecApp(execPOSTRESET);
             } else {
                 new LogError("AppMain: ERROR, I can not determine the status of execution of the application!");
             }
 
             if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println(InfoStato.getInstance().getSTATOexecApp());
+                System.out.println("AppMain: STATOexecApp is " + InfoStato.getInstance().getSTATOexecApp());
             }
 
-            /*
-             *	SET SIM PIN
-             */
             ATManager.getInstance().executeCommand("at+cpin=5555\r");
 
-//#ifdef RECORDSTORE
-//#                 /*
-//#                  * [5] RECOVER DATA FROM FLASH
-//#                  * 
-//#                  */
-//#                 try {
-//#                     // Open RecordStore
-//#                     RecordStore rs = RecordStore.openRecordStore(recordStoreName, true);
-//# 
-//#                     /*
-//#                      * Record recovey:
-//#                      * 1) Last GPRMC valid string
-//#                      * 2) <empty> ...
-//#                      */
-//#                     byte b[] = rs.getRecord(1);
-//#                     String str = new String(b, 0, b.length);
-//#                     //InfoStato.getInstance().setInfoFileString(LastGPRMCValid, str);
-//#                     if (Settings.getInstance().getSetting("mainDebug", false)) {
-//#                         System.out.println("RecordStore, record n.1: " + str);
-//#                     }
-//# 
-//#                     // Chiusura RecordStore
-//#                     rs.closeRecordStore();
-//# 
-//#                 } catch (RecordStoreNotOpenException rsnoe) {
-//#                     if (Settings.getInstance().getSetting("mainDebug", false)) {
-//#                         System.out.println("FlashRecordStore: RecordStoreNotOpenException");
-//#                     }
-//#                 } catch (RecordStoreFullException rsfe) {
-//#                     if (Settings.getInstance().getSetting("mainDebug", false)) {
-//#                         System.out.println("FlashRecordStore: RecordStoreFullException");
-//#                     }
-//#                 } catch (RecordStoreException rse) {
-//#                     if (Settings.getInstance().getSetting("mainDebug", false)) {
-//#                         System.out.println("FlashRecordStore: RecordStoreException");
-//#                     }
-//#                 } catch (IllegalArgumentException e) {
-//#                     if (Settings.getInstance().getSetting("mainDebug", false)) {
-//#                         System.out.println("FlashRecordStore: IllegalArgumentException");
-//#                     }
-//#                 }
-//#endif
-                /*
-             * [6a] SET AUTOSTART ONLY IF APPLICATION IS IN 
-             * 	    STATE 'execFIRST' OR 'execPOSTRESET'
-             * 
-             */
             if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execFIRST)
                     || InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execPOSTRESET)) {
 
@@ -339,23 +229,14 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
 
                 InfoStato.getInstance().setSTATOexecApp(execNORMALE);
 
-            } //AUTOSTART
+            }
 
-            // Set wake up for ALIVE
             ATManager.getInstance().executeCommand("ati\r");
             ATManager.getInstance().executeCommand("at+cclk=\"02/01/01,00:00:00\"\r");
             ATManager.getInstance().executeCommand("at+cala=\"02/01/01,06:00:00\"\r");
 
-            /*
-             * [6b] SET AT^SBC TO ADJUST APPLICATION CONSUMPTION
-             * 
-             */
             ATManager.getInstance().executeCommand("AT^SBC=5000\r");
 
-            /*
-             * [6c] SET AT^SJNET FOR GPRS CONNECTION (ALWAYS)
-             * 
-             */
             ATManager.getInstance().executeCommand("at^sjnet="
                     + "\"" + GPRSConnectOptions.getConnectOptions().getBearerType() + "\","
                     + "\"" + GPRSConnectOptions.getConnectOptions().getAPN() + "\","
@@ -364,61 +245,33 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
                     + "\"\"," // DNS
                     + "0\r"); // TIMEOUT
 
-            /*
-             * [6d] SET AT+CGSN TO GET MODULE IMEI
-             *
-             */
             ATManager.getInstance().executeCommand("AT+CGSN\r");
             ATManager.getInstance().executeCommand("AT^SCKS=1\r");
+
+            movSens = new MovSens();
+            movSens.addMovListener(this);
             
+            if (Settings.getInstance().getSetting("motion", 4) > 0) {
+                movSens.setMovSens(Settings.getInstance().getSetting("motion", 4));
+            }
+
             BatteryManager.getInstance();
             GPIOInputManager.getInstance();
 
+            if (GPIOInputManager.getInstance().gpio7 == 0) {
+                wakeupMode = ignitionWakeup;
+            }
 
-            /*
-             * At this point I know if device was started
-             * due to the motion sensor, the key or + CALA 
-             */
-            if (InfoStato.getInstance().getTipoRisveglio().equalsIgnoreCase(risveglioMovimento)) {
-                /*
-                 * If awakening due to motion sensor
-                 * go to state 'execMOVIMENTO'
-                 */
-                if (Settings.getInstance().getSetting("mainDebug", false)) {
-                    System.out.println("execMOVIMENTO");
-                }
-                InfoStato.getInstance().setSTATOexecApp(execMOVIMENTO);
-            } //risveglioMovimento
+            if (Settings.getInstance().getSetting("mainDebug", false)) {
+                System.out.println("AppMain: wakeupMode is " + wakeupMode);
+            }
 
-            /*
-             * [9] DISABLING MOTION SENSOR
-             *
-             */
-            InfoStato.getInstance().setDisattivaSensore(true);
+            movSens.movSensOff();
 
             watchDogTask = new WatchDogTask();
 
-            /* 
-             * [10] RADIO PARTS OR GPS RECEIVER ACTIVATIONS
-             *  
-             */
-            /* 
-             * If application is in state 'execNORMALE' or 'execMOVIMENTO'
-             * I must go to from AIRPLANE mode to NORMAL mode,
-             * activating radio part
-             * (case 'execMOVIMENTO' should be covered because it is in fact
-             * identical to the normal case, up to this point in the application)
-             */
-            /* Send 'AT' for safety, per sicurezza, in order to succeed
-             * in any case to view the ^SYSSTART URC
-             */
             ATManager.getInstance().executeCommand("AT\r");
             ATManager.getInstance().executeCommand("at+crc=1\r");
-
-            // Wait for info about ^SYSSTART type
-            while (InfoStato.getInstance().getOpMode() == null) {
-                Thread.sleep(whileSleep);
-            }
 
             /* Power on radio parts of the module for safety */
             if (Settings.getInstance().getSetting("mainDebug", false)) {
@@ -428,543 +281,210 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
             ATManager.getInstance().executeCommand("AT+CREG=1\r");
             ATManager.getInstance().executeCommand("AT+CGREG=1\r");
 
-            CommGPSThread.getInstance().start();
-            processSMSThread.start();
-            th9.start();
-            SocketGPRSThread.getInstance().start();
-            /*
-            movSens = new MovSens();
-            movSens.addMovListener(this);
-            movSens.start();
-            movSens.setMovSens(4);
-            movSens.movSensOn();
-            */
-
-            /* 
-             * [11] PREPARING TIMEOUTS ABOUT FIX GPS AND POSITIONING STRINGS SENDING
-             * 
-             */
-
-            /* Enable CSD */
-            InfoStato.getInstance().setEnableCSD(true);
-
-            /* 
-             * [12] WAIT FOR MESSAGES FROM THREADS AND MANAGEMENT
-             * 
-             *	From here AppMain waits for msg from threds and coordinates
-             * the operations to be carried out in accordance with the msg
-             * received, according to the priorities
-             */
             if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain, actual state of the application: " + InfoStato.getInstance().getSTATOexecApp());
+                System.out.println("CommGPSThread.getPriority: " + CommGPSThread.getInstance().getPriority());
+                System.out.println("ProcessSMSThread.getPriority: " + processSMSThread.getPriority());
+                System.out.println("SocketGPRSThread.getPriority: " + SocketGPRSThread.getInstance().getPriority());
+                System.out.println("CommASC0Thread.getPriority: " + CommASC0Thread.getInstance().getPriority());
             }
 
-            if (InfoStato.getInstance().getCALA()) {
-                System.out.println("AppMain: Module reboot in progress...");
-                BatteryManager.getInstance().reboot();
+            System.out.flush();
+            Thread.sleep(1000);
+
+            if (!airplaneMode) {
+                CommGPSThread.getInstance().start();
+                processSMSThread.start();
+                CommASC0Thread.getInstance().start();
+                SocketGPRSThread.getInstance().start();
+
+                InfoStato.getInstance().setEnableCSD(true);
+
+                while (!loop()) {
+                    if (Settings.getInstance().getSetting("mainDebug", false)) {
+                        System.out.println("AppMain: sleep in loop...");
+                    }
+                    Thread.sleep(1000);
+                }
+
+                InfoStato.getInstance().setEnableCSD(false);
+
+                CommGPSThread.getInstance().terminate = true;
+                CommGPSThread.getInstance().join();
+
+                InfoStato.getInstance().closeUDPSocketTask();
+                InfoStato.getInstance().closeTCPSocketTask();
+
+                SocketGPRSThread.getInstance().terminate = true;
+                SocketGPRSThread.getInstance().join();
+            }
+            System.out.flush();
+            Thread.sleep(1000);
+
+            try {
+                destroyApp(true);
+            } catch (MIDletStateChangeException msce) {
+                //
             }
 
-            while (!GOTOstagePwDownSTANDBY) {
-
-                try {
-                    ATManager.getInstance().executeCommand("AT+CSQ\r");
-                    /*
-                     * Read a possible msg present on the Mailbox
-                     * 
-                     * read() method is BLOCKING, until a message is received
-                     * (of some sort) the while loop does not continue
-                     */
-                    try {
-
-                        msgRicevuto = (String) Mailboxes.getInstance(0).read();
-
-                        //System.out.println(InfoStato.getInstance().getEnableCSD());
-                        //System.out.println(InfoStato.getInstance().getCSDattivo());
-                    } catch (Exception e) {
-                        System.out.println("ERROR READ mboxMAIN)");
-                    }
-                    //*** [12a] KEY MANAGEMENT
-                        /*
-                     * ACTIVATION KEY event
-                     * 
-                     * (both in the case where the key is the cause of the
-                     *  application startup and when the key is activated
-                     * while the application is running in another state)
-                     */
-                    if (Settings.getInstance().getSetting("mainDebug", false)) {
-                        System.out.println("AppMain message " + msgRicevuto);
-                    }
-                    if (msgRicevuto.equalsIgnoreCase(msgChiaveAttivata)) {
-
-                        if (Settings.getInstance().getSetting("keyDebug", false)) {
-                            System.out.println("AppMain: KEY activation detected...");
-                        }
-
-                        /*
-                         * Origin state: 'execMOVIMENTO'
-                         * 
-                         * Suspend motion tracking, execute tracking with active KEYxxxxxxxxxxxx^
-                         * and go to STAND-BY
-                         */
-                        if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execMOVIMENTO)) {
-
-                            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                                System.out.println("AppMain,MOTION: key was activated!");
-                            }
-
-                            //InfoStato.getInstance().setSTATOexecApp(execCHIAVEattivata);
-                            InfoStato.getInstance().setSTATOexecApp(execNORMALE);
-                            //Mailboxes.getInstance(3).write(trackAttivChiave);
-
-                        } //execMOVIMENTO
-                        else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execCHIAVEattivata)) {
-
-                            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                                System.out.println("AppMain, KEY ACTIVE: already in key active state!");
-                            }
-                        }
-
-                    } //msgChiaveAttivata
-
-                    /*
-                     * KEY DEACTIVATION event
-                     * 
-                     * (you can get here from the state 'execCHIAVEattivata'
-                     *  but also from states 'execFIRST' and 'execPOSTRESET',
-                     *  becOrigin stateause in these states I check the FIX only if the KEY
-                     *  is activated and I would like to know if it has been disabled in the meantime)		  	
-                     */
-                    if (msgRicevuto.equalsIgnoreCase(msgChiaveDisattivata)) {
-                        //if (msgRicevuto.equalsIgnoreCase(msgChiaveDisattivata)){	
-                        if (Settings.getInstance().getSetting("keyDebug", false)) {
-                            System.out.println("AppMain: KEY deactivation detected");
-                        }
-
-                        /*
-                         * Origin state: 'execCHIAVEattivata'
-                         * 
-                         * App sends last valid GPS position (you don't need GPS timer,
-                         * but GPRS timer yes!) and goes to power down
-                         */
-                        if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execCHIAVEattivata) || InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execNORMALE)) {
-
-                            // Block everything before closing
-                            //Mailboxes.getInstance(3).write(exitTrack);
-                            GOTOstagePwDownSTANDBY = true;
-
-                            // Set new application state
-                            InfoStato.getInstance().setSTATOexecApp(execCHIAVEdisattivata);
-                        } /*
-                         * Case 'execMOVIMENTO' -> do nothing
-                         */ else {
-                            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                                System.out.println("AppMain,CHIAVEdisattivata: nothing to do, key already deactivated!");
-                            }
-                            if (timeToOff == 50 || timeToOff == 70) {
-                                //Mailboxes.getInstance(3).write(trackMovimento);
-                            } else {
-                                if (timeToOff >= 100) {
-                                    // Block everything before closing
-                                    //Mailboxes.getInstance(3).write(exitTrack);
-
-                                    GOTOstagePwDownSTANDBY = true;
-
-                                    // Set new application state
-                                    InfoStato.getInstance().setSTATOexecApp(execCHIAVEdisattivata);
-                                }
-                            }
-                            timeToOff++;
-                            //System.out.println("timeToOff" + timeToOff);
-                        }
-
-                    } //msgChiaveDisattivata		
-
-                    if (Settings.getInstance().getSetting("mainDebug", false)) {
-                        System.out.println(msgRicevuto);
-                    }
-
-                    if (msgRicevuto.equalsIgnoreCase(msgALIVE) && InfoStato.getInstance().getCSDattivo() == false
-                            && Settings.getInstance().getSetting("tracking", false)) {
-
-                        if (Settings.getInstance().getSetting("mainDebug", false)) {
-                            System.out.println("AppMain: Alive message");
-                        }
-
-                        ATManager.getInstance().executeCommand("at+cclk=\"02/01/01,00:00:00\"\r");
-                        ATManager.getInstance().executeCommand("at+cala=\"02/01/01,06:00:00\"\r");
-
-                        // If KEY is activated, repeat tracking
-                        if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execCHIAVEattivata) || InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execNORMALE)) {
-
-                            InfoStato.getInstance().setSTATOexecApp(execNORMALE);
-                            //Mailboxes.getInstance(3).write(trackAlive);
-                            trackTimerAlive = true;
-                            /*
-                             if (InfoStato.getInstance().getInfoFileInt(UartNumTent) > 0) {
-                             InfoStato.getInstance().setInfoFileInt(UartNumTent, "0");
-                             FlashFile.getInstance().setImpostazione(UartNumTent, "0");
-                             InfoStato.getFile();
-                             FlashFile.getInstance().writeSettings();
-                             InfoStato.freeFile();
-                             Mailboxes.getInstance(3).write(trackUrcSim);
-                             }
-                             */
-                        }
-
-                    } //msgAlive
-
-                    if (msgRicevuto.equalsIgnoreCase(msgALR1) && InfoStato.getInstance().getCSDattivo() == false
-                            && Settings.getInstance().getSetting("tracking", false)) {
-
-                        if (Settings.getInstance().getSetting("mainDebug", false)) {
-                            System.out.println("AppMain: rilevato ALLARME INPUT 1");
-                        }
-
-                        // If KEY is activated, repeat tracking
-                        if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execCHIAVEattivata) || InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execNORMALE)) {
-
-                            InfoStato.getInstance().setSTATOexecApp(execNORMALE);
-                            //Mailboxes.getInstance(3).write(trackAlarmIn1);
-                            trackTimerAlive = true;
-                        }
-
-                    } //msgALR1
-
-                    if (msgRicevuto.equalsIgnoreCase(msgALR2) && InfoStato.getInstance().getCSDattivo() == false
-                            && Settings.getInstance().getSetting("tracking", false)) {
-
-                        if (Settings.getInstance().getSetting("mainDebug", false)) {
-                            System.out.println("AppMain: rilevato ALLARME INPUT 2");
-                        }
-
-                        // If KEY is activated, repeat tracking
-                        if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execCHIAVEattivata) || InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execNORMALE)) {
-
-                            InfoStato.getInstance().setSTATOexecApp(execNORMALE);
-                            //Mailboxes.getInstance(3).write(trackAlarmIn2);
-                            trackTimerAlive = true;
-                        }
-
-                    } //msgALR1
-
-                    //*** [12f] LOW BATTERY CONTROL
-                        /*
-                     * 'msgBattScarica' received
-                     * Put module in power down, without enabling motion sensor
-                     */
-                    if (msgRicevuto.equalsIgnoreCase(msgBattScarica) && elabBATT == false && PowDown == false) {
-
-                        elabBATT = true;
-
-                        if (Settings.getInstance().getSetting("mainDebug", false)) {
-                            System.out.println("AppMain: low battery signal received");
-                        }
-
-                        // Set new application state
-                        InfoStato.getInstance().setSTATOexecApp(execBATTSCARICA);
-
-                    } //msgBattScarica				
-
-                    //*** [12g] APPLICATION CLOSURE / STAND-BY
-                    if (GOTOstagePwDownSTANDBY == true) {
-                        /* 
-                         * When I finish to send positions through GPRS,
-                         * I prevent from happening more than once this step 
-                         */
-                        GOTOstagePwDownSTANDBY = false;
-                        PowDown = true;
-
-                        /* 
-                         * Inhibit key usage,
-                         * device must go to power down mode
-                         */
-                        InfoStato.getInstance().setEnableCSD(false);
-
-                        /*
-                         *  If battery low, call GoToPowerDown without
-                         *  activate motion sensor and without set awakening,
-                         *  writing on file the closure reason (battery low)
-                         */
-                        if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execBATTSCARICA)) {
-                            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                                System.out.println("AppMain, low battery: motion sensor DISABLED!");
-                            }
-                        } // If key deactivated, enable motion sensor and call 'GoToPowerDown'
-                        else {
-                            if (movsens) {
-                                movSens.movSensOn();
-                            }
-                        }
-
-                    } //GOTOstagePwDownSTANDBY
-
-                    //*** [12i] RING EVENT, FOR CSD CALL (IF POSSIBLE)
-                        /*
-                     * 'msgRING' received and CSD procedure enabled
-                     * I can activate CSD procedure and disable every other operation
-                     * until CSD procedure will be finished
-                     */
-                    if (msgRicevuto.equalsIgnoreCase(msgRING) && InfoStato.getInstance().getEnableCSD() == true && InfoStato.getInstance().getCSDattivo() == false) {
-
-                        if (Settings.getInstance().getSetting("mainDebug", false)) {
-                            System.out.println("AppMain: received instruction to start CSD procedure");
-                        }
-
-                        // Init and start UpdateCSD
-                        th7 = new UpdateCSD();
-                        th7.setPriority(5);
-                        th7.start();
-
-                        // Wait for UpdateCSD answers to incoming call
-                        Thread.sleep(2000);
-
-                    } //msgRING
-
-                    if (InfoStato.getInstance().getReboot()) {
-                        System.out.println("Reboot for GPIO");
-                        /*
-                         if (InfoStato.getInstance().getInfoFileInt(UartNumTent) > 0) {
-                         FlashFile.getInstance().setImpostazione(UartNumTent, "1");
-                         InfoStato.getFile();
-                         FlashFile.getInstance().writeSettings();
-                         InfoStato.freeFile();
-                         }
-                         */
-                        restart = true;
-                        //break;
-                    }
-
-                    Thread.sleep(10);
-
-                } catch (InterruptedException ie) {
-                    new LogError("Interrupted Exception AppMain");
-                    restart = true;
-                } catch (Exception ioe) {
-                    new LogError("Generic Exception AppMain");
-                    restart = true;
-                }
-                if (restart == true) {
-                    restart = false;
-                    if (Settings.getInstance().getSetting("mainDebug", false)) {
-                        System.out.println("AppMain: Reboot module in progress...");
-                    }
-                    System.out.println("Reboot for GPIO");
-                    new LogError("Reboot for GPIO");
-                    BatteryManager.getInstance().reboot();
-                    break;
-                }
-
-                if (Settings.getInstance().getSetting("mainDebug", false)) {
-                    System.out.println("AppMain: sleep in loop...");
-                }
-
-                Thread.sleep(1000);
-            } //while(true)
-
-            /* 
-             * [13] POWER OFF MODULE AND CLOSE APPLICATION
-             *
-             * Please note:
-             *      AT^SMSO cause call of destroyApp(true),
-             * 		therefore AT^SMSO should not be called inside detroyApp()
-             */
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: Power off module in progress...");
-            }
-
-            CommGPSThread.getInstance().terminate = true;
-            CommGPSThread.getInstance().join();
-
-            InfoStato.getInstance().closeUDPSocketTask();
-            InfoStato.getInstance().closeTCPSocketTask();
-
-            SocketGPRSThread.getInstance().terminate = true;
-            SocketGPRSThread.getInstance().join();
-
-            powerDown();
-
-            ATManager.getInstance().executeCommand("AT^SPIO=0\r");
-
-            BatteryManager.getInstance().lowPowerMode();
-            Thread.sleep(5000);
-
-            ATManager.getInstance().executeCommand("AT^SMSO\r");
-
-            /*try {
-             if(Settings.getInstance().getSetting("mainDebug", false){
-             System.out.println("XE DRIO STUARSE");
-             }
-             destroyApp(true);
-             } catch (MIDletStateChangeException me) { 
-             if(Settings.getInstance().getSetting("mainDebug", false){
-             System.out.println("AppMain: MIDletStateChangeException"); 
-             }
-             }*/
         } catch (InterruptedException ie) {
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("Interrupted Exception AppMain");
-            }
             new LogError("Interrupted Exception AppMain");
-        } catch (Exception ioe) {
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("Generic Exception AppMain");
-            }
-            new LogError("Generic Exception AppMain");
+        } catch (NumberFormatException nfe) {
+            new LogError("NumberFormatException AppMain");
+        } catch (IOException ioe) {
+            new LogError("IOException AppMain");
         }
-    } //startApp
+    }
 
-    /**
-     * Contains code to run the application when is in PAUSE.
-     */
     protected void pauseApp() {
         if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("Application in pause...");
+            System.out.println("AppMain: pauseApp");
         }
         try {
-            Thread.sleep(2000);
             destroyApp(true);
-        } catch (InterruptedException ie) {
-        } catch (MIDletStateChangeException me) {
+        } catch (MIDletStateChangeException msce) {
+            //
         }
-    } //pauseApp
+    }
 
-    /**
-     * Contains code to execute before destroy application.
-     *
-     * @throws	MIDletStateChangeException
-     */
     protected void destroyApp(boolean cond) throws MIDletStateChangeException {
         if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("Close application in progress...");
+            System.out.println("AppMain: destroyApp");
         }
-
-        // Destroy application
-        notifyDestroyed();
-    } //destroyApp
-
-    private void powerDown() {
         if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("Th*GoToPowerDown: STARTED");
+            System.out.println("AppMain: powerDown from " + InfoStato.getInstance().getSTATOexecApp());
         }
 
         Date date = LocationManager.getInstance().dateLastFix();
         if (date != null) {
             if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("PowerDown @ last fix time " + date.toString());
+                System.out.println("AppMain: powerDown @ last fix time " + date.toString());
             }
 
             Calendar cal = Calendar.getInstance();
             cal.setTime(date);
 
+            if (Settings.getInstance().getSetting("mainDebug", false)) {
+                System.out.println("cal " + cal.get(Calendar.YEAR)
+                        + " " + cal.get(Calendar.MONTH)
+                        + " " + cal.get(Calendar.DAY_OF_MONTH)
+                        + " " + cal.get(Calendar.HOUR)
+                        + " " + cal.get(Calendar.AM_PM)
+                        + " " + cal.get(Calendar.MINUTE)
+                        + " " + cal.get(Calendar.SECOND)
+                );
+            }
+
             String rtc = "at+cclk=\""
-                    + (cal.get(Calendar.YEAR) - 2000) + "/" + (cal.get(Calendar.MONTH) + 1) + "/" + cal.get(Calendar.DAY_OF_MONTH)
+                    + two(cal.get(Calendar.YEAR) - 2000)
+                    + "/" + two(cal.get(Calendar.MONTH) + 1)
+                    + "/" + two(cal.get(Calendar.DAY_OF_MONTH))
                     + ","
-                    + cal.get(Calendar.HOUR) + ":" + cal.get(Calendar.MINUTE) + ":" + cal.get(Calendar.SECOND)
+                    + two(cal.get(Calendar.HOUR) + (cal.get(Calendar.AM_PM) == Calendar.PM ? 12 : 0))
+                    + ":" + two(cal.get(Calendar.MINUTE))
+                    + ":" + two(cal.get(Calendar.SECOND))
                     + "\"\r";
 
             ATManager.getInstance().executeCommand(rtc);
+        } else {
+            date = new Date();
         }
 
-        date = new Date();
         if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("PowerDown @ " + date.toString());
+            System.out.println("AppMain: powerDown @ " + date.toString());
         }
 
-        if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execBATTSCARICA)) {
+        if (BatteryManager.getInstance().isBatteryVoltageLow()) {
             if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("PowerDown on low battery, no wakeup call");
+                System.out.println("PAppMain: powerDown on low battery, no wakeup call");
             }
 
         } else {
             date.setTime(date.getTime() + Settings.getInstance().getSetting("sleep", 6 * 3600) * 1000L);
 
             if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("PowerDown: setting wakeup call for " + date.toString());
+                System.out.println("AppMain: powerDown setting wakeup call for " + date.toString());
             }
 
             Calendar cal = Calendar.getInstance();
             cal.setTime(date);
 
+            if (Settings.getInstance().getSetting("mainDebug", false)) {
+                System.out.println("cal " + cal.get(Calendar.YEAR)
+                        + " " + cal.get(Calendar.MONTH)
+                        + " " + cal.get(Calendar.DAY_OF_MONTH)
+                        + " " + cal.get(Calendar.HOUR)
+                        + " " + cal.get(Calendar.AM_PM)
+                        + " " + cal.get(Calendar.MINUTE)
+                        + " " + cal.get(Calendar.SECOND)
+                );
+            }
+
             String rtc = "at+cala=\""
-                    + (cal.get(Calendar.YEAR) - 2000) + "/" + (cal.get(Calendar.MONTH) + 1) + "/" + cal.get(Calendar.DAY_OF_MONTH)
+                    + two(cal.get(Calendar.YEAR) - 2000)
+                    + "/" + two(cal.get(Calendar.MONTH) + 1)
+                    + "/" + two(cal.get(Calendar.DAY_OF_MONTH))
                     + ","
-                    + cal.get(Calendar.HOUR) + ":" + cal.get(Calendar.MINUTE) + ":" + cal.get(Calendar.SECOND)
+                    + two(cal.get(Calendar.HOUR) + (cal.get(Calendar.AM_PM) == Calendar.PM ? 12 : 0))
+                    + ":" + two(cal.get(Calendar.MINUTE))
+                    + ":" + two(cal.get(Calendar.SECOND))
                     + "\"\r";
 
             ATManager.getInstance().executeCommand(rtc);
         }
 
+        if (BatteryManager.getInstance().isBatteryVoltageLow()) {
+            if (Settings.getInstance().getSetting("mainDebug", false)) {
+                System.out.println("AppMain, low battery: motion sensor DISABLED!");
+            }
+        } else {
+            if (Settings.getInstance().getSetting("motion", 4) > 0) {
+                try {
+                    movSens.movSensOn();
+                } catch (IOException ioe) {
+                    System.err.println("IOException movSensOn");
+                }
+            }
+        }
+
         if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execFIRST)) {
-
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("Th*GoToPowerDown, closure from status :" + execFIRST);
-            }
-
-            // Key deactivation FIRST
             Settings.getInstance().setSetting("closeMode", closeAppDisattivChiaveFIRST);
-            //FlashFile.getInstance().setImpostazione(CloseMode, closeAppDisattivChiaveFIRST);
-            // pay attention, MODIFY FOR DEBUG
-            //FlashFile.getInstance().setImpostazione(CloseMode, closeAppFactory);
-
-        } // NORMAL EXECUTION
-        else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execNORMALE)) {
-
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("Th*GoToPowerDown, closure from status :" + execNORMALE);
-            }
-
-            // Normal OK
+        } else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execNORMALE)) {
             if (LocationManager.getInstance().isFix()) {
                 Settings.getInstance().setSetting("closeMode", closeAppNormaleOK);
             } else {
                 Settings.getInstance().setSetting("closeMode", closeAppNormaleTimeout);
             }
-
-        } // KEY DEACTIVATED
-        else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execCHIAVEdisattivata)) {
-
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("Th*GoToPowerDown, closure from status :" + execCHIAVEdisattivata);
-            }
-
+        } else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execCHIAVEdisattivata)) {
             if (LocationManager.getInstance().isFix()) {
                 Settings.getInstance().setSetting("closeMode", closeAppDisattivChiaveOK);
             } else {
                 Settings.getInstance().setSetting("closeMode", closeAppDisattivChiaveTimeout);
             }
-
-        } // MOVEMENT
-        else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execMOVIMENTO)) {
-
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("Th*GoToPowerDown, closure from status :" + execMOVIMENTO);
-            }
-
-            // Movement OK
+        } else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execMOVIMENTO)) {
             Settings.getInstance().setSetting("closeMode", closeAppMovimentoOK);
-
-            //FlashFile.getInstance().setImpostazione(CloseMode, closeAppMovimentoOK);
-        } // AFTER RESET
-        else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execPOSTRESET)) {
-
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("Th*GoToPowerDown, closure from status :" + execPOSTRESET);
-            }
-
-            // Key deactivation after RESET
+        } else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execPOSTRESET)) {
             Settings.getInstance().setSetting("closeMode", closeAppPostReset);
+        }
 
-            //FlashFile.getInstance().setImpostazione(CloseMode, closeAppPostReset);
-        } // BATTERY LOW
-        else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execBATTSCARICA)) {
-
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("Th*GoToPowerDown, closure from status :" + execBATTSCARICA);
-            }
-
-            // Battery Low
+        if (BatteryManager.getInstance().isBatteryVoltageLow()) {
             Settings.getInstance().setSetting("closeMode", closeAppBatteriaScarica);
         }
+
+        if (Settings.getInstance().getSetting("mainDebug", false)) {
+            System.out.println("AppMain: powerDown closeMode is " + Settings.getInstance().getSetting("closeMode", closeAppNormaleOK));
+        }
+
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException ie) {
+            //
+        }
+        
+        ATManager.getInstance().executeCommand("AT^SPIO=0\r");
+
+        BatteryManager.getInstance().lowPowerMode();
+
+        ATManager.getInstance().executeCommand("AT^SMSO\r");
     }
 
     public void movSensEvent(String Event) {
@@ -979,5 +499,109 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
         }
     }
 
-} //AppMain
+    private boolean loop() {
+        if (wakeupMode == ignitionWakeup && GPIOInputManager.getInstance().gpio7 == 1) {
+            if (Settings.getInstance().getSetting("mainDebug", false)) {
+                System.out.println("ignitionWakeup && gpio7");
+            }
+            return true;
+        }
 
+        if (wakeupMode == motionWakeup && LocationManager.getInstance().dateLastFix() != null) {
+            if (Settings.getInstance().getSetting("mainDebug", false)) {
+                System.out.println("AppMain: motionWakeup && dateLastFix");
+            }
+            return true;
+        }
+
+        if (wakeupMode == motionWakeup && LocationManager.getInstance().isTimeout()) {
+            if (Settings.getInstance().getSetting("mainDebug", false)) {
+                System.out.println("AppMain: motionWakeup && isTimeout");
+            }
+            return true;
+        }
+
+        if (wakeupMode == alarmWakeup && LocationManager.getInstance().dateLastFix() != null) {
+            if (Settings.getInstance().getSetting("mainDebug", false)) {
+                System.out.println("AppMain: alarmWakeup && dateLastFix");
+            }
+            return true;
+        }
+
+        if (wakeupMode == alarmWakeup && LocationManager.getInstance().isTimeout()) {
+            if (Settings.getInstance().getSetting("mainDebug", false)) {
+                System.out.println("AppMain: alarmWakeup && isTimeout");
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    private String two(int i) {
+        String s = "" + i;
+        if (s.length() < 2) {
+            s = "0" + s;
+        }
+        return s;
+    }
+
+//#ifdef TODO
+//#             //*** [12i] RING EVENT, FOR CSD CALL (IF POSSIBLE)
+//#                         /*
+//#              * 'msgRING' received and CSD procedure enabled
+//#              * I can activate CSD procedure and disable every other operation
+//#              * until CSD procedure will be finished
+//#              */
+//#             if (msgRicevuto.equalsIgnoreCase(msgRING) && InfoStato.getInstance().getEnableCSD() == true && InfoStato.getInstance().getCSDattivo() == false) {
+//# 
+//#                 if (Settings.getInstance().getSetting("mainDebug", false)) {
+//#                     System.out.println("AppMain: received instruction to start CSD procedure");
+//#                 }
+//# 
+//#                 // Init and start UpdateCSD
+//#                 th7 = new UpdateCSD();
+//#                 th7.setPriority(5);
+//#                 th7.start();
+//# 
+//#                 // Wait for UpdateCSD answers to incoming call
+//#                 Thread.sleep(2000);
+//# 
+//#             } //msgRING
+//# 
+//#             if (InfoStato.getInstance().getReboot()) {
+//#                 System.out.println("Reboot for GPIO");
+//#                 /*
+//#                  if (InfoStato.getInstance().getInfoFileInt(UartNumTent) > 0) {
+//#                  FlashFile.getInstance().setImpostazione(UartNumTent, "1");
+//#                  InfoStato.getFile();
+//#                  FlashFile.getInstance().writeSettings();
+//#                  InfoStato.freeFile();
+//#                  }
+//#                  */
+//#                 restart = true;
+//#                 //break;
+//#             }
+//# 
+//#             Thread.sleep(10);
+//# 
+//#         } catch (InterruptedException ie) {
+//#             new LogError("Interrupted Exception AppMain");
+//#             restart = true;
+//#         } catch (Exception ioe) {
+//#             new LogError("Generic Exception AppMain");
+//#             restart = true;
+//#         }
+//#         if (restart == true) {
+//#             restart = false;
+//#             if (Settings.getInstance().getSetting("mainDebug", false)) {
+//#                 System.out.println("AppMain: Reboot module in progress...");
+//#             }
+//#             new LogError("Reboot for GPIO");
+//#             BatteryManager.getInstance().reboot();
+//#             return true;
+//#         }
+//#         return false;
+//#     }
+//#endif
+}
