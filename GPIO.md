@@ -24,7 +24,7 @@ owntracks/gw/GWCAR-jp/gpio/7 0
 
 ![Arduino](assets/arduino.png)
 
-In order to toggle these pins with, say, an Arduino, you can use a this small sketch on a basic Arduino board. The following is a variation of the _blink_ sketch which flips PIN 10 connected to GPIO1 on the Greenwich every 5 seconds, and blinks LED13 on the Arduino accordingly.
+In order to toggle these pins with, say, an Arduino, you can use a small sketch on a basic Arduino board. The following is a variation of the _blink_ sketch which flips PIN 10 connected to GPIO1 on the Greenwich every 5 seconds, and blinks LED13 on the Arduino accordingly.
 
 ```
 #define LED        13
