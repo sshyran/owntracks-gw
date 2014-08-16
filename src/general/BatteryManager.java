@@ -89,7 +89,7 @@ public class BatteryManager {
     }
     
     public void eventLowBattery() {
-        Mailboxes.getInstance(0).write(Mailboxes.UnderVoltage);
+        AppMain.getInstance().underVoltageEvent(getBatteryVoltageString());
     }
     
     public boolean reboot() {
@@ -112,7 +112,17 @@ public class BatteryManager {
 
     class BatteryRequestTimerTask extends TimerTask {
         public void run() {
-            ATManager.getInstance().executeCommand("AT^SBV\r");
+            String response = ATManager.getInstance().executeCommandSynchron("AT^SBV\r");
+            final String SBV = "^SBV: ";
+            try {
+                int start = response.indexOf(SBV) + SBV.length();
+                int end = response.substring(start).indexOf("\r");
+                double voltage = Double.parseDouble(response.substring(
+                        start, start + end));
+                setBatteryVoltage(voltage / 1000);
+            } catch (NumberFormatException nfe) {
+                System.err.println("NumberFormatException " + response);
+            }
         }
     }
 }

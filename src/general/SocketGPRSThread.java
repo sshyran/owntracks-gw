@@ -22,6 +22,9 @@ public class SocketGPRSThread extends Thread implements GlobCost {
 
     public boolean terminate = false;
     private boolean sending = false;
+  
+    public int creg = -1;
+    public int cgreg = -1;
     
     private Queue gpsQ;
 
@@ -71,21 +74,23 @@ public class SocketGPRSThread extends Thread implements GlobCost {
     }
     
     public void open() {
+        ATManager.getInstance().executeCommandSynchron("at^smong\r");
         try {
-            ATManager.getInstance().executeCommand("at^smong\r");
-            ATManager.getInstance().executeCommand("at+cgatt=1\r");
-        } catch (Exception e) {
+            Thread.sleep(1001);
+        } catch (InterruptedException ie) {
+            //
         }
+        ATManager.getInstance().executeCommandSynchron("at+cgatt=1\r");
 
         if (!MQTTHandler.getInstance().isConnected()) {
             MQTTHandler.getInstance().init(
-                    Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI()),
+                    Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI()),
                     Settings.getInstance().getSetting("host", "tcp://localhost") + ":" + Settings.getInstance().getSetting("port", 1883),
                     Settings.getInstance().getSetting("user", null),
                     Settings.getInstance().getSetting("password", null),
                     Settings.getInstance().getSetting("willTopic",
                             Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                            + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI())
+                            + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
                             + "/status"),
                     Settings.getInstance().getSetting("will", "0").getBytes(),
                     Settings.getInstance().getSetting("willQos", 1),
@@ -94,7 +99,7 @@ public class SocketGPRSThread extends Thread implements GlobCost {
                     Settings.getInstance().getSetting("cleanSession", true),
                     Settings.getInstance().getSetting("subscription",
                             Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                            + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI()) + "/cmd"),
+                            + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI()) + "/cmd"),
                     Settings.getInstance().getSetting("subscriptionQos", 1)
             );
             MQTTHandler.getInstance().connectToBroker();
@@ -105,7 +110,7 @@ public class SocketGPRSThread extends Thread implements GlobCost {
     public void close() {
         MQTTHandler.getInstance().disconnect();
         InfoStato.getInstance().setEnableCSD(true);
-        ATManager.getInstance().executeCommand("at+cgatt=0\r");
+        ATManager.getInstance().executeCommandSynchron("at+cgatt=0\r");
         sending = false;
     }
 

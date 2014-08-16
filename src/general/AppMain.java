@@ -23,7 +23,8 @@ import java.io.IOException;
  * @author matteobo
  */
 public class AppMain extends MIDlet implements GlobCost, MovListener {
-
+    private String executionState;
+    
     private String text;
     private String msgRicevuto = "";
     private boolean restart = false;
@@ -32,6 +33,8 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
     MovSens movSens;
     boolean moved = false;
 
+    public boolean shouldReboot = false;
+    
     public boolean airplaneMode = false;
 
     final public int ignitionWakeup = 1;
@@ -56,7 +59,6 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
      */
     Settings settings;
     InfoStato infoS;
-    Mailboxes mailboxes;
 
     /**
      * <BR> Timer for cyclic monitoring of network registration status.
@@ -105,12 +107,22 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
 
         ATManager.getInstance();
         infoS = InfoStato.getInstance();
-        mailboxes = Mailboxes.getInstance();
 
         CommGPSThread.getInstance();
         processSMSThread = new ProcessSMSThread();
         CommASC0Thread.getInstance();
         SocketGPRSThread.getInstance();
+
+        SocketGPRSThread.getInstance().put(
+                Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                + "/sw/midlet",
+                Settings.getInstance().getSetting("qos", 1),
+                Settings.getInstance().getSetting("retain", true),
+                (settings.getSetting("MIDlet-Name", "")
+                + " " + settings.getSetting("MIDlet-Vendor", "")
+                + " " + settings.getSetting("MIDlet-Version", "")).getBytes()
+        );
 
         BearerControl.addListener(Bearer.getInstance());
     }
@@ -164,6 +176,10 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
      */
     protected void startApp() throws MIDletStateChangeException {
         AppMain.appMain = this;
+        if (Settings.getInstance().getSetting("mainDebug", false)) {
+            System.out.println("AppMain: watchdog starting");
+        }
+        watchDogTask = new WatchDogTask();
 
         try {
             if (Settings.getInstance().getSetting("mainDebug", false)) {
@@ -176,68 +192,64 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
             Settings.getInstance().setSetting("closeMode", closeAppResetHW);
 
             if (closeMode.equalsIgnoreCase(closeAppFactory)) {
-                InfoStato.getInstance().setSTATOexecApp(execFIRST);
+                executionState = execFIRST;
             } else if (closeMode.equalsIgnoreCase(closeAIR)) {
-                InfoStato.getInstance().setSTATOexecApp(execNORMALE);
+                executionState = execNORMALE;
                 airplaneMode = true;
                 wakeupMode = alarmWakeup;
             } else if (closeMode.equalsIgnoreCase(closeAppNormaleOK)) {
-                InfoStato.getInstance().setSTATOexecApp(execNORMALE);
+                executionState = execNORMALE;
             } else if (closeMode.equalsIgnoreCase(closeAppNormaleTimeout)) {
-                InfoStato.getInstance().setSTATOexecApp(execNORMALE);
+                executionState = execNORMALE;
             } else if (closeMode.equalsIgnoreCase(closeAppDisattivChiaveFIRST)) {
-                InfoStato.getInstance().setSTATOexecApp(execNORMALE);
+                executionState = execNORMALE;
             } else if (closeMode.equalsIgnoreCase(closeAppDisattivChiaveOK)) {
-                InfoStato.getInstance().setSTATOexecApp(execNORMALE);
+                executionState = execNORMALE;
             } else if (closeMode.equalsIgnoreCase(closeAppDisattivChiaveTimeout)) {
-                InfoStato.getInstance().setSTATOexecApp(execNORMALE);
+                executionState = execNORMALE;
             } else if (closeMode.equalsIgnoreCase(closeAppMovimentoOK)) {
-                InfoStato.getInstance().setSTATOexecApp(execNORMALE);
+                executionState = execNORMALE;
             } else if (closeMode.equalsIgnoreCase(closeAppPostReset)) {
-                InfoStato.getInstance().setSTATOexecApp(execNORMALE);
+                executionState = execNORMALE;
             } else if (closeMode.equalsIgnoreCase(closeAppBatteriaScarica)) {
-                InfoStato.getInstance().setSTATOexecApp(execNORMALE);
+                executionState = execNORMALE;
             } else if (closeMode.equalsIgnoreCase(closeAppResetHW)) {
-                InfoStato.getInstance().setSTATOexecApp(execPOSTRESET);
+                executionState = execPOSTRESET;
             } else if (closeMode.equalsIgnoreCase(closeAppBatteriaScarica)) {
-                InfoStato.getInstance().setSTATOexecApp(execPOSTRESET);
+                executionState = execPOSTRESET;
             } else {
                 new LogError("AppMain: ERROR, I can not determine the status of execution of the application!");
             }
 
             if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: STATOexecApp is " + InfoStato.getInstance().getSTATOexecApp());
+                System.out.println("AppMain: STATOexecApp is " + executionState);
             }
 
-            ATManager.getInstance().executeCommand("at+cpin=5555\r");
+            ATManager.getInstance().executeCommandSynchron("at+cpin=5555\r");
 
-            if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execFIRST)
-                    || InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execPOSTRESET)) {
+            if (executionState.equalsIgnoreCase(execFIRST)
+                    || executionState.equalsIgnoreCase(execPOSTRESET)) {
 
                 if (Settings.getInstance().getSetting("mainDebug", false)) {
                     System.out.println("AppMain: Set AUTOSTART...");
                 }
-                ATManager.getInstance().executeCommand("at^scfg=\"Userware/Autostart/AppName\",\"\",\"a:/app/"
+                ATManager.getInstance().executeCommandSynchron("at^scfg=\"Userware/Autostart/AppName\",\"\",\"a:/app/"
                         + Settings.getInstance().getSetting("MIDlet-Name", "OwnTracks") + ".jar\"\r");
-                ATManager.getInstance().executeCommand("at^scfg=\"Userware/Autostart/Delay\",\"\",10\r");
-                ATManager.getInstance().executeCommand("at^scfg=\"Userware/Autostart\",\"\",\"1\"\r");
+                ATManager.getInstance().executeCommandSynchron("at^scfg=\"Userware/Autostart/Delay\",\"\",10\r");
+                ATManager.getInstance().executeCommandSynchron("at^scfg=\"Userware/Autostart\",\"\",\"1\"\r");
                 if (Settings.getInstance().getSetting("usbDebug", false)) {
-                    ATManager.getInstance().executeCommand("at^scfg=\"Userware/StdOut\",USB\r");
+                    ATManager.getInstance().executeCommandSynchron("at^scfg=\"Userware/StdOut\",USB\r");
                 } else {
-                    ATManager.getInstance().executeCommand("at^scfg=\"Userware/StdOut\",ASC0\r");
+                    ATManager.getInstance().executeCommandSynchron("at^scfg=\"Userware/StdOut\",ASC0\r");
                 }
 
-                InfoStato.getInstance().setSTATOexecApp(execNORMALE);
+                executionState = execNORMALE;
 
             }
 
-            ATManager.getInstance().executeCommand("ati\r");
-            ATManager.getInstance().executeCommand("at+cclk=\"02/01/01,00:00:00\"\r");
-            ATManager.getInstance().executeCommand("at+cala=\"02/01/01,06:00:00\"\r");
+            ATManager.getInstance().executeCommandSynchron("AT^SBC=5000\r");
 
-            ATManager.getInstance().executeCommand("AT^SBC=5000\r");
-
-            ATManager.getInstance().executeCommand("at^sjnet="
+            ATManager.getInstance().executeCommandSynchron("at^sjnet="
                     + "\"" + GPRSConnectOptions.getConnectOptions().getBearerType() + "\","
                     + "\"" + GPRSConnectOptions.getConnectOptions().getAPN() + "\","
                     + "\"" + GPRSConnectOptions.getConnectOptions().getUser() + "\","
@@ -245,8 +257,7 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
                     + "\"\"," // DNS
                     + "0\r"); // TIMEOUT
 
-            ATManager.getInstance().executeCommand("AT+CGSN\r");
-            ATManager.getInstance().executeCommand("AT^SCKS=1\r");
+            ATManager.getInstance().executeCommandSynchron("AT^SCKS=1\r");
 
             movSens = new MovSens();
             movSens.addMovListener(this);
@@ -265,33 +276,31 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
             if (Settings.getInstance().getSetting("mainDebug", false)) {
                 System.out.println("AppMain: wakeupMode is " + wakeupMode);
             }
+            if (Settings.getInstance().getSetting("mainDebug", false)) {
+                System.out.println("AppMain: airplaneMode is " + airplaneMode);
+            }
+            if (Settings.getInstance().getSetting("mainDebug", false)) {
+                System.out.println("AppMain: moved is " + moved);
+            }
 
             movSens.movSensOff();
+            
+            ATManager.getInstance().executeCommandSynchron("AT\r");
+            ATManager.getInstance().executeCommandSynchron("at+crc=1\r");
 
-            watchDogTask = new WatchDogTask();
-
-            ATManager.getInstance().executeCommand("AT\r");
-            ATManager.getInstance().executeCommand("at+crc=1\r");
-
-            /* Power on radio parts of the module for safety */
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: SWITCH ON RADIO PART of the module...");
-            }
-            ATManager.getInstance().executeCommand("AT^SCFG=\"MEopMode/Airplane\",\"off\"\r");
-            ATManager.getInstance().executeCommand("AT+CREG=1\r");
-            ATManager.getInstance().executeCommand("AT+CGREG=1\r");
-
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("CommGPSThread.getPriority: " + CommGPSThread.getInstance().getPriority());
-                System.out.println("ProcessSMSThread.getPriority: " + processSMSThread.getPriority());
-                System.out.println("SocketGPRSThread.getPriority: " + SocketGPRSThread.getInstance().getPriority());
-                System.out.println("CommASC0Thread.getPriority: " + CommASC0Thread.getInstance().getPriority());
-            }
-
-            System.out.flush();
-            Thread.sleep(1000);
+            // Not sure what to do here
+            //ATManager.getInstance().executeCommandSynchron("AT^SCFG=\"MEopMode/Airplane\",\"off\"\r");
+            //Settings.getInstance().setSetting("closeMode", closeAIR);
+            //reboot
 
             if (!airplaneMode) {
+                if (Settings.getInstance().getSetting("mainDebug", false)) {
+                    System.out.println("AppMain: SWITCH ON RADIO PART of the module...");
+                }
+            
+                ATManager.getInstance().executeCommandSynchron("AT+CREG=1\r");
+                ATManager.getInstance().executeCommandSynchron("AT+CGREG=1\r");
+
                 CommGPSThread.getInstance().start();
                 processSMSThread.start();
                 CommASC0Thread.getInstance().start();
@@ -300,9 +309,6 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
                 InfoStato.getInstance().setEnableCSD(true);
 
                 while (!loop()) {
-                    if (Settings.getInstance().getSetting("mainDebug", false)) {
-                        System.out.println("AppMain: sleep in loop...");
-                    }
                     Thread.sleep(1000);
                 }
 
@@ -311,21 +317,10 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
                 CommGPSThread.getInstance().terminate = true;
                 CommGPSThread.getInstance().join();
 
-                InfoStato.getInstance().closeUDPSocketTask();
-                InfoStato.getInstance().closeTCPSocketTask();
-
                 SocketGPRSThread.getInstance().terminate = true;
                 SocketGPRSThread.getInstance().join();
             }
-            System.out.flush();
-            Thread.sleep(1000);
-
-            try {
-                destroyApp(true);
-            } catch (MIDletStateChangeException msce) {
-                //
-            }
-
+            shutdown();
         } catch (InterruptedException ie) {
             new LogError("Interrupted Exception AppMain");
         } catch (NumberFormatException nfe) {
@@ -350,8 +345,15 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
         if (Settings.getInstance().getSetting("mainDebug", false)) {
             System.out.println("AppMain: destroyApp");
         }
+        notifyDestroyed();
+    }
+
+    protected void shutdown() {
         if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("AppMain: powerDown from " + InfoStato.getInstance().getSTATOexecApp());
+            System.out.println("AppMain: shutdown");
+        }
+        if (Settings.getInstance().getSetting("mainDebug", false)) {
+            System.out.println("AppMain: powerDown from " + executionState);
         }
 
         Date date = LocationManager.getInstance().dateLastFix();
@@ -363,17 +365,6 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
             Calendar cal = Calendar.getInstance();
             cal.setTime(date);
 
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("cal " + cal.get(Calendar.YEAR)
-                        + " " + cal.get(Calendar.MONTH)
-                        + " " + cal.get(Calendar.DAY_OF_MONTH)
-                        + " " + cal.get(Calendar.HOUR)
-                        + " " + cal.get(Calendar.AM_PM)
-                        + " " + cal.get(Calendar.MINUTE)
-                        + " " + cal.get(Calendar.SECOND)
-                );
-            }
-
             String rtc = "at+cclk=\""
                     + two(cal.get(Calendar.YEAR) - 2000)
                     + "/" + two(cal.get(Calendar.MONTH) + 1)
@@ -384,7 +375,7 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
                     + ":" + two(cal.get(Calendar.SECOND))
                     + "\"\r";
 
-            ATManager.getInstance().executeCommand(rtc);
+            ATManager.getInstance().executeCommandSynchron(rtc);
         } else {
             date = new Date();
         }
@@ -408,17 +399,6 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
             Calendar cal = Calendar.getInstance();
             cal.setTime(date);
 
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("cal " + cal.get(Calendar.YEAR)
-                        + " " + cal.get(Calendar.MONTH)
-                        + " " + cal.get(Calendar.DAY_OF_MONTH)
-                        + " " + cal.get(Calendar.HOUR)
-                        + " " + cal.get(Calendar.AM_PM)
-                        + " " + cal.get(Calendar.MINUTE)
-                        + " " + cal.get(Calendar.SECOND)
-                );
-            }
-
             String rtc = "at+cala=\""
                     + two(cal.get(Calendar.YEAR) - 2000)
                     + "/" + two(cal.get(Calendar.MONTH) + 1)
@@ -429,7 +409,7 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
                     + ":" + two(cal.get(Calendar.SECOND))
                     + "\"\r";
 
-            ATManager.getInstance().executeCommand(rtc);
+            ATManager.getInstance().executeCommandSynchron(rtc);
         }
 
         if (BatteryManager.getInstance().isBatteryVoltageLow()) {
@@ -446,23 +426,23 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
             }
         }
 
-        if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execFIRST)) {
+        if (executionState.equalsIgnoreCase(execFIRST)) {
             Settings.getInstance().setSetting("closeMode", closeAppDisattivChiaveFIRST);
-        } else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execNORMALE)) {
+        } else if (executionState.equalsIgnoreCase(execNORMALE)) {
             if (LocationManager.getInstance().isFix()) {
                 Settings.getInstance().setSetting("closeMode", closeAppNormaleOK);
             } else {
                 Settings.getInstance().setSetting("closeMode", closeAppNormaleTimeout);
             }
-        } else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execCHIAVEdisattivata)) {
+        } else if (executionState.equalsIgnoreCase(execCHIAVEdisattivata)) {
             if (LocationManager.getInstance().isFix()) {
                 Settings.getInstance().setSetting("closeMode", closeAppDisattivChiaveOK);
             } else {
                 Settings.getInstance().setSetting("closeMode", closeAppDisattivChiaveTimeout);
             }
-        } else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execMOVIMENTO)) {
+        } else if (executionState.equalsIgnoreCase(execMOVIMENTO)) {
             Settings.getInstance().setSetting("closeMode", closeAppMovimentoOK);
-        } else if (InfoStato.getInstance().getSTATOexecApp().equalsIgnoreCase(execPOSTRESET)) {
+        } else if (executionState.equalsIgnoreCase(execPOSTRESET)) {
             Settings.getInstance().setSetting("closeMode", closeAppPostReset);
         }
 
@@ -473,28 +453,47 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
         if (Settings.getInstance().getSetting("mainDebug", false)) {
             System.out.println("AppMain: powerDown closeMode is " + Settings.getInstance().getSetting("closeMode", closeAppNormaleOK));
         }
-
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException ie) {
-            //
+        
+        ATManager.getInstance().executeCommandSynchron("AT^SPIO=0\r");
+        
+        watchDogTask.stop();
+        if (Settings.getInstance().getSetting("mainDebug", false)) {
+            System.out.println("AppMain: watchdog stopped");
+            System.out.flush();
         }
         
-        ATManager.getInstance().executeCommand("AT^SPIO=0\r");
-
         BatteryManager.getInstance().lowPowerMode();
-
-        ATManager.getInstance().executeCommand("AT^SMSO\r");
+        if (Settings.getInstance().getSetting("mainDebug", false)) {
+            System.out.println("AppMain: lowPowerMode");
+            System.out.flush();
+        }
+        ATManager.getInstance().executeCommandSynchron("AT^SMSO\r");
+        if (Settings.getInstance().getSetting("mainDebug", false)) {
+            System.out.println("AppMain: SMSO");
+            System.out.flush();
+        }
     }
 
-    public void movSensEvent(String Event) {
+    public void ringEvent(String event) {
         if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("movSensEvent " + Event);
+            System.out.println("ringEvent " + event);
+        }
+    }
+    
+    public void underVoltageEvent(String event) {
+        if (Settings.getInstance().getSetting("mainDebug", false)) {
+            System.out.println("underVoltageEvent " + event);
+        }
+    }
+    
+    public void movSensEvent(String event) {
+        if (Settings.getInstance().getSetting("mainDebug", false)) {
+            System.out.println("movSensEvent " + event);
         }
 
-        if (Event.equalsIgnoreCase("^MOVE: 0")) {
+        if (event.equalsIgnoreCase("^MOVE: 0")) {
             moved = false;
-        } else if (Event.equalsIgnoreCase("^MOVE: 1")) {
+        } else if (event.equalsIgnoreCase("^MOVE: 1")) {
             moved = true;
         }
     }

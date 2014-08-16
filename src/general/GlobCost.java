@@ -43,15 +43,7 @@ public interface GlobCost {
     /**
      * Alarm enable
      */
-    public static final boolean alarmEnable = true;
-
-    public static final String recordStoreName = "GWimpostazioniRS";
-    public static final String recordPOS = "Pos_RS";
-    //public static final String 	recordPOS 			= "Pos_Prova";
-    public static final String fileName = "GWmqttSettings.txt";
- 
-    //public static final String revNumber = "0.1.40";
-    //public static final String dataRev = "26/07/2014";
+    public static final boolean alarmEnable = true; 
     public static final String moduleCodeRev = "EGS5 rev. ";
 
     /**
@@ -113,12 +105,6 @@ public interface GlobCost {
      */
     public static final int sensMovSetupTime = 50;
     public static final int sensMovHoldTime = 2000;
-
-	//if test_choral
-    //public static final String defaultGPS = ",V,00,000000,000000,0000.00000,N,00000.00000,E,0.0,00.0,4.3V,B,00,00,00000000";
-    //otherwise
-    public static final String defaultGPS = ",V,00,000000,000000,0000.00000,N,00000.00000,E,0.0,0.0,00.0,000000,4.3V,B,00,00,00000000";
-
 
     /**
      * ALIAS for flash settings

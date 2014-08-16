@@ -31,7 +31,7 @@ public class ProcessSMSThread extends Thread implements GlobCost {
         open();
                 
         while (true) {
-            ATManager.getInstance().executeCommand("AT+CPMS?\r");
+            processMessage(ATManager.getInstance().executeCommandSynchron("AT+CPMS?\r"));
 
             String message;
             do {
@@ -49,9 +49,8 @@ public class ProcessSMSThread extends Thread implements GlobCost {
     }
     
     void open() {
-        ATManager.getInstance().executeCommand("AT+CMGF=1\r");
-        ATManager.getInstance().executeCommand("AT+CPMS=\"MT\",\"MT\",\"MT\"\r");
-        ATManager.getInstance().executeCommand("AT+CNMI=1,1\r");
+        ATManager.getInstance().executeCommandSynchron("AT+CMGF=1\r");
+        processMessage(ATManager.getInstance().executeCommandSynchron("AT+CPMS=\"MT\",\"MT\",\"MT\"\r"));
     }
 
     void processMessage(String message) {
@@ -119,7 +118,7 @@ public class ProcessSMSThread extends Thread implements GlobCost {
 
                 if (numberOfCurrentMessages > 0) {
                     for (int i = 1; i <= numberOfStorageMessages; i++) {
-                        ATManager.getInstance().executeCommand("AT+CMGR=" + i + "\r");
+                        processMessage(ATManager.getInstance().executeCommandSynchron("AT+CMGR=" + i + "\r"));
                     }
                 }
             }
@@ -165,7 +164,7 @@ public class ProcessSMSThread extends Thread implements GlobCost {
                     System.out.println("text >" + text + "<");
                 }               
                                 
-                ATManager.getInstance().executeCommand("AT+CMGD=" + index + "\r");
+                ATManager.getInstance().executeCommandSynchron("AT+CMGD=" + index + "\r");
 
                 CommandProcessor commandProcessor = CommandProcessor.getInstance();
                 String response;
@@ -184,8 +183,7 @@ public class ProcessSMSThread extends Thread implements GlobCost {
                     response = response.substring(0, 140);
                 }
 
-                ATManager.getInstance().executeCommand("AT+CMGS=" + telephoneNo + "\r");
-                ATManager.getInstance().executeCommand(response + "\032");
+                ATManager.getInstance().executeCommandSynchron("AT+CMGS=" + telephoneNo + "\r" + response + "\032");
             }
         }                
     }   

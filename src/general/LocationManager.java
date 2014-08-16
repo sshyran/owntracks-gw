@@ -38,7 +38,8 @@ public class LocationManager {
 
     private String gga;
     private double tempAlt;
-    private int tempNumSat;
+    
+    private int numSat = 0;
 
     private LocationManager() {
         fix = false;
@@ -65,7 +66,7 @@ public class LocationManager {
             timeout = true;
             SocketGPRSThread.getInstance().put(
                     Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                    + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI())
+                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
                     + "/error",
                     Settings.getInstance().getSetting("qos", 1),
                     Settings.getInstance().getSetting("retain", false),
@@ -107,6 +108,10 @@ public class LocationManager {
         return fix;
     }
     
+    public int getNumSat() {
+        return numSat;
+    }
+    
     public boolean isTimeout() {
         return timeout;
     }
@@ -145,7 +150,7 @@ public class LocationManager {
         if (Settings.getInstance().getSetting("raw", false)) {
             SocketGPRSThread.getInstance().put(
                     Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                    + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI())
+                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
                     + "/raw",
                     Settings.getInstance().getSetting("qos", 1),
                     Settings.getInstance().getSetting("retain", true),
@@ -268,7 +273,7 @@ public class LocationManager {
         if (Settings.getInstance().getSetting("raw", false)) {
             SocketGPRSThread.getInstance().put(
                     Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                    + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI())
+                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
                     + "/raw",
                     Settings.getInstance().getSetting("qos", 1),
                     Settings.getInstance().getSetting("retain", true),
@@ -280,9 +285,9 @@ public class LocationManager {
         if (components.length == 15) {
             try {
                 if (components[7].length() > 0) {
-                    tempNumSat = Integer.parseInt(components[7]);
+                    numSat = Integer.parseInt(components[7]);
                 } else {
-                    tempNumSat = 0;
+                    numSat = 0;
                 }
 
                 if (components[9].length() > 0) {
@@ -350,7 +355,7 @@ public class LocationManager {
                 String[] fields = StringSplitter.split(Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,battery"), ",");
                 SocketGPRSThread.getInstance().put(
                         Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                        + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI()),
+                        + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI()),
                         Settings.getInstance().getSetting("qos", 1),
                         Settings.getInstance().getSetting("retain", true),
                         getJSONString(fields).getBytes()
@@ -361,7 +366,7 @@ public class LocationManager {
             String[] fields = StringSplitter.split(Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,battery"), ",");
             SocketGPRSThread.getInstance().put(
                     Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                    + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI()),
+                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI()),
                     Settings.getInstance().getSetting("qos", 1),
                     Settings.getInstance().getSetting("retain", true),
                     getJSONString(fields).getBytes()

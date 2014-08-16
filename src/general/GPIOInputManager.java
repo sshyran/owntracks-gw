@@ -11,28 +11,28 @@ public class GPIOInputManager {
         * GPIO DRIVER ACTIVATION
         * 
         */
-        ATManager.getInstance().executeCommand("at^spio=1\r");
+        ATManager.getInstance().executeCommandSynchron("at^spio=1\r");
 
         /*
          * Activate
          */
-        ATManager.getInstance().executeCommand("at^scpin=1,0,0\r");
-        ATManager.getInstance().executeCommand("at^scpin=1,2,0\r");
-        ATManager.getInstance().executeCommand("at^scpin=1,6,0\r");
+        ATManager.getInstance().executeCommandSynchron("at^scpin=1,0,0\r");
+        ATManager.getInstance().executeCommandSynchron("at^scpin=1,2,0\r");
+        ATManager.getInstance().executeCommandSynchron("at^scpin=1,6,0\r");
 
         /*
          * Activate polling
          */
-        ATManager.getInstance().executeCommand("at^scpol=1,0\r");
-        ATManager.getInstance().executeCommand("at^scpol=1,2\r");
-        ATManager.getInstance().executeCommand("at^scpol=1,6\r");
+        ATManager.getInstance().executeCommandSynchron("at^scpol=1,0\r");
+        ATManager.getInstance().executeCommandSynchron("at^scpol=1,2\r");
+        ATManager.getInstance().executeCommandSynchron("at^scpol=1,6\r");
 
         /*
          * Check initial values
          */
-        ATManager.getInstance().executeCommand("at^sgio=0\r");
-        ATManager.getInstance().executeCommand("at^sgio=2\r");
-        ATManager.getInstance().executeCommand("at^sgio=6\r");
+        processSGIO(ATManager.getInstance().executeCommandSynchron("at^sgio=0\r"));
+        processSGIO(ATManager.getInstance().executeCommandSynchron("at^sgio=2\r"));
+        processSGIO(ATManager.getInstance().executeCommandSynchron("at^sgio=6\r"));
     }
     
     public static GPIOInputManager getInstance() {
@@ -85,7 +85,7 @@ public class GPIOInputManager {
         }
     }
 
-    public void processSGIO(String message) {
+    private void processSGIO(String message) {
         if (Settings.getInstance().getSetting("gpioDebug", false)) {
             System.out.println("Received SGIO: " + message);
         }
@@ -141,7 +141,7 @@ public class GPIOInputManager {
                 gpio1 = value;
                 SocketGPRSThread.getInstance().put(
                     Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                    + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI())
+                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
                     + "/gpio/1",
                     Settings.getInstance().getSetting("qos", 1),
                     Settings.getInstance().getSetting("retain", true),
@@ -152,7 +152,7 @@ public class GPIOInputManager {
                 gpio3 = value;
                 SocketGPRSThread.getInstance().put(
                     Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                    + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI())
+                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
                     + "/gpio/3",
                     Settings.getInstance().getSetting("qos", 1),
                     Settings.getInstance().getSetting("retain", true),
@@ -163,7 +163,7 @@ public class GPIOInputManager {
                 gpio7 = value;
                 SocketGPRSThread.getInstance().put(
                     Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                    + Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI())
+                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
                     + "/gpio/7",
                     Settings.getInstance().getSetting("qos", 1),
                     Settings.getInstance().getSetting("retain", true),

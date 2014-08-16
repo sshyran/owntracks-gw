@@ -29,8 +29,6 @@ public class CommandProcessor implements GlobCost {
     private final String upgrade = "upgrade";
     private final String close = "close";
     private final String reconnect = "reconnect";
-    private final String secure = "secure";
-    private final String magic = "magic";
     private final String exec = "exec";
     private final String destroy = "destroy";
     private final String log = "log";
@@ -128,7 +126,7 @@ public class CommandProcessor implements GlobCost {
             if (json != null) {
                 SocketGPRSThread.getInstance().put(
                     settings.getSetting("publish", "owntracks/gw/")
-                    + settings.getSetting("clientID", InfoStato.getInstance().getIMEI()),
+                    + settings.getSetting("clientID", MicroManager.getInstance().getIMEI()),
                     settings.getSetting("qos", 1),
                     settings.getSetting("retain", true),
                     json.getBytes());
@@ -173,14 +171,8 @@ public class CommandProcessor implements GlobCost {
         } else if (command.equalsIgnoreCase(upgrade)) {
             return upgradeCommand(parameters);
 
-        } else if (command.equalsIgnoreCase(secure)) {
-            return secureCommand(parameters);
-
         } else if (command.equalsIgnoreCase(exec)) {
             return execCommand(parameters);
-
-        } else if (command.equalsIgnoreCase(magic)) {
-            return magicCommand(parameters);
 
         } else if (command.equalsIgnoreCase(dump)) {
             String combined;
@@ -241,20 +233,20 @@ public class CommandProcessor implements GlobCost {
     }
 
     boolean stateCommand(String[] parameters) {
-        message = "NUMSAT:" + InfoStato.getInstance().getNumSat();
+        message = "NUMSAT:" + LocationManager.getInstance().getNumSat();
         message = message.concat(";BEARER:" + Bearer.getInstance().getBearerState());
-        message = message.concat(";CREG:" + InfoStato.getInstance().getCREG());
-        message = message.concat(";CGREG:" + InfoStato.getInstance().getCGREG());
-        message = message.concat(";ERR:" + InfoStato.getInstance().getERROR());
+        message = message.concat(";CREG:" + SocketGPRSThread.getInstance().creg);
+        message = message.concat(";CGREG:" + SocketGPRSThread.getInstance().cgreg);
         message = message.concat(";BATT:" + BatteryManager.getInstance().getBatteryVoltage());
         message = message.concat(";EXTV:" + BatteryManager.getInstance().getExternalVoltage());
-        message = message.concat(";t2:" + InfoStato.getInstance().getTask2Timer());
         message = message.concat(";gpsQ:" + SocketGPRSThread.getInstance().qSize());
         message = message.concat(";sgt:" + (SocketGPRSThread.getInstance().isSending() ? "1" : "0"));
-        message = message.concat(";uFW:" + InfoStato.getInstance().getReleaseMicro());
+        message = message.concat(";uFW:" + MicroManager.getInstance().getRelease()
+                + "," + MicroManager.getInstance().getBootRelease()
+                + "," + MicroManager.getInstance().getJavaRelease());
         message = message.concat(";SW:" + Settings.getInstance().getSetting("MIDlet-Version", "unknown"));
-        message = message.concat(";EG5:" + InfoStato.getInstance().getREV());
-        message = message.concat(";IMEI:" + InfoStato.getInstance().getIMEI());
+        message = message.concat(";EG5:" + MicroManager.getInstance().getInfo());
+        message = message.concat(";IMEI:" + MicroManager.getInstance().getIMEI());
         return true;
     }
 
@@ -315,7 +307,7 @@ public class CommandProcessor implements GlobCost {
     
     boolean upgradeCommand(String[] parameters) {
         if (parameters.length == 1) {
-            String clientID = Settings.getInstance().getSetting("clientID", InfoStato.getInstance().getIMEI());
+            String clientID = Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI());
             String otapURI = Settings.getInstance().getSetting("otapURI", "");
             String notifyURI = Settings.getInstance().getSetting("notifyURI", "");
             otapURI = replaceString(otapURI, "@", clientID);
@@ -342,9 +334,9 @@ public class CommandProcessor implements GlobCost {
                 System.out.println("upgrade " + otap);
             }
 
-            ATManager.getInstance().executeCommand(otap);
-            ATManager.getInstance().executeCommand("AT^SJOTAP\r");
-            message = "upgrade " + otap;
+            String response1 = ATManager.getInstance().executeCommandSynchron(otap);
+            String response2 = ATManager.getInstance().executeCommandSynchron("AT^SJOTAP\r");
+            message = "upgrade " + response1 + " " + response2;
             return true;
         } else {
             message = "usage " + upgrade;
@@ -367,97 +359,13 @@ public class CommandProcessor implements GlobCost {
         }
     }
 
-    boolean secureCommand(String[] parameters) {
-        if (parameters.length == 3) {
-            try {
-                SecureConnection secc;
-                InputStream is;
-                OutputStream os;
-
-                message = "Opening a SecureConnection to " + parameters[1] + CRLF;
-                secc = (SecureConnection) Connector.open(parameters[1]);
-                SecurityInfo info = secc.getSecurityInfo();
-                message = message.concat("ProtocolName " + info.getProtocolName() + CRLF);
-                message = message.concat("ProtocolVersion " + info.getProtocolVersion() + CRLF);
-                message = message.concat("CipherSuite " + info.getCipherSuite() + CRLF);
-
-                message = message.concat("Issuer " + info.getServerCertificate().getIssuer() + CRLF);
-                message = message.concat("Serial " + info.getServerCertificate().getSerialNumber() + CRLF);
-                message = message.concat("SigAlgName " + info.getServerCertificate().getSigAlgName() + CRLF);
-                message = message.concat("Subject " + info.getServerCertificate().getSubject() + CRLF);
-                message = message.concat("Type " + info.getServerCertificate().getType() + CRLF);
-                message = message.concat("Version " + info.getServerCertificate().getVersion() + CRLF);
-
-                secc.setSocketOption(SocketConnection.LINGER, 5);
-
-                is = secc.openInputStream();
-                os = secc.openOutputStream();
-                String request = parameters[2].replace('_', ' ');
-                message = message.concat("Request: " + request + CRLF);
-                os.write((request + "\r\n\r\n").getBytes());
-
-                int ch = 0;
-                StringBuffer buffer = new StringBuffer();
-                while (ch != -1) {
-                    buffer.append((char) is.read());
-                    if (buffer.length() > 200) {
-                        break;
-                    }
-                }
-
-                message = message.concat("Response " + CRLF + buffer.toString() + CRLF);
-
-                is.close();
-                os.close();
-                secc.close();
-
-            } catch (IllegalArgumentException iae) {
-                message = message.concat("IllegalArgumentException " + iae.getMessage());
-            } catch (CertificateException ce) {
-                message = message.concat("CertificateException " + ce.getMessage());
-            } catch (IOException ex) {
-                message = message.concat("IOException " + ex.getMessage());
-            }
-            return true;
-
-        } else {
-            message = "usage " + secure + " url message";
-            return false;
-        }
-    }
     boolean execCommand(String[] parameters) {
         if (parameters.length == 2) {
-            ATManager.getInstance().executeCommand(parameters[1] + "\r");
-            message = "To see response set gsmDebug=1";
+            String response = ATManager.getInstance().executeCommandSynchron(parameters[1] + "\r");
+            message = response;
             return true;
         } else {
             message = "usage " + exec + " at-cmd";
-            return false;
-        }
-    }
-    boolean magicCommand(String[] parameters) {
-        if (parameters.length == 2) {
-            try {
-                Date date = new Date(Long.parseLong(parameters[1]));
-                message = date.toString();
-            } catch (NumberFormatException nfe) {
-                message = message.concat("IllegalArgumentException " + parameters[1]);
-                return false;
-            }
-            return true;
-        } else if (parameters.length == 3) {
-            DateParser dp = new DateParser(parameters[1], parameters[2]);
-            Date date = dp.getDate();
-            if (date != null) {
-                message = "tst " + date.getTime() + CRLF;
-                message = message.concat("toString " + date.toString()) + CRLF;
-                return true;
-            } else {
-                message = "Parsing error";
-                return false;
-            }
-        } else {
-            message = "usage " + magic + " timestamp | YYMMDD HHMMSS";
             return false;
         }
     }

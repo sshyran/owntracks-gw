@@ -92,7 +92,7 @@ public class UpdateCSD extends Thread implements GlobCost {
                     System.out.println("Th*UpdateCSD: I'm responding to the CSD call");
                 }
                 //InfoStato.getInstance().setATexec(true);
-                Mailboxes.getInstance(2).write("ATA\r");
+                ATManager.getInstance().executeCommandSynchron("ATA\r");
 
                 // Wait until CSD connection is established
                 while (InfoStato.getInstance().getCSDconnect() == false) {
@@ -117,19 +117,19 @@ public class UpdateCSD extends Thread implements GlobCost {
                 if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*UpdateCSD: Open CSD stream");
                 }
-                Mailboxes.getInstance(2).write(csdOpen);
+                ATManager.getInstance().executeCommandSynchron(csdOpen);
 
                 // Write on output stream
                 if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*UpdateCSD: Write on output stream");
                 }
-                Mailboxes.getInstance(2).write(csdWrite + "\n\rGreenwich Connected\n\r");
+                ATManager.getInstance().executeCommandSynchron(csdWrite + "\n\rGreenwich Connected\n\r");
 
                 // Read from input stream
                 if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*UpdateCSD: Read from input stream");
                 }
-                Mailboxes.getInstance(2).write(csdRead);
+                ATManager.getInstance().executeCommandSynchron(csdRead);
 
 		    	// ... authentication and commands ...
                 // Wait until CSD connection is used
@@ -150,7 +150,7 @@ public class UpdateCSD extends Thread implements GlobCost {
                 if (Settings.getInstance().getSetting("generalDebug", false)) {
                     System.out.println("Th*UpdateCSD: I'm releasing CSD call");
                 }
-                ATManager.getInstance().executeCommand("ATH\r");
+                ATManager.getInstance().executeCommandSynchron("ATH\r");
                 while (InfoStato.getInstance().getCSDWatchDog()) {
                     Thread.sleep(whileSleep);
                 }	

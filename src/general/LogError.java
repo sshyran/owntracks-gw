@@ -20,22 +20,24 @@ import com.cinterion.io.file.FileConnection;
  */
 public class LogError implements GlobCost {
     
-    private static String url = "file:///a:/log/";
-    private static String fileLog = "log.txt";
-    private static String fileOLD = "logOLD.txt";
+    private static final String url = "file:///a:/log/";
+    private static final String fileLog = "log.txt";
+    private static final String fileOLD = "logOLD.txt";
 
+    private static boolean free = true;
+    
     public LogError(String error) {
         if (Settings.getInstance().getSetting("generalDebug", false)) {
             System.out.println("LogError: " + error);
         }
         try {
-            while (!InfoStato.getLogSemaphore()) {
+            while (!getLogSemaphore()) {
                 Thread.sleep(1);
             }
         } catch (InterruptedException e) {
         }
         writeError(error);
-        InfoStato.freeLogSemaphore();
+        freeLogSemaphore();
     }
 
     /* 
@@ -99,7 +101,7 @@ public class LogError implements GlobCost {
     private static StringBuffer readLog(String fileName) {
         StringBuffer buffer = null;
         try {
-            while (!InfoStato.getLogSemaphore()) {
+            while (!getLogSemaphore()) {
                 Thread.sleep(1);
             }
         } catch (InterruptedException ie) {
@@ -120,7 +122,7 @@ public class LogError implements GlobCost {
         } catch (IOException ioe) {
         } catch (SecurityException e) {
         }
-        InfoStato.freeLogSemaphore();
+        freeLogSemaphore();
         return buffer;
     }
     
@@ -133,7 +135,7 @@ public class LogError implements GlobCost {
     
     public static void deleteLog() {
         try {
-            while (!InfoStato.getLogSemaphore()) {
+            while (!getLogSemaphore()) {
                 Thread.sleep(1);
             }
         } catch (InterruptedException e) {
@@ -149,6 +151,21 @@ public class LogError implements GlobCost {
 
         } catch (SecurityException e) {
         }
-        InfoStato.freeLogSemaphore();
+        freeLogSemaphore();
     }
+
+    synchronized static boolean getLogSemaphore() {
+        if (!free) {
+            return false;
+        } else {
+            free = false;
+            return true;
+        }
+    }
+
+    synchronized static void freeLogSemaphore() {
+        free = true;
+    }
+
+
 }

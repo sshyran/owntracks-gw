@@ -92,7 +92,7 @@ public class TimeoutTask extends TimerTask implements GlobCost {
                 }
 
                 //System.out.println("TimeoutTask, trackTimeout: STARTED");
-                Mailboxes.getInstance(0).write(msgChiaveAttivata);
+                //Mailboxes.getInstance(0).write(msgChiaveAttivata);
 
             } //trackTimeout
 
