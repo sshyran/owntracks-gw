@@ -240,7 +240,6 @@ public class CommandProcessor implements GlobCost {
         message = message.concat(";BATT:" + BatteryManager.getInstance().getBatteryVoltage());
         message = message.concat(";EXTV:" + BatteryManager.getInstance().getExternalVoltage());
         message = message.concat(";gpsQ:" + SocketGPRSThread.getInstance().qSize());
-        message = message.concat(";sgt:" + (SocketGPRSThread.getInstance().isSending() ? "1" : "0"));
         message = message.concat(";uFW:" + MicroManager.getInstance().getRelease()
                 + "," + MicroManager.getInstance().getBootRelease()
                 + "," + MicroManager.getInstance().getJavaRelease());

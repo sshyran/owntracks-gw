@@ -14,11 +14,14 @@ import com.cinterion.misc.Watchdog;
  * @author christoph
  */
 public class WatchDogTask extends TimerTask {
+
     final private int periodSec = 29;
     final private int holdSec = 2;
     final private int timeoutSec = 90;
 
     final private Timer timer;
+
+    private boolean gpio6On = false;
 
     public boolean gpsRunning;
     public boolean GPRSRunning;
@@ -29,38 +32,37 @@ public class WatchDogTask extends TimerTask {
         timer = new Timer();
         timer.scheduleAtFixedRate(this, 0, periodSec * 1000);
     }
-    
+
     public void stop() {
         timer.cancel();
         Watchdog.start(0);
-    } 
-            
+    }
+
     public void run() {
+        if (Settings.getInstance().getSetting("timerDebug", false)) {
+            System.out.println("WatchDogTask " + System.currentTimeMillis());
+        }
+
+        if (gpsRunning && GPRSRunning) {
             if (Settings.getInstance().getSetting("timerDebug", false)) {
-                System.out.println("WatchDogTask " + System.currentTimeMillis());
+                System.out.println("WatchDogTask will kick");
             }
 
-            if (gpsRunning && GPRSRunning) {
-                if (Settings.getInstance().getSetting("timerDebug", false)) {
-                    System.out.println("WatchDogTask will kick");
-                }
+            gpsRunning = false;
+            GPRSRunning = false;
 
-                gpsRunning = false;
-                GPRSRunning = false;
-                
-                Watchdog.kick();
+            Watchdog.kick();
 
-                try {
-                    ATManager.getInstance().executeCommandSynchron("at^ssio=5,1\r");
-                    Thread.sleep(holdSec * 1000);
-                    ATManager.getInstance().executeCommandSynchron("at^ssio=5,0\r");
-
-                    ATManager.getInstance().executeCommandSynchron("at^ssio=5,1\r");
-                    Thread.sleep(holdSec * 1000);
-                    ATManager.getInstance().executeCommandSynchron("at^ssio=5,0\r");
-                } catch (InterruptedException ie) {
-                    //
-                }
+            if (gpio6On) {
+                ATManager.getInstance().executeCommandSynchron("at^ssio=5,0\r");
+            } else {
+                ATManager.getInstance().executeCommandSynchron("at^ssio=5,1\r");
             }
+            gpio6On = !gpio6On;
+
+            if (Settings.getInstance().getSetting("timerDebug", false)) {
+                System.out.println("WatchDogTask gpio6 " + gpio6On);
+            }
+        }
     }
 }
