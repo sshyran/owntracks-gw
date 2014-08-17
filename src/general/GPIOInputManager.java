@@ -8,12 +8,6 @@ public class GPIOInputManager {
 
     public GPIOInputManager() {
         /*
-        * GPIO DRIVER ACTIVATION
-        * 
-        */
-        ATManager.getInstance().executeCommandSynchron("at^spio=1\r");
-
-        /*
          * Activate
          */
         ATManager.getInstance().executeCommandSynchron("at^scpin=1,0,0\r");

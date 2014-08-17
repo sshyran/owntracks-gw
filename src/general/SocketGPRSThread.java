@@ -116,7 +116,8 @@ public class SocketGPRSThread extends Thread implements GlobCost {
 
     public void run() {
         while (!terminate) {
-            AppMain.getInstance().watchDogTask.GPRSRunning = true;
+            AppMain.getInstance().userwareWatchDogTask.GPRSRunning = true;
+            AppMain.getInstance().gpio6WatchDogTask.GPRSRunning = true;
             Publish publish = null;
 
             if (!sending) {

@@ -49,6 +49,10 @@ public class ATManager implements GlobCost, ATCommandListener, ATCommandResponse
         try {
             if (listener == null) {
                 response = atCommand.send(command);
+                if (Settings.getInstance().getSetting("gsmDebug", false)) {
+                    System.out.println("commandResponse: " + response);
+                    System.out.flush();
+                }
             } else {
                 atCommand.send(command, listener);
             }

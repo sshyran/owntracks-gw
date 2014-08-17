@@ -65,7 +65,8 @@ public class CommGPSThread extends Thread {
             init_GPS(os);
 
             while (!terminate) {
-                AppMain.getInstance().watchDogTask.gpsRunning = true;
+                AppMain.getInstance().userwareWatchDogTask.gpsRunning = true;
+                AppMain.getInstance().gpio6WatchDogTask.gpsRunning = true;
 
                 if (is.available() > 0) {
                     int c;

@@ -13,26 +13,27 @@ import com.cinterion.misc.Watchdog;
  *
  * @author christoph
  */
-public class WatchDogTask extends TimerTask {
+public class UserwareWatchDogTask extends TimerTask {
 
     final private int periodSec = 29;
-    final private int holdSec = 2;
     final private int timeoutSec = 90;
 
-    final private Timer timer;
-
-    private boolean gpio6On = false;
+    private Timer timer = null;
 
     public boolean gpsRunning;
     public boolean GPRSRunning;
 
-    public WatchDogTask() {
-        ATManager.getInstance().executeCommandSynchron("at^scpin=1,5,1,0\r");
+    public UserwareWatchDogTask() {
+        start();
+    }
+
+    final public void start() {
         Watchdog.start(timeoutSec);
         timer = new Timer();
         timer.scheduleAtFixedRate(this, 0, periodSec * 1000);
-    }
 
+    }
+    
     public void stop() {
         timer.cancel();
         Watchdog.start(0);
@@ -40,29 +41,18 @@ public class WatchDogTask extends TimerTask {
 
     public void run() {
         if (Settings.getInstance().getSetting("timerDebug", false)) {
-            System.out.println("WatchDogTask " + System.currentTimeMillis());
+            System.out.println("UserwareWatchDogTask " + System.currentTimeMillis()/1000);
         }
 
         if (gpsRunning && GPRSRunning) {
             if (Settings.getInstance().getSetting("timerDebug", false)) {
-                System.out.println("WatchDogTask will kick");
+                System.out.println("UserwareWatchDogTask will kick watchdog");
             }
 
             gpsRunning = false;
             GPRSRunning = false;
 
             Watchdog.kick();
-
-            if (gpio6On) {
-                ATManager.getInstance().executeCommandSynchron("at^ssio=5,0\r");
-            } else {
-                ATManager.getInstance().executeCommandSynchron("at^ssio=5,1\r");
-            }
-            gpio6On = !gpio6On;
-
-            if (Settings.getInstance().getSetting("timerDebug", false)) {
-                System.out.println("WatchDogTask gpio6 " + gpio6On);
-            }
         }
     }
 }

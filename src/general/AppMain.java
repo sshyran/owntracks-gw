@@ -70,7 +70,10 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
      */
     TimeoutTask regTimeoutTask;
 
-    WatchDogTask watchDogTask;
+    UserwareWatchDogTask userwareWatchDogTask;
+    GPIO6WatchDogTask gpio6WatchDogTask;
+
+
 
     /**
      * <BR> Timer for delay tracking start when key is activated.
@@ -176,11 +179,6 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
      */
     protected void startApp() throws MIDletStateChangeException {
         AppMain.appMain = this;
-        if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("AppMain: watchdog starting");
-        }
-        watchDogTask = new WatchDogTask();
-
         try {
             if (Settings.getInstance().getSetting("mainDebug", false)) {
                 System.out.println("AppMain: Recover system settings in progress...");
@@ -225,7 +223,16 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
                 System.out.println("AppMain: STATOexecApp is " + executionState);
             }
 
+            ATManager.getInstance().executeCommandSynchron("AT\r");
             ATManager.getInstance().executeCommandSynchron("at+cpin=5555\r");
+            ATManager.getInstance().executeCommandSynchron("at^spio=1\r");
+            
+            if (Settings.getInstance().getSetting("mainDebug", false)) {
+                System.out.println("AppMain: watchdogs starting");
+            }
+
+            userwareWatchDogTask = new UserwareWatchDogTask();
+            gpio6WatchDogTask = new GPIO6WatchDogTask();
 
             if (executionState.equalsIgnoreCase(execFIRST)
                     || executionState.equalsIgnoreCase(execPOSTRESET)) {
@@ -285,7 +292,6 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
 
             movSens.movSensOff();
             
-            ATManager.getInstance().executeCommandSynchron("AT\r");
             ATManager.getInstance().executeCommandSynchron("at+crc=1\r");
 
             // Not sure what to do here
@@ -456,9 +462,10 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
         
         ATManager.getInstance().executeCommandSynchron("AT^SPIO=0\r");
         
-        watchDogTask.stop();
+        gpio6WatchDogTask.stop();
+        userwareWatchDogTask.stop();
         if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("AppMain: watchdog stopped");
+            System.out.println("AppMain: watchdogs stopped");
             System.out.flush();
         }
         
