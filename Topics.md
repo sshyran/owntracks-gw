@@ -35,6 +35,16 @@ owntracks/gw/GWCAR-jp/sw/gw 02.16B,02.01,02.16
 owntracks/gw/GWCAR-jp/sw/midlet OwnTracks Choral 0.5.43
 ```
 
+## `../voltage`
+
+Built-in battery (`batt`) and external (`ext`) voltages are published to `../voltage/` when voltage changes "significantly" (this is currently when a change of 0.1V is detected).
+
+```
+owntracks/gw/GWCAR-jp/voltage/batt 4.4V
+owntracks/gw/GWCAR-jp/voltage/ext 12.2V
+```
+
+
 ## `../gpio/`
 
 The *inverted* status of the GPIO pins are published under the `gpio/` subtopic, [as documented](GPIO.md).
