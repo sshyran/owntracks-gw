@@ -124,8 +124,9 @@ locations are published when tracking is on and maxInterval has passed or minSpe
 
 | Key  | Values | Default | Validity | Description |
 |:-----|:------:|:-------:|---------:|:------------|
-| display     | 0/1 | 0 | immediate | display the raw incoming GPS messages |
 | generalDebug| 0/1 | 0 | immediate|controls the debug output for most of the code |
+| locDebug    | 0/1 | 0 | immediate|controls the debug output of the LocationManager |
+| timerDebug  | 0/1 | 0 | immediate|controls the debug output of the WatchDogs |
 | usbDebug    | 0/1 | 0 | immediate|if set to 1, debug output flows to USB instead of ASC0 |
 | gsmDebug    | 0/1 | 0 | immediate|controls the debug output for all AT commands and responses |
 | mainDebug   | 0/1 | 0 | immediate|controls the debug output for main taks |
