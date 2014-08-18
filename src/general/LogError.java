@@ -18,7 +18,7 @@ import com.cinterion.io.file.FileConnection;
  * @author matteobo
  *
  */
-public class LogError implements GlobCost {
+public class LogError {
     
     private static final String url = "file:///a:/log/";
     private static final String fileLog = "log.txt";
@@ -62,7 +62,7 @@ public class LogError implements GlobCost {
                 }
 
                 DataOutputStream dos = fconn.openDataOutputStream();
-                dos.write(("Versione software: " + Settings.getInstance().getSetting("MIDlet-Version", "unknown") + "\r\n").getBytes());
+                dos.write(("Versione software: " + AppMain.getInstance(). getAppProperty("MIDlet-Version") + "\r\n").getBytes());
                 dos.flush();
                 dos.close();
                 //append writing

@@ -1,0 +1,125 @@
+@startuml
+class choral.io.CheckUpgrade
+class choral.io.InfoMicro
+class choral.io.MovSens
+class choral.io.PowerManager
+class choral.io.UserLed
+class com.cinterion.io.ATCommand
+class com.cinterion.io.ATCommandFailedException
+class com.cinterion.io.BearerControl
+class com.cinterion.io.file.FileConnection
+class com.cinterion.misc.Watchdog
+class com.m2mgo.util.GPRSConnectOptions
+class general.ATManager
+class general.AppMain
+class general.BatteryManager
+class general.Bearer
+class general.CommASC0Thread
+class general.CommGPSThread
+class general.CommandProcessor
+class general.DateParser
+class general.GPIO6WatchDogTask
+class general.GPIOInputManager
+class general.InfoStato
+class general.Location
+class general.LocationManager
+class general.LogError
+class general.MIDlet
+class general.MQTTHandler
+class general.MicroManager
+class general.ProcessSMSThread
+class general.Queue
+class general.Settings
+class general.SocketGPRSThread
+class general.StringSplitter
+class general.TimeoutTask
+class general.UpdateCSD
+class general.UserwareWatchDogTask
+class java.io.IOException
+class java.io.InputStream
+class java.io.OutputStream
+class java.lang.Thread
+class java.util.Date
+class java.util.Enumeration
+class java.util.Timer
+class java.util.TimerTask
+class java.util.Vector
+class javax.microedition.io.CommConnection
+class javax.microedition.io.Connector
+class javax.microedition.midlet.MIDletStateChangeException
+class org.eclipse.paho.client.mqttv3.MqttClient
+class org.eclipse.paho.client.mqttv3.MqttConnectOptions
+class org.eclipse.paho.client.mqttv3.MqttDeliveryToken
+class org.eclipse.paho.client.mqttv3.MqttException
+class org.eclipse.paho.client.mqttv3.MqttMessage
+class org.eclipse.paho.client.mqttv3.MqttSecurityException
+class org.eclipse.paho.client.mqttv3.MqttTopic
+class org.eclipse.paho.client.mqttv3.internal.MemoryPersistence
+interface choral.io.MovListener
+interface com.cinterion.io.BearerControlListener
+interface general.ATCommandListener
+interface general.ATCommandResponseListener
+interface org.eclipse.paho.client.mqttv3.MqttCallback
+general.ATManager --|> general.ATCommandListener
+general.ATManager --|> general.ATCommandResponseListener
+general.AppMain ..> choral.io.CheckUpgrade
+general.AppMain ..> choral.io.MovSens
+general.AppMain ..> com.cinterion.io.BearerControl
+general.AppMain ..> com.m2mgo.util.GPRSConnectOptions
+general.AppMain --|> general.MIDlet
+general.AppMain ..> java.io.IOException
+general.AppMain --|> choral.io.MovListener
+general.BatteryManager ..> choral.io.PowerManager
+general.BatteryManager ..> java.io.IOException
+general.BatteryManager ..> java.util.Timer
+general.BatteryManager ..> java.util.TimerTask
+general.Bearer ..> com.m2mgo.util.GPRSConnectOptions
+general.Bearer --|> com.cinterion.io.BearerControlListener
+general.CommASC0Thread ..> java.io.IOException
+general.CommASC0Thread ..> java.io.InputStream
+general.CommASC0Thread ..> java.io.OutputStream
+general.CommASC0Thread --|> java.lang.Thread
+general.CommASC0Thread ..> javax.microedition.io.CommConnection
+general.CommASC0Thread ..> javax.microedition.io.Connector
+general.CommGPSThread --|> java.lang.Thread
+general.CommandProcessor ..> com.cinterion.io.ATCommand
+general.CommandProcessor ..> com.cinterion.io.ATCommandFailedException
+general.CommandProcessor ..> java.io.IOException
+general.CommandProcessor ..> java.util.Date
+general.CommandProcessor ..> java.util.Enumeration
+general.CommandProcessor ..> javax.microedition.midlet.MIDletStateChangeException
+general.DateParser ..> java.util.Date
+general.GPIO6WatchDogTask ..> java.util.Timer
+general.GPIO6WatchDogTask --|> java.util.TimerTask
+general.Location ..> java.util.Date
+general.LocationManager ..> choral.io.UserLed
+general.LocationManager ..> java.io.IOException
+general.LocationManager ..> java.util.Date
+general.LocationManager ..> java.util.Timer
+general.LocationManager ..> java.util.TimerTask
+general.LogError ..> com.cinterion.io.file.FileConnection
+general.LogError ..> javax.microedition.io.Connector
+general.MQTTHandler ..> org.eclipse.paho.client.mqttv3.MqttClient
+general.MQTTHandler ..> org.eclipse.paho.client.mqttv3.MqttConnectOptions
+general.MQTTHandler ..> org.eclipse.paho.client.mqttv3.MqttDeliveryToken
+general.MQTTHandler ..> org.eclipse.paho.client.mqttv3.MqttException
+general.MQTTHandler ..> org.eclipse.paho.client.mqttv3.MqttMessage
+general.MQTTHandler ..> org.eclipse.paho.client.mqttv3.MqttSecurityException
+general.MQTTHandler ..> org.eclipse.paho.client.mqttv3.MqttTopic
+general.MQTTHandler ..> org.eclipse.paho.client.mqttv3.internal.MemoryPersistence
+general.MQTTHandler --|> org.eclipse.paho.client.mqttv3.MqttCallback
+general.MicroManager ..> choral.io.InfoMicro
+general.MicroManager ..> java.io.IOException
+general.ProcessSMSThread --|> java.lang.Thread
+general.Queue ..> java.util.Vector
+general.Settings ..> com.cinterion.io.file.FileConnection
+general.Settings ..> javax.microedition.io.Connector
+general.SocketGPRSThread --|> java.lang.Thread
+general.StringSplitter ..> java.util.Vector
+general.TimeoutTask --|> java.util.TimerTask
+general.UpdateCSD --|> java.lang.Thread
+general.UpdateCSD ..> java.util.Timer
+general.UserwareWatchDogTask ..> com.cinterion.misc.Watchdog
+general.UserwareWatchDogTask ..> java.util.Timer
+general.UserwareWatchDogTask --|> java.util.TimerTask
+@enduml

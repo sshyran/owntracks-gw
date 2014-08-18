@@ -14,7 +14,7 @@ package general;
  * @author alessioza
  *
  */
-public class SocketGPRSThread extends Thread implements GlobCost {
+public class SocketGPRSThread extends Thread {
 
     final private int nothingSleep = 500;
     final private int errorSleep = 5000;
@@ -109,7 +109,6 @@ public class SocketGPRSThread extends Thread implements GlobCost {
 
     public void close() {
         MQTTHandler.getInstance().disconnect();
-        InfoStato.getInstance().setEnableCSD(true);
         ATManager.getInstance().executeCommandSynchron("at+cgatt=0\r");
         sending = false;
     }

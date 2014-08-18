@@ -22,7 +22,7 @@ import java.io.IOException;
  * @version	1.00 <BR> <i>Last update</i>: 28-05-2008
  * @author matteobo
  */
-public class AppMain extends MIDlet implements GlobCost, MovListener {
+public class AppMain extends MIDlet implements MovListener {
     private String executionState;
     
     private String text;
@@ -33,7 +33,8 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
     MovSens movSens;
     boolean moved = false;
 
-    public boolean shouldReboot = false;
+    public boolean invalidSIM = false;
+    public boolean network = true;
     
     public boolean airplaneMode = false;
 
@@ -41,24 +42,37 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
     final public int motionWakeup = 2;
     final public int alarmWakeup = 3;
     public int wakeupMode = motionWakeup;
+    
+        /**
+     * Application execution status
+     */
+    public static final String execFIRST = "FirstExecution";
+    public static final String execNORMALE = "NormalExecution";
+    public static final String execCHIAVEattivata = "KeyOnExecution";
+    public static final String execTrack = "Tracking";
+    public static final String execCHIAVEdisattivata = "KeyOffExecution";
+    public static final String execMOVIMENTO = "MoveExecution";
+    public static final String execPOSTRESET = "PostResetExecution";
+    public static final String execBATTSCARICA = "BatteriaScaricaExecution";
+    public static final String execSMStrack = "TrackingFromSMSExecution";
 
     /**
-     * <BR> Thread for update configuration parameters through CSD call.
+     * Application closure modes
      */
-    UpdateCSD th7;
-    /**
-     * <BR> Thread for (received) SMS management.
-     */
-    ProcessSMSThread processSMSThread;
+    public static final String closeAppFactory = "Factory";
+    public static final String closeAppDisattivChiaveOK = "DisattivChiaveOK";
+    public static final String closeAppDisattivChiaveTimeout = "DisattivChiaveTimeout";
+    public static final String closeAppDisattivChiaveFIRST = "DisattivChiaveFIRST";
+    public static final String closeAppNormaleOK = "NormaleOK";
+    public static final String closeAppNormaleTimeout = "NormaleTimeout";
+    public static final String closeAppMovimentoOK = "SensMovOK";
+    public static final String closeAppResetHW = "ResetHW";
+    public static final String closeAppBatteriaScarica = "BatteriaScarica";
+    public static final String closeAppPostReset = "DisattivChiavePostReset";
+    public static final String closeAppOTAP = "OTAP";
+    public static final String closeAIR = "closeAIR";
 
-    /*
-     * file and recordstore
-     */
-    /**
-     * <BR> Manager for save and take data from configuration file.
-     */
     Settings settings;
-    InfoStato infoS;
 
     /**
      * <BR> Timer for cyclic monitoring of network registration status.
@@ -72,8 +86,6 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
 
     UserwareWatchDogTask userwareWatchDogTask;
     GPIO6WatchDogTask gpio6WatchDogTask;
-
-
 
     /**
      * <BR> Timer for delay tracking start when key is activated.
@@ -98,23 +110,18 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
         settings = Settings.getInstance();
         settings.setfileURL("file:///a:/file/OwnTracks.properties");
 
-        settings.setSettingNoWrite("MIDlet-Name", getAppProperty("MIDlet-Name"));
-        settings.setSettingNoWrite("MIDlet-Vendor", getAppProperty("MIDlet-Vendor"));
-        settings.setSetting("MIDlet-Version", getAppProperty("MIDlet-Version"));
-
         System.out.println(
-                "Running " + settings.getSetting("MIDlet-Name", "")
-                + " " + settings.getSetting("MIDlet-Vendor", "")
-                + " " + settings.getSetting("MIDlet-Version", "")
+                "Running " + getAppProperty("MIDlet-Name")
+                + " " + getAppProperty("MIDlet-Vendor")
+                + " " +  getAppProperty("MIDlet-Version")
         );
 
         ATManager.getInstance();
-        infoS = InfoStato.getInstance();
 
         CommGPSThread.getInstance();
-        processSMSThread = new ProcessSMSThread();
         CommASC0Thread.getInstance();
         SocketGPRSThread.getInstance();
+        ProcessSMSThread.setup();
 
         SocketGPRSThread.getInstance().put(
                 Settings.getInstance().getSetting("publish", "owntracks/gw/")
@@ -122,9 +129,9 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
                 + "/sw/midlet",
                 Settings.getInstance().getSetting("qos", 1),
                 Settings.getInstance().getSetting("retain", true),
-                (settings.getSetting("MIDlet-Name", "")
-                + " " + settings.getSetting("MIDlet-Vendor", "")
-                + " " + settings.getSetting("MIDlet-Version", "")).getBytes()
+                (getAppProperty("MIDlet-Name")
+                + " " + getAppProperty("MIDlet-Vendor")
+                + " " +  getAppProperty("MIDlet-Version")).getBytes()
         );
 
         BearerControl.addListener(Bearer.getInstance());
@@ -241,7 +248,7 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
                     System.out.println("AppMain: Set AUTOSTART...");
                 }
                 ATManager.getInstance().executeCommandSynchron("at^scfg=\"Userware/Autostart/AppName\",\"\",\"a:/app/"
-                        + Settings.getInstance().getSetting("MIDlet-Name", "OwnTracks") + ".jar\"\r");
+                        + AppMain.getInstance().getAppProperty("MIDlet-Name") + ".jar\"\r");
                 ATManager.getInstance().executeCommandSynchron("at^scfg=\"Userware/Autostart/Delay\",\"\",10\r");
                 ATManager.getInstance().executeCommandSynchron("at^scfg=\"Userware/Autostart\",\"\",\"1\"\r");
                 if (Settings.getInstance().getSetting("usbDebug", false)) {
@@ -308,17 +315,12 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
                 ATManager.getInstance().executeCommandSynchron("AT+CGREG=1\r");
 
                 CommGPSThread.getInstance().start();
-                processSMSThread.start();
                 CommASC0Thread.getInstance().start();
                 SocketGPRSThread.getInstance().start();
-
-                InfoStato.getInstance().setEnableCSD(true);
 
                 while (!loop()) {
                     Thread.sleep(1000);
                 }
-
-                InfoStato.getInstance().setEnableCSD(false);
 
                 CommGPSThread.getInstance().terminate = true;
                 CommGPSThread.getInstance().join();
@@ -506,9 +508,9 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
     }
 
     private boolean loop() {
-        if (wakeupMode == ignitionWakeup && GPIOInputManager.getInstance().gpio7 == 1) {
+        if (invalidSIM) {
             if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("ignitionWakeup && gpio7");
+                System.out.println("invalidSim");
             }
             return true;
         }
@@ -551,63 +553,4 @@ public class AppMain extends MIDlet implements GlobCost, MovListener {
         }
         return s;
     }
-
-//#ifdef TODO
-//#             //*** [12i] RING EVENT, FOR CSD CALL (IF POSSIBLE)
-//#                         /*
-//#              * 'msgRING' received and CSD procedure enabled
-//#              * I can activate CSD procedure and disable every other operation
-//#              * until CSD procedure will be finished
-//#              */
-//#             if (msgRicevuto.equalsIgnoreCase(msgRING) && InfoStato.getInstance().getEnableCSD() == true && InfoStato.getInstance().getCSDattivo() == false) {
-//# 
-//#                 if (Settings.getInstance().getSetting("mainDebug", false)) {
-//#                     System.out.println("AppMain: received instruction to start CSD procedure");
-//#                 }
-//# 
-//#                 // Init and start UpdateCSD
-//#                 th7 = new UpdateCSD();
-//#                 th7.setPriority(5);
-//#                 th7.start();
-//# 
-//#                 // Wait for UpdateCSD answers to incoming call
-//#                 Thread.sleep(2000);
-//# 
-//#             } //msgRING
-//# 
-//#             if (InfoStato.getInstance().getReboot()) {
-//#                 System.out.println("Reboot for GPIO");
-//#                 /*
-//#                  if (InfoStato.getInstance().getInfoFileInt(UartNumTent) > 0) {
-//#                  FlashFile.getInstance().setImpostazione(UartNumTent, "1");
-//#                  InfoStato.getFile();
-//#                  FlashFile.getInstance().writeSettings();
-//#                  InfoStato.freeFile();
-//#                  }
-//#                  */
-//#                 restart = true;
-//#                 //break;
-//#             }
-//# 
-//#             Thread.sleep(10);
-//# 
-//#         } catch (InterruptedException ie) {
-//#             new LogError("Interrupted Exception AppMain");
-//#             restart = true;
-//#         } catch (Exception ioe) {
-//#             new LogError("Generic Exception AppMain");
-//#             restart = true;
-//#         }
-//#         if (restart == true) {
-//#             restart = false;
-//#             if (Settings.getInstance().getSetting("mainDebug", false)) {
-//#                 System.out.println("AppMain: Reboot module in progress...");
-//#             }
-//#             new LogError("Reboot for GPIO");
-//#             BatteryManager.getInstance().reboot();
-//#             return true;
-//#         }
-//#         return false;
-//#     }
-//#endif
 }

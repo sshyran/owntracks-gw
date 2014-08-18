@@ -3,22 +3,15 @@ package general;
 import com.cinterion.io.ATCommand;
 import com.cinterion.io.ATCommandFailedException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Date;
 import java.util.Enumeration;
-import javax.microedition.io.Connector;
-import javax.microedition.io.SecureConnection;
-import javax.microedition.io.SecurityInfo;
-import javax.microedition.io.SocketConnection;
 import javax.microedition.midlet.MIDletStateChangeException;
-import javax.microedition.pki.CertificateException;
 
 /**
  *
  * @author christoph krey
  */
-public class CommandProcessor implements GlobCost {
+public class CommandProcessor {
 
     private final String login = "login";
     private final String logout = "logout";
@@ -243,7 +236,7 @@ public class CommandProcessor implements GlobCost {
         message = message.concat(";uFW:" + MicroManager.getInstance().getRelease()
                 + "," + MicroManager.getInstance().getBootRelease()
                 + "," + MicroManager.getInstance().getJavaRelease());
-        message = message.concat(";SW:" + Settings.getInstance().getSetting("MIDlet-Version", "unknown"));
+        message = message.concat(";SW:" + AppMain.getInstance().getAppProperty("MIDlet-Version"));
         message = message.concat(";EG5:" + MicroManager.getInstance().getInfo());
         message = message.concat(";IMEI:" + MicroManager.getInstance().getIMEI());
         return true;

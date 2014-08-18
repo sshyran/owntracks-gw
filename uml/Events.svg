@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="306pt" style="width:723px;height:306px;" version="1.1" viewBox="0 0 723 306" width="723pt">
+    <defs>
+        <filter height="300%" id="f1" width="300%" x="-1" y="-1">
+            <feGaussianBlur result="blurOut" stdDeviation="2.0"/>
+            <feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/>
+            <feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/>
+            <feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/>
+        </filter>
+    </defs>
+    <g>
+        <line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 5.0,5.0;" x1="47" x2="47" y1="35.3516" y2="267.8125"/>
+        <line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 5.0,5.0;" x1="169" x2="169" y1="35.3516" y2="267.8125"/>
+        <line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 5.0,5.0;" x1="301" x2="301" y1="35.3516" y2="267.8125"/>
+        <line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 5.0,5.0;" x1="430" x2="430" y1="35.3516" y2="267.8125"/>
+        <line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 5.0,5.0;" x1="538" x2="538" y1="35.3516" y2="267.8125"/>
+        <line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 5.0,5.0;" x1="650" x2="650" y1="35.3516" y2="267.8125"/>
+        <rect fill="#FEFECE" filter="url(#f1)" height="30.3516" style="stroke: #A80036; stroke-width: 1.5;" width="80" x="5" y="0"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="66" x="12" y="20">ATManager</text>
+        <rect fill="#FEFECE" filter="url(#f1)" height="30.3516" style="stroke: #A80036; stroke-width: 1.5;" width="80" x="5" y="266.6484"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="66" x="12" y="286.6484">ATManager</text>
+        <rect fill="#FEFECE" filter="url(#f1)" height="30.3516" style="stroke: #A80036; stroke-width: 1.5;" width="130" x="102" y="0"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="116" x="109" y="20">ProcessSMSThread</text>
+        <rect fill="#FEFECE" filter="url(#f1)" height="30.3516" style="stroke: #A80036; stroke-width: 1.5;" width="130" x="102" y="266.6484"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="116" x="109" y="286.6484">ProcessSMSThread</text>
+        <rect fill="#FEFECE" filter="url(#f1)" height="30.3516" style="stroke: #A80036; stroke-width: 1.5;" width="106" x="246" y="0"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="92" x="253" y="20">BatteryManager</text>
+        <rect fill="#FEFECE" filter="url(#f1)" height="30.3516" style="stroke: #A80036; stroke-width: 1.5;" width="106" x="246" y="266.6484"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="92" x="253" y="286.6484">BatteryManager</text>
+        <rect fill="#FEFECE" filter="url(#f1)" height="30.3516" style="stroke: #A80036; stroke-width: 1.5;" width="124" x="366" y="0"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="110" x="373" y="20">GPIOInputManager</text>
+        <rect fill="#FEFECE" filter="url(#f1)" height="30.3516" style="stroke: #A80036; stroke-width: 1.5;" width="124" x="366" y="266.6484"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="110" x="373" y="286.6484">GPIOInputManager</text>
+        <rect fill="#FEFECE" filter="url(#f1)" height="30.3516" style="stroke: #A80036; stroke-width: 1.5;" width="65" x="504" y="0"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="51" x="511" y="20">AppMain</text>
+        <rect fill="#FEFECE" filter="url(#f1)" height="30.3516" style="stroke: #A80036; stroke-width: 1.5;" width="65" x="504" y="266.6484"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="51" x="511" y="286.6484">AppMain</text>
+        <rect fill="#FEFECE" filter="url(#f1)" height="30.3516" style="stroke: #A80036; stroke-width: 1.5;" width="131" x="583" y="0"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="117" x="590" y="20">SocketGPRSThread</text>
+        <rect fill="#FEFECE" filter="url(#f1)" height="30.3516" style="stroke: #A80036; stroke-width: 1.5;" width="131" x="583" y="266.6484"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="117" x="590" y="286.6484">SocketGPRSThread</text>
+        <polygon fill="#A80036" points="157,63.3516,167,67.3516,157,71.3516,161,67.3516" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 2.0,2.0;" x1="47" x2="163" y1="67.3516" y2="67.3516"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="98" x="54" y="62.3516">eventSMSArrived</text>
+        <polygon fill="#A80036" points="289,93.7031,299,97.7031,289,101.7031,293,97.7031" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 2.0,2.0;" x1="47" x2="295" y1="97.7031" y2="97.7031"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="95" x="54" y="92.7031">eventLowBattery</text>
+        <polygon fill="#A80036" points="418,124.0547,428,128.0547,418,132.0547,422,128.0547" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 2.0,2.0;" x1="47" x2="424" y1="128.0547" y2="128.0547"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="146" x="54" y="123.0547">eventGPIOValueChanged</text>
+        <polygon fill="#A80036" points="526.5,154.4063,536.5,158.4063,526.5,162.4063,530.5,158.4063" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 2.0,2.0;" x1="47" x2="532.5" y1="158.4063" y2="158.4063"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="97" x="54" y="153.4063">setAirplaneMode</text>
+        <polygon fill="#A80036" points="526.5,184.7578,536.5,188.7578,526.5,192.7578,530.5,188.7578" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 2.0,2.0;" x1="47" x2="532.5" y1="188.7578" y2="188.7578"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="58" x="54" y="183.7578">invalidSim</text>
+        <polygon fill="#A80036" points="638.5,215.1094,648.5,219.1094,638.5,223.1094,642.5,219.1094" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 2.0,2.0;" x1="47" x2="644.5" y1="219.1094" y2="219.1094"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="45" x="54" y="214.1094">setCreg</text>
+        <polygon fill="#A80036" points="638.5,245.4609,648.5,249.4609,638.5,253.4609,642.5,249.4609" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 2.0,2.0;" x1="47" x2="644.5" y1="249.4609" y2="249.4609"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="52" x="54" y="244.4609">setCgreg</text>
+    </g>
+</svg>

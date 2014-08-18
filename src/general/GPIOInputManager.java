@@ -38,7 +38,7 @@ public class GPIOInputManager {
         private static final GPIOInputManager INSTANCE = new GPIOInputManager();
     }
 
-    public void processSCPOL(String message) {
+    public void eventGPIOValueChanged(String message) {
         if (Settings.getInstance().getSetting("gpioDebug", false)) {
             System.out.println("Received SCPOL: " + message);
         }

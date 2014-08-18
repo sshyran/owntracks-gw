@@ -1,0 +1,13 @@
+@startuml
+ATManager ---> ProcessSMSThread: eventSMSArrived
+
+ATManager ---> BatteryManager: eventLowBattery
+
+ATManager ---> GPIOInputManager: eventGPIOValueChanged
+
+ATManager ---> AppMain: setAirplaneMode
+ATManager ---> AppMain: invalidSim
+
+ATManager ---> SocketGPRSThread: setCreg
+ATManager ---> SocketGPRSThread: setCgreg
+@enduml

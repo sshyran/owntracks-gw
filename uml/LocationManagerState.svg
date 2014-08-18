@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="342pt" style="width:876px;height:342px;" version="1.1" viewBox="0 0 876 342" width="876pt">
+    <defs>
+        <filter height="300%" id="f1" width="300%" x="-1" y="-1">
+            <feGaussianBlur result="blurOut" stdDeviation="2.0"/>
+            <feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/>
+            <feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/>
+            <feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/>
+        </filter>
+    </defs>
+    <g>
+        <ellipse cx="381" cy="33.086" fill="#000000" filter="url(#f1)" rx="10" ry="10" style="stroke: none; stroke-width: 1.0;"/>
+        <rect fill="#FEFECE" filter="url(#f1)" height="50" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="131" x="573.5" y="8.086"/>
+        <line style="stroke: #A80036; stroke-width: 1.5;" x1="573.5" x2="704.5" y1="35.6954" y2="35.6954"/>
+        <text fill="#000000" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="111" x="583.5" y="27.086">waitingForFirstFix</text>
+        <rect fill="#FEFECE" filter="url(#f1)" height="50" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="65" x="606.5" y="136.086"/>
+        <line style="stroke: #A80036; stroke-width: 1.5;" x1="606.5" x2="671.5" y1="163.6954" y2="163.6954"/>
+        <text fill="#000000" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="45" x="616.5" y="155.086">Moving</text>
+        <rect fill="#FEFECE" filter="url(#f1)" height="50" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="84" x="147" y="136.086"/>
+        <line style="stroke: #A80036; stroke-width: 1.5;" x1="147" x2="231" y1="163.6954" y2="163.6954"/>
+        <text fill="#000000" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="64" x="157" y="155.086">Stationary</text>
+        <rect fill="#FEFECE" filter="url(#f1)" height="52.7031" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="220" x="571" y="264.0859"/>
+        <line style="stroke: #A80036; stroke-width: 1.5;" x1="571" x2="791" y1="291.6953" y2="291.6953"/>
+        <text fill="#000000" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="104" x="629" y="283.0859">MovingTwoFixes</text>
+        <text fill="#000000" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="200" x="576" y="308.6953">publish (t) every minInterval seconds</text>
+        <rect fill="#FEFECE" filter="url(#f1)" height="52.7031" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="226" x="6" y="264.0859"/>
+        <line style="stroke: #A80036; stroke-width: 1.5;" x1="6" x2="232" y1="291.6953" y2="291.6953"/>
+        <text fill="#000000" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="123" x="57.5" y="283.0859">StationaryTwoFixes</text>
+        <text fill="#000000" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="206" x="11" y="308.6953">publish (T) every maxInterval seconds</text>
+        <path d="M391.114,33.086 C420.157,33.086 505.728,33.086 568.225,33.086 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="573.439,33.086,564.439,29.086,568.439,33.086,564.439,37.086,573.439,33.086" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="146" x="409.25" y="26.086">opening GPS Connection</text>
+        <path d="M639,58.38 C639,79.036 639,108.755 639,130.737 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="639,135.866,643,126.866,639,130.866,635,126.866,639,135.866" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="175" x="640" y="102.086">firstFixAssuming:publish (f)irst</text>
+        <path d="M236.423,161.086 C328.198,161.086 527.954,161.086 606.422,161.086 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="231.335,161.086,240.335,165.086,236.335,161.086,240.335,157.086,231.335,161.086" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="227" x="305.25" y="154.086">velocitySmallerMinSpeed:publish par(k)</text>
+        <path d="M646.999,186.368 C653.814,207.057 663.641,236.889 670.979,259.166 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="672.599,264.0836,673.582,254.2839,671.0345,259.3347,665.9837,256.7872,672.599,264.0836" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="43" x="663" y="230.086">nextFix</text>
+        <path d="M175.669,186.368 C164.262,207.144 147.794,237.14 135.547,259.4464 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="133.001,264.0836,140.8387,258.1194,135.4073,259.7007,133.826,254.2694,133.001,264.0836" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="43" x="160" y="230.086">nextFix</text>
+        <path d="M796.168,279.6163 C813.921,281.2736 826,284.9301 826,290.5859 C826,296.7734 811.543,300.568 791.016,301.9699 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="791.016,279.2018,799.6672,283.909,796,279.6018,800.3072,275.9346,791.016,279.2018" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="43" x="832" y="295.5859">nextFix</text>
+        <path d="M232.24,279.2672 C252.688,280.7192 267,284.4921 267,290.5859 C267,296.1559 255.042,299.7869 237.371,301.4788 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="232.24,301.9045,241.5405,305.145,237.2228,301.4902,240.8776,297.1725,232.24,301.9045" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="43" x="273" y="295.5859">nextFix</text>
+        <path d="M237.11,306.5605 C256.744,308.6519 276.92,310.458 296,311.5859 C389.614,317.1199 413.391,317.2142 507,311.5859 C527.653,310.344 549.612,308.2803 570.724,305.9188 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="232.131,306.0229,240.6506,310.9642,237.1022,306.5586,241.5078,303.0103,232.131,306.0229" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="209" x="297" y="307.5859">velocitySmallerMinSpeed: publish(k)</text>
+        <path d="M205.502,317.1566 C234.031,324.6848 266.112,331.846 296,335.5859 C342.526,341.4076 460.486,341.5033 507,335.5859 C534.682,332.0642 564.259,325.5111 591.028,318.4744 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="595.992,317.1555,586.2665,315.6013,591.1597,318.4397,588.3213,323.3329,595.992,317.1555" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="144" x="329.5" y="331.5859">velocityGreaterMinSpeed</text>
+        <path d="M570.998,290.5859 C474.907,290.5859 335.77,290.5859 237.299,290.5859 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="232.053,290.5859,241.053,294.5859,237.053,290.5859,241.053,286.5859,232.053,290.5859" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="229" x="287" y="283.5859">distanceSmallerMinDistance: publish(k)</text>
+        <path d="M232.007,274.433 C250.032,272.4175 268.501,270.6818 286,269.5859 C388.466,263.1687 414.541,263.0527 517,269.5859 C532.836,270.5956 549.48,272.1486 565.845,273.963 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="570.914,274.5342,562.4186,269.5514,565.9455,273.9742,561.5226,277.501,570.914,274.5342" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="164" x="319.5" y="259.5859">distanceGreaterMinDistance</text>
+    </g>
+</svg>

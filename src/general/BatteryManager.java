@@ -22,6 +22,10 @@ public class BatteryManager {
     private final int BatteryRequestLoop = 60;
     
     private double batteryVoltage;
+    private double lastBatteryVoltage = -1.0;
+    private double lastExternalVoltage = -1.0;
+    private final double significantVoltageChange = 0.1;
+
     private final PowerManager powerManager;
     private final Timer timer;
     private final TimerTask timerTask;
@@ -52,7 +56,7 @@ public class BatteryManager {
     }
     
     private String voltageString(double voltage) {
-        return "" + (int)Math.floor(voltage) + "." + (int)(Math.floor(voltage * 10)) % 10 + "V";
+        return "" + (int)Math.floor(voltage) + "." + (int)(Math.floor(voltage * 10)) % 10;
     }
     
     public String getBatteryVoltageString() {
@@ -65,6 +69,17 @@ public class BatteryManager {
             {
                 long longVoltage = (long)(voltage * 1000.0);
                 voltage = longVoltage / 1000.0;
+            }
+            if (Math.abs(lastExternalVoltage - voltage) > significantVoltageChange) {
+                SocketGPRSThread.getInstance().put(
+                        Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                        + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                        + "/voltage/ext",
+                        Settings.getInstance().getSetting("qos", 1),
+                        Settings.getInstance().getSetting("retain", true),
+                        voltageString(voltage).getBytes()
+                );
+                lastExternalVoltage = voltage;
             }
             return voltage;
         } catch (IOException ioe) {
@@ -84,6 +99,17 @@ public class BatteryManager {
         }
         if (voltage < LowVoltageThreshold) {
             eventLowBattery();
+        }
+        if (Math.abs(lastBatteryVoltage - voltage) > significantVoltageChange) {
+            SocketGPRSThread.getInstance().put(
+                    Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                    + "/voltage/batt",
+                    Settings.getInstance().getSetting("qos", 1),
+                    Settings.getInstance().getSetting("retain", true),
+                    voltageString(voltage).getBytes()
+            );
+            lastBatteryVoltage = voltage;
         }
         batteryVoltage = voltage;
     }
@@ -120,6 +146,7 @@ public class BatteryManager {
                 double voltage = Double.parseDouble(response.substring(
                         start, start + end));
                 setBatteryVoltage(voltage / 1000);
+                getExternalVoltage();
             } catch (NumberFormatException nfe) {
                 System.err.println("NumberFormatException " + response);
             }

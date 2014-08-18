@@ -1,0 +1,24 @@
+@startuml
+MainThread -> ProcessSMSThread: setup
+MainThread ---> CommGPSThread: start
+MainThread ---> SocketGPRSThread: start
+MainThread ---> CommASC0Thread: start
+
+CommGPSThread ---> SocketGPRSThread: put
+
+SocketGPRSThread ---> GPIO6WatchDogTask: running
+CommGPSThread ---> GPIO6WatchDogTask: running
+
+GPIO6WatchDogTask -> ChoralWatchdog: init
+GPIO6WatchDogTask -> ChoralWatchdog: on
+GPIO6WatchDogTask -> ChoralWatchdog: off
+
+SocketGPRSThread ---> UserwareWatchDogTask: running
+CommGPSThread ---> UserwareWatchDogTask: running
+
+UserwareWatchDogTask -> CinterionWatchdog: start
+UserwareWatchDogTask -> CinterionWatchdog: kick
+
+ProcessSMSThread -> ProcessSMSThread: new
+
+@enduml

@@ -1,0 +1,16 @@
+@startuml
+[*] -> waitingForFirstFix: opening GPS Connection
+waitingForFirstFix -down-> Moving: firstFixAssuming:publish (f)irst
+Moving -left-> Stationary: velocitySmallerMinSpeed:publish par(k)
+Moving -down-> MovingTwoFixes: nextFix
+Stationary -down-> StationaryTwoFixes: nextFix
+MovingTwoFixes -left-> MovingTwoFixes: nextFix
+StationaryTwoFixes --> StationaryTwoFixes: nextFix
+MovingTwoFixes -left-> StationaryTwoFixes: velocitySmallerMinSpeed: publish(k)
+StationaryTwoFixes --> MovingTwoFixes: velocityGreaterMinSpeed
+MovingTwoFixes --> StationaryTwoFixes: distanceSmallerMinDistance: publish(k)
+StationaryTwoFixes --> MovingTwoFixes: distanceGreaterMinDistance
+
+MovingTwoFixes: publish (t) every minInterval seconds
+StationaryTwoFixes: publish (T) every maxInterval seconds
+@enduml
