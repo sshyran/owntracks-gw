@@ -54,3 +54,12 @@ owntracks/gw/GWCAR-jp/gpio/1 0
 owntracks/gw/GWCAR-jp/gpio/3 1
 owntracks/gw/GWCAR-jp/gpio/7 0
 ```
+
+## `../cmd/out`
+
+Output of commands sent to the device (e.g. `login`, `set`, etc.) is published to the `cmd/out` topic.
+
+```
+owntracks/gw/GWCAR-jp/cmd login xxx
+owntracks/gw/GWCAR-jp/cmd/out NACK: incorrect login
+```
