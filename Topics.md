@@ -14,11 +14,11 @@ clientID=GWCAR-jp
 
 the _base topic_ will be `owntracks/gw/GWCAR-jp`.
 
-## base topic
+### base topic
 
 The base topic is used for [JSON payloads](https://github.com/owntracks/owntracks/wiki/JSON).
 
-## `../hw`
+### `../hw`
 
 Upon startup, the device publishes the hardware model of the chip. Example:
 
@@ -26,7 +26,7 @@ Upon startup, the device publishes the hardware model of the chip. Example:
 owntracks/gw/GWCAR-jp/hw Cinterion,EGS5-X,REVISION 02.004
 ```
 
-## `../sw/`
+### `../sw/`
 
 Upon startup, the device publishes the Greenwich version as well as the application version:
 
@@ -35,7 +35,7 @@ owntracks/gw/GWCAR-jp/sw/gw 02.16B,02.01,02.16
 owntracks/gw/GWCAR-jp/sw/midlet OwnTracks Choral 0.5.43
 ```
 
-## `../voltage`
+### `../voltage`
 
 Built-in battery (`batt`) and external (`ext`) voltages are published to `../voltage/` when voltage changes "significantly" (this is currently when a change of 0.1V is detected).
 
@@ -45,7 +45,7 @@ owntracks/gw/GWCAR-jp/voltage/ext 12.2V
 ```
 
 
-## `../gpio/`
+### `../gpio/`
 
 The *inverted* status of the GPIO pins are published under the `gpio/` subtopic, [as documented](GPIO.md).
 
@@ -55,7 +55,7 @@ owntracks/gw/GWCAR-jp/gpio/3 1
 owntracks/gw/GWCAR-jp/gpio/7 0
 ```
 
-## `../cmd/out`
+### `../cmd/out`
 
 Output of commands sent to the device (e.g. `login`, `set`, etc.) is published to the `cmd/out` topic.
 
