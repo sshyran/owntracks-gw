@@ -63,7 +63,7 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
                 atCommand.send(command, listener);
             }
         } catch (ATCommandFailedException atcfe) {
-            new LogError("ATCommandFailedException send " + command);
+            Log.log("ATCommandFailedException send " + command);
         }
 
         return response;
@@ -75,14 +75,14 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
         }
 
         if (Settings.getInstance().getSetting("gsmDebug", false)) {
-            System.out.println("ATListenerEvents: " + event);
+            System.out.println("ATListenerEvents: (" + event.length() + ") " + event);
         }
-
+        
         if (event.indexOf("^SYSSTART AIRPLANE MODE") >= 0) {
             AppMain.getInstance().airplaneMode = true;
-        }
-
-        if (event.indexOf("+CGREG") >= 0) {
+        } else if (event.indexOf("+CALA:") >= 0) {
+            AppMain.getInstance().alarm = true;
+        } else if (event.indexOf("+CGREG") >= 0) {
             try {
                 SocketGPRSThread.getInstance().cgreg = Integer.parseInt(
                         event.substring((event.indexOf(": ")) + 2,
@@ -91,9 +91,7 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
             } catch (NumberFormatException nfe) {
                 SocketGPRSThread.getInstance().cgreg = -1;
             }
-        }
-
-        if (event.indexOf("+CREG") >= 0) {
+        } else if (event.indexOf("+CREG") >= 0) {
             try {
                 SocketGPRSThread.getInstance().creg = Integer.parseInt(
                         event.substring((event.indexOf(": ")) + 2,
@@ -101,24 +99,20 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
             } catch (NumberFormatException nfe) {
                 SocketGPRSThread.getInstance().creg = -1;
             }
-        }
-
-        if (event.indexOf("^SCPOL: ") >= 0) {
+        } else if (event.indexOf("^SCPOL: ") >= 0) {
             GPIOInputManager.getInstance().eventGPIOValueChanged(event);
-        }
-
-        if (event.indexOf("+CMTI: ") >= 0) {
+        } else if (event.indexOf("+CMTI: ") >= 0) {
             ProcessSMSThread.eventSMSArrived(event);
-        }
-
-        if (event.indexOf("^SBC: Undervoltage") >= 0) {
+        } else if (event.indexOf("^SBC: Undervoltage") >= 0) {
             BatteryManager.getInstance().eventLowBattery();
-        }
-
-        if (event.indexOf("^SCKS") >= 0) {
-            new LogError(event);
+        } else if (event.indexOf("^SCKS") >= 0) {
+            Log.log(event);
             if (event.indexOf("2") >= 0) {
                 AppMain.getInstance().invalidSIM = true;
+            }
+        } else {
+            if (Settings.getInstance().getSetting("gsmDebug", false)) {
+                System.out.println("ATListenerEvents: nothing to do");
             }
         }
     }

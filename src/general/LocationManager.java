@@ -12,11 +12,10 @@ import java.io.IOException;
  */
 public class LocationManager {
 
-    final private int fixTimeout = 600;
     private Timer timer = null;
     private TimerTask timerTask = null;
     private boolean fix;
-    private boolean timeout;
+    private boolean timeout = false;
     final private UserLed userLed;
 
     private boolean stationary = false;
@@ -64,15 +63,6 @@ public class LocationManager {
                 System.out.println("FixTimeout");
             }
             timeout = true;
-            SocketGPRSThread.getInstance().put(
-                    Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
-                    + "/error",
-                    Settings.getInstance().getSetting("qos", 1),
-                    Settings.getInstance().getSetting("retain", false),
-                    "FixTimeout".getBytes()
-            );
-
         }
     }
 
@@ -80,7 +70,7 @@ public class LocationManager {
         stopTimer();
         timer = new Timer();
         timerTask = new FixTimeout();
-        timer.schedule(timerTask, fixTimeout * 1000);
+        timer.schedule(timerTask, Settings.getInstance().getSetting("fixTimeout", 600) * 1000);
         if (Settings.getInstance().getSetting("locDebug", false)) {
             System.out.println("start fixTimeout timer");
         }

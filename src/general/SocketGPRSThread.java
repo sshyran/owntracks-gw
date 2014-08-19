@@ -6,6 +6,9 @@
  */
 package general;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 /**
  * Task that tales care of sending strings through a GPRS connection using a TCP
  * socket service
@@ -16,29 +19,86 @@ package general;
  */
 public class SocketGPRSThread extends Thread {
 
+    private Timer timeoutTimer = null;
+    private TimerTask timeoutTimerTask = null;
+    private boolean timeout;
+
     final private int nothingSleep = 500;
     final private int errorSleep = 5000;
     final private int closingSleep = 2000;
 
     public boolean terminate = false;
     private boolean sending = false;
-  
+    private boolean network = false;
+    private String operator = "";
+    
     public int creg = -1;
     public int cgreg = -1;
     
-    private Queue gpsQ;
+    private final Queue gpsQ;
+    private Publish publish = null;
+
+    private final Timer timer;
+    private final TimerTask timerTask;
+    private final int NetworkCheckLoop = 30;
 
     public boolean isSending() {
         return sending;
     }
 
+    public boolean isNetwork() {
+        return network;
+    }
+    
+    public String getOperator() {
+        return operator;
+    }
+
+    public boolean isTimeout() {
+        return timeout;
+    }
+    
     public SocketGPRSThread() {
         if (Settings.getInstance().getSetting("generalDebug", false)) {
             System.out.println("TT*SocketGPRStask: CREATED");
         }
         gpsQ = new Queue(100, "gpsQ");
+        
+        timer = new Timer();
+        timerTask = new NetworkCheckTimerTask();
+        timer.schedule(timerTask, 0, NetworkCheckLoop * 1000);
+        
+        startTimeoutTimer();
     }
-    
+
+    class GPRSTimeout extends TimerTask {
+
+        public void run() {
+            if (Settings.getInstance().getSetting("gprsDebug", false)) {
+                System.out.println("GPRSTimeout");
+            }
+            timeout = true;
+        }
+    }
+
+    private void startTimeoutTimer() {
+        stopTimeoutTimer();
+        timeoutTimer = new Timer();
+        timeoutTimerTask = new GPRSTimeout();
+        timeoutTimer.schedule(timeoutTimerTask, Settings.getInstance().getSetting("gprsTimeout", 600) * 1000);
+        if (Settings.getInstance().getSetting("gprsDebug", false)) {
+            System.out.println("start gprsTimeout timer");
+        }
+    }
+
+    private void stopTimeoutTimer() {
+        if (timeoutTimer != null) {
+            timeoutTimer.cancel();
+        }
+        timeout = false;
+    }
+
+
     public static SocketGPRSThread getInstance() {
         return SocketGPRSThreadHolder.INSTANCE;
     }
@@ -70,7 +130,7 @@ public class SocketGPRSThread extends Thread {
     }
     
     public synchronized int qSize() {
-        return gpsQ.size();
+        return gpsQ.size() + ((publish == null) ? 0 : 1);
     }
     
     public void open() {
@@ -117,7 +177,6 @@ public class SocketGPRSThread extends Thread {
         while (!terminate) {
             AppMain.getInstance().userwareWatchDogTask.GPRSRunning = true;
             AppMain.getInstance().gpio6WatchDogTask.GPRSRunning = true;
-            Publish publish = null;
 
             if (!sending) {
                 open();
@@ -161,4 +220,34 @@ public class SocketGPRSThread extends Thread {
         MQTTHandler.getInstance().publish(publish.topic, publish.qos, publish.retain, publish.payload);
         return MQTTHandler.getInstance().isConnected();
     }
+    
+    class NetworkCheckTimerTask extends TimerTask {
+        public void run() {
+            String response = ATManager.getInstance().executeCommandSynchron("AT+COPS?\r");
+            final String COPS = "+COPS: ";
+            if (response.indexOf(COPS) >= 0 &&
+                    response.length() > response.indexOf(COPS) + COPS.length()) {
+                String[] values = StringSplitter.split(response.substring(response.indexOf(COPS) + COPS.length()), ",");
+                if (values.length == 3) {
+                    stopTimeoutTimer();
+                    network = true;
+                    operator = values[2];
+                    
+                } else {
+                    if (network) {
+                        startTimeoutTimer();
+                    }
+                    network = false;
+                    operator = "";
+                }
+            } else {
+                if (network) {
+                    startTimeoutTimer();
+                }
+                network = false;
+                operator = "";
+            }
+        }
+    }
+
 }

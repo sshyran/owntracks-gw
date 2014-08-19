@@ -233,6 +233,9 @@ public class CommandProcessor {
         message = message.concat(";BATT:" + BatteryManager.getInstance().getBatteryVoltage());
         message = message.concat(";EXTV:" + BatteryManager.getInstance().getExternalVoltage());
         message = message.concat(";gpsQ:" + SocketGPRSThread.getInstance().qSize());
+        message = message.concat(";sending:" + SocketGPRSThread.getInstance().isSending());
+        message = message.concat(";network:" + SocketGPRSThread.getInstance().isNetwork());
+        message = message.concat(";operator:" + SocketGPRSThread.getInstance().getOperator());
         message = message.concat(";uFW:" + MicroManager.getInstance().getRelease()
                 + "," + MicroManager.getInstance().getBootRelease()
                 + "," + MicroManager.getInstance().getJavaRelease());
@@ -244,14 +247,14 @@ public class CommandProcessor {
 
     boolean logCommand(String[] parameters) {
         if (parameters.length == 1) {
-            message = LogError.readCurrentLog().toString();
+            message = Log.readCurrentLog().toString();
             return true;
         } else if (parameters.length == 2) {
             if (parameters[1].equalsIgnoreCase("old")) {
-                message = LogError.readOldLog().toString();
+                message = Log.readOldLog().toString();
                 return true;
             } else if (parameters[1].equalsIgnoreCase("del")) {
-                LogError.deleteLog();
+                Log.deleteLog();
                 message = "deleted";
                 return true;
             } else {

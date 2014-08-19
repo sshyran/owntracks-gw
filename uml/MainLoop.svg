@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="1118pt" style="width:590px;height:1118px;" version="1.1" viewBox="0 0 590 1118" width="590pt">
+    <defs>
+        <filter height="300%" id="f1" width="300%" x="-1" y="-1">
+            <feGaussianBlur result="blurOut" stdDeviation="2.0"/>
+            <feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/>
+            <feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/>
+            <feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/>
+        </filter>
+    </defs>
+    <g>
+        <text fill="#000000" font-size="18" lengthAdjust="spacingAndGlyphs" textLength="176" x="207.5" y="18">Main Application Loop</text>
+        <polygon fill="#FFFFFF" filter="url(#f1)" points="315.795,802.6406,399.795,802.6406,406.795,826.25,473.795,826.25,473.795,1111.6406,315.795,1111.6406,315.795,802.6406" style="stroke: #000000; stroke-width: 2.0;"/>
+        <line style="stroke: #000000; stroke-width: 2.0;" x1="315.795" x2="406.795" y1="826.25" y2="826.25"/>
+        <text fill="#000000" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="78" x="318.795" y="819.6406">Closedown</text>
+        <polygon fill="#FFFFFF" filter="url(#f1)" points="313.795,46.6406,370.795,46.6406,377.795,70.25,517.795,70.25,517.795,197.6406,313.795,197.6406,313.795,46.6406" style="stroke: #000000; stroke-width: 2.0;"/>
+        <line style="stroke: #000000; stroke-width: 2.0;" x1="313.795" x2="377.795" y1="70.25" y2="70.25"/>
+        <text fill="#000000" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="51" x="316.795" y="63.6406">Startup</text>
+        <polygon fill="#FFFFFF" filter="url(#f1)" points="60.7947,230.6406,101.7947,230.6406,108.7947,254.25,424.795,254.25,424.795,769.6406,60.7947,769.6406,60.7947,230.6406" style="stroke: #000000; stroke-width: 2.0;"/>
+        <line style="stroke: #000000; stroke-width: 2.0;" x1="60.7947" x2="108.7947" y1="254.25" y2="254.25"/>
+        <text fill="#000000" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="35" x="63.7947" y="247.6406">Loop</text>
+        <rect fill="#FEFECE" filter="url(#f1)" height="37.6094" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="117" x="332.295" y="838.6406"/>
+        <text fill="#000000" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="97" x="342.295" y="862.6406">send remaining</text>
+        <rect fill="#FEFECE" filter="url(#f1)" height="37.6094" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="110" x="339.795" y="917.6406"/>
+        <text fill="#000000" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="90" x="349.795" y="941.6406">disable device</text>
+        <rect fill="#FEFECE" filter="url(#f1)" height="37.6094" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="125" x="332.295" y="996.6406"/>
+        <text fill="#000000" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="105" x="342.295" y="1020.6406">shutdown device</text>
+        <ellipse cx="394.795" cy="1085.6406" fill="none" filter="url(#f1)" rx="10" ry="10" style="stroke: #000000; stroke-width: 1.0;"/>
+        <ellipse cx="395.295" cy="1086.1406" fill="#000000" rx="6" ry="6" style="stroke: none; stroke-width: 1.0;"/>
+        <ellipse cx="489.795" cy="92.6406" fill="#000000" filter="url(#f1)" rx="10" ry="10" style="stroke: none; stroke-width: 1.0;"/>
+        <polygon fill="#FEFECE" filter="url(#f1)" points="489.795,150.6406,501.795,162.6406,489.795,174.6406,477.795,162.6406,489.795,150.6406" style="stroke: #A80036; stroke-width: 1.5;"/>
+        <rect fill="#FEFECE" filter="url(#f1)" height="37.6094" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="108" x="329.795" y="143.6406"/>
+        <text fill="#000000" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="88" x="339.795" y="167.6406">enable device</text>
+        <rect fill="#FEFECE" filter="url(#f1)" height="37.6094" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="116" x="291.795" y="266.6406"/>
+        <text fill="#000000" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="96" x="301.795" y="290.6406">get parameters</text>
+        <polygon fill="#FEFECE" filter="url(#f1)" points="346.795,345.6406,358.795,357.6406,346.795,369.6406,334.795,357.6406,346.795,345.6406" style="stroke: #A80036; stroke-width: 1.5;"/>
+        <rect fill="#FEFECE" filter="url(#f1)" height="37.6094" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="123" x="285.295" y="427.6406"/>
+        <text fill="#000000" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="103" x="295.295" y="451.6406">device unusable</text>
+        <polygon fill="#FEFECE" filter="url(#f1)" points="252.795,434.6406,264.795,446.6406,252.795,458.6406,240.795,446.6406,252.795,434.6406" style="stroke: #A80036; stroke-width: 1.5;"/>
+        <rect fill="#FEFECE" filter="url(#f1)" height="37.6094" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="130" x="278.795" y="523.6406"/>
+        <text fill="#000000" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="110" x="288.795" y="547.6406">need to switch off</text>
+        <polygon fill="#FEFECE" filter="url(#f1)" points="88.7947,530.6406,100.7947,542.6406,88.7947,554.6406,76.7947,542.6406,88.7947,530.6406" style="stroke: #A80036; stroke-width: 1.5;"/>
+        <polygon fill="#FEFECE" filter="url(#f1)" points="88.7947,626.6406,100.7947,638.6406,88.7947,650.6406,76.7947,638.6406,88.7947,626.6406" style="stroke: #A80036; stroke-width: 1.5;"/>
+        <rect fill="#FEFECE" filter="url(#f1)" height="37.6094" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="131" x="154.295" y="715.6406"/>
+        <text fill="#000000" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="111" x="164.295" y="739.6406">normal system off</text>
+        <rect fill="#FEFECE" filter="url(#f1)" height="37.6094" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="118" x="140.795" y="523.6406"/>
+        <text fill="#000000" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="98" x="150.795" y="547.6406">alarm or motion</text>
+        <polygon fill="#FEFECE" filter="url(#f1)" points="132.795,626.6406,144.795,638.6406,132.795,650.6406,120.795,638.6406,132.795,626.6406" style="stroke: #A80036; stroke-width: 1.5;"/>
+        <rect fill="#FEFECE" filter="url(#f1)" height="37.6094" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="219" x="188.295" y="619.6406"/>
+        <text fill="#000000" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="199" x="198.295" y="643.6406">system off after alarm or motion</text>
+        <path d="M391.743,876.8886 C392.296,887.5326 392.999,901.0646 393.59,912.4576 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="393.854,917.5236,397.3807,908.3278,393.5941,912.5304,389.3915,908.7438,393.854,917.5236" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <path d="M394.795,955.8886 C394.795,966.5326 394.795,980.0646 394.795,991.4576 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="394.795,996.5236,398.795,987.5236,394.795,991.5236,390.795,987.5236,394.795,996.5236" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <path d="M394.795,1034.8634 C394.795,1045.9857 394.795,1060.0024 394.795,1070.3256 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="394.795,1075.3525,398.795,1066.3525,394.795,1070.3525,390.795,1066.3525,394.795,1075.3525" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <path d="M489.795,102.8106 C489.795,113.6906 489.795,132.0346 489.795,145.3496 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="489.795,150.3566,493.795,141.3566,489.795,145.3566,485.795,141.3566,489.795,150.3566" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="83" x="506.9138" y="139.062">Airplane Mode</text>
+        <path d="M493.452,171.3686 C502.044,190.2536 522.795,240.4386 522.795,284.6406 C522.795,284.6406 522.795,284.6406 522.795,937.6406 C522.795,969.6416 493.054,988.6826 462.244,999.8226 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="457.295,1001.5436,467.1094,1002.3673,462.0179,999.9022,464.483,994.8107,457.295,1001.5436" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <path d="M477.664,162.6406 C466.209,162.6406 454.755,162.6406 443.3,162.6406 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="438.037,162.6406,447.037,166.6406,443.037,162.6406,447.037,158.6406,438.037,162.6406" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <path d="M378.705,181.7556 C372.746,202.9626 362.863,238.1326 356.339,261.3506 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="354.92,266.4016,361.2062,258.8198,356.273,261.5882,353.5047,256.655,354.92,266.4016" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <path d="M349.022,304.6676 C348.543,315.8436 347.934,330.0676 347.473,340.8086 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="347.248,346.0736,351.63,337.2533,347.4623,341.0782,343.6374,336.9105,347.248,346.0736" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="37" x="356.0138" y="334.1052">SIM is</text>
+        <path d="M346.795,369.6596 C346.795,382.8366 346.795,405.2516 346.795,422.3306 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="346.795,427.4436,350.795,418.4436,346.795,422.4436,342.795,418.4436,346.795,427.4436" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="35" x="347.795" y="403.6406">invalid</text>
+        <path d="M340.915,364.0826 C325.22,378.6086 282.213,418.4136 262.68,436.4916 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="258.673,440.2006,267.9949,437.0224,262.3423,436.8041,262.5605,431.1515,258.673,440.2006" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="54" x="184.0791" y="423.293">battery is</text>
+        <path d="M258.215,453.2396 C270.585,466.0176 301.455,497.9056 322.53,519.6746 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="326.084,523.3456,322.6956,514.098,322.6053,519.7541,316.9492,519.6638,326.084,523.3456" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="19" x="307.795" y="499.6406">low</text>
+        <path d="M245.748,451.6796 C220.258,466.2896 132.672,516.4916 100.6451,534.8486 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="96,537.5106,105.7975,536.506,100.3381,535.0245,101.8196,529.5651,96,537.5106" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="90" x="-20.9287" y="525.2807">wakeupMode is</text>
+        <path d="M88.7947,554.7926 C88.7947,571.3296 88.7947,602.4416 88.7947,621.4766 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="88.7947,626.5026,92.7947,617.5026,88.7947,621.5026,84.7947,617.5026,88.7947,626.5026" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="41" x="89.7947" y="595.6406">ignition</text>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="55" x="22.4509" y="615.2682">ignition is</text>
+        <path d="M94.8575,644.8126 C99.2204,648.4816 105.2833,653.4746 110.795,657.6406 C136.328,676.9426 166.203,697.6476 188.213,712.5636 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="192.506,715.4676,187.2925,707.1118,188.3645,712.6662,182.8102,713.7382,192.506,715.4676" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="13" x="162.795" y="691.6406">off</text>
+        <path d="M100.9353,542.6406 C112.433,542.6406 123.93,542.6406 135.428,542.6406 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="140.711,542.6406,131.711,538.6406,135.711,542.6406,131.711,546.6406,140.711,542.6406" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <path d="M186.876,561.7646 C173.112,581.0756 151.779,611.0056 140.459,626.8876 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="137.546,630.9746,146.0266,625.9667,140.4477,626.9028,139.5116,621.3239,137.546,630.9746" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="27" x="103.3281" y="615.1952">is fix</text>
+        <path d="M144.928,638.6406 C154.021,638.6406 167.481,638.6406 182.704,638.6406 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="187.931,638.6406,178.931,634.6406,182.931,638.6406,178.931,642.6406,187.931,638.6406" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="22" x="155.545" y="631.6406">true</text>
+        <path d="M305.564,657.7686 C322.42,697.0996 362.325,790.2126 380.929,833.6206 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="382.982,838.4116,383.1126,828.5636,381.0121,833.816,375.7596,831.7155,382.982,838.4116" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <path d="M245.395,753.7556 C276.336,775.6496 328.309,812.4256 361.014,835.5676 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="365.299,838.5996,360.2601,830.1374,361.2166,835.7128,355.6412,836.6693,365.299,838.5996" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <path d="M369.286,561.6766 C386.296,575.3776 407.232,595.8796 416.795,619.6406 C446.557,693.5896 416.828,790.3976 400.271,833.8256 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="398.42,838.6046,405.402,831.6583,400.2269,833.9425,397.9426,828.7673,398.42,838.6046" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <path d="M408.304,465.0776 C443.53,479.2346 480.795,503.2776 480.795,541.6406 C480.795,541.6406 480.795,541.6406 480.795,858.6406 C480.795,883.3376 460.866,902.1006 440.195,914.9196 " fill="none" style="stroke: #A80036; stroke-width: 1.0;"/>
+        <polygon fill="#A80036" points="435.78,917.5646,445.5564,916.3718,440.0695,914.9955,441.4458,909.5086,435.78,917.5646" style="stroke: #A80036; stroke-width: 1.0;"/>
+    </g>
+</svg>

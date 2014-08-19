@@ -1,0 +1,48 @@
+@startuml
+title Main Application Loop
+
+partition Closedown
+"send remaining" -down-> "disable device"
+"disable device" -down-> "shutdown device"
+"shutdown device" -down-> (*)
+
+end partition
+
+
+partition Startup
+(*) -down-> if "Airplane Mode" then
+    -> "shutdown device"
+else
+    -> "enable device"
+end partition
+
+partition Loop
+"enable device" ->  "get parameters"
+
+"get parameters" -down-> if "SIM is" then
+    -->[invalid] "device unusable"
+else
+    -down-> if "battery is" then
+        -->[low] "need to switch off"
+else
+    -down-> if "wakeupMode is" then
+        -down->[ignition] if "ignition is" then
+            -down->[off] "normal system off"
+        endif
+    else
+        -> "alarm or motion"
+    endif
+endif
+
+"alarm or motion" -down-> if "is fix" then 
+    ->[true] "system off after alarm or motion"
+endif
+
+"system off after alarm or motion" -right-> "send remaining"
+"normal system off" -right-> "send remaining"
+"need to switch off" -right-> "send remaining"
+"device unusable" -right-> "disable device"
+
+end partition
+
+@enduml

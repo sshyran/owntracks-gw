@@ -1,5 +1,5 @@
 /*	
- * Class 	LogError
+ * Class 	Log
  * 
  * This software is developed for Choral devices with Java.
  * Copyright Choral srl. All Rights reserved. 
@@ -18,7 +18,7 @@ import com.cinterion.io.file.FileConnection;
  * @author matteobo
  *
  */
-public class LogError {
+public class Log {
     
     private static final String url = "file:///a:/log/";
     private static final String fileLog = "log.txt";
@@ -26,29 +26,16 @@ public class LogError {
 
     private static boolean free = true;
     
-    public LogError(String error) {
+    public static void log(String error) {
         if (Settings.getInstance().getSetting("generalDebug", false)) {
             System.out.println("LogError: " + error);
         }
-        try {
-            while (!getLogSemaphore()) {
-                Thread.sleep(1);
-            }
-        } catch (InterruptedException e) {
-        }
-        writeError(error);
+        getLogSemaphore();
+        write(error);
         freeLogSemaphore();
     }
 
-    /* 
-     * Method run
-     */
-    /**
-     * Method to SAVE SYSTEM SETTINGS on FILE
-     *
-     * @return
-     */
-    public synchronized String writeError(String error) {
+    private static String write(String error) {
         
 		//System.out.println("FreeMem: " + Runtime.getRuntime().freeMemory());
         //System.out.println("TotalMem: " + Runtime.getRuntime().totalMemory());
@@ -100,13 +87,7 @@ public class LogError {
 
     private static StringBuffer readLog(String fileName) {
         StringBuffer buffer = null;
-        try {
-            while (!getLogSemaphore()) {
-                Thread.sleep(1);
-            }
-        } catch (InterruptedException ie) {
-            ie.printStackTrace();
-        }
+        getLogSemaphore();
 
         try {
             FileConnection fconn = (FileConnection) Connector.open(fileName);
@@ -134,12 +115,7 @@ public class LogError {
     }
     
     public static void deleteLog() {
-        try {
-            while (!getLogSemaphore()) {
-                Thread.sleep(1);
-            }
-        } catch (InterruptedException e) {
-        }
+        getLogSemaphore();
 
         try {
             FileConnection fconn1 = (FileConnection) Connector.open("file:///a:/log/log.txt");
@@ -154,16 +130,17 @@ public class LogError {
         freeLogSemaphore();
     }
 
-    synchronized static boolean getLogSemaphore() {
-        if (!free) {
-            return false;
-        } else {
-            free = false;
-            return true;
+    private synchronized static void getLogSemaphore() {
+        try {
+            while (!free) {
+                Thread.sleep(1);
+            }
+        } catch (InterruptedException ie) {
+            //
         }
     }
 
-    synchronized static void freeLogSemaphore() {
+    private synchronized static void freeLogSemaphore() {
         free = true;
     }
 

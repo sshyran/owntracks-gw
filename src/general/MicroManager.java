@@ -7,18 +7,23 @@
 package general;
 
 import choral.io.InfoMicro;
+import choral.io.MovListener;
+import choral.io.MovSens;
 import java.io.IOException;
 
 /**
  *
  * @author christoph krey
  */
-public class MicroManager {
+public class MicroManager implements MovListener {
     private String ati = "unknown";
     private String imei = "unknown";
     private String release = "unknown";
     private String bootRelease = "unknown";
     private String javaRelease = "unknown";
+    
+    private MovSens movSens;
+    private boolean moved = false;
 
     private MicroManager() {
         String response;
@@ -55,12 +60,51 @@ public class MicroManager {
         SocketGPRSThread.getInstance().put(
                 Settings.getInstance().getSetting("publish", "owntracks/gw/")
                 + Settings.getInstance().getSetting("clientID", imei)
+                + "/hw/imei",
+                Settings.getInstance().getSetting("qos", 1),
+                Settings.getInstance().getSetting("retain", true),
+                imei.getBytes()
+        );
+        SocketGPRSThread.getInstance().put(
+                Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                + Settings.getInstance().getSetting("clientID", imei)
                 + "/sw/gw",
                 Settings.getInstance().getSetting("qos", 1),
                 Settings.getInstance().getSetting("retain", true),
                 (release + "," + bootRelease + "," + javaRelease).getBytes()
         );
+        
+        movSens = new MovSens();
+        movSens.addMovListener(this);
+            
+        if (Settings.getInstance().getSetting("motion", 4) > 0) {
+            try {
+                movSens.movSensOn();
+            } catch (IOException ioe) {
+                System.err.println("IOException movSensOn");
+            }
+        } else {
+            try {
+                movSens.movSensOff();
+            } catch (IOException ioe) {
+                System.err.println("IOException movSensOff");
+            }            
+        }
     }
+    
+    public void movSensEvent(String event) {
+        if (Settings.getInstance().getSetting("microDebug", false)) {
+            System.out.println("movSensEvent " + event);
+        }
+
+        if (event.equalsIgnoreCase("^MOVE: 0")) {
+            //moved = false;
+        } else if (event.equalsIgnoreCase("^MOVE: 1")) {
+            moved = true;
+        }
+    }
+
+
     
     public static MicroManager getInstance() {
         return MicroManagerHolder.INSTANCE;
@@ -85,5 +129,9 @@ public class MicroManager {
     }
     public String getJavaRelease() {
         return javaRelease;
+    }
+    
+    public boolean hasMoved() {
+        return moved;
     }
 }

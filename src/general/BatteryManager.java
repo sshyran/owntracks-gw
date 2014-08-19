@@ -18,7 +18,6 @@ import java.io.IOException;
  */
 public class BatteryManager {
     
-    private final double LowVoltageThreshold = 3.599;
     private final int BatteryRequestLoop = 60;
     
     private double batteryVoltage;
@@ -48,7 +47,7 @@ public class BatteryManager {
     }
     
     public boolean isBatteryVoltageLow() {
-        return batteryVoltage < LowVoltageThreshold;
+        return batteryVoltage <= Settings.getInstance().getSetting("lowBattery", 3599) / 1000.0;
     }
     
     public double getBatteryVoltage() {
@@ -97,9 +96,6 @@ public class BatteryManager {
             long longVoltage = (long)(voltage * 1000.0);
             voltage = longVoltage / 1000.0;
         }
-        if (voltage < LowVoltageThreshold) {
-            eventLowBattery();
-        }
         if (Math.abs(lastBatteryVoltage - voltage) > significantVoltageChange) {
             SocketGPRSThread.getInstance().put(
                     Settings.getInstance().getSetting("publish", "owntracks/gw/")
@@ -115,7 +111,7 @@ public class BatteryManager {
     }
     
     public void eventLowBattery() {
-        AppMain.getInstance().underVoltageEvent(getBatteryVoltageString());
+        setBatteryVoltage(Settings.getInstance().getSetting("lowBattery", 3599) / 1000.0);
     }
     
     public boolean reboot() {

@@ -7,7 +7,6 @@
 package general;
 
 import java.io.*;
-import java.util.*;
 
 import javax.microedition.io.*;
 
@@ -56,7 +55,7 @@ public class CommGPSThread extends Thread {
             is = connGPS.openInputStream();
             os = connGPS.openOutputStream();
         } catch (IOException e) {
-            new LogError("Th*CommGPStrasparent: IOException");
+            Log.log("Th*CommGPStrasparent: IOException");
             return;
         }
 
@@ -103,7 +102,7 @@ public class CommGPSThread extends Thread {
             connGPS.close();
             
         } catch (IOException ioe) {
-            new LogError("Th*CommGPStrasparent-while: IOException");
+            Log.log("Th*CommGPStrasparent-while: IOException");
         }
     }
 

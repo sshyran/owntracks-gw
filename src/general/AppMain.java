@@ -7,8 +7,6 @@ package general;
 
 import com.m2mgo.util.GPRSConnectOptions;
 import choral.io.CheckUpgrade;
-import choral.io.MovSens;
-import choral.io.MovListener;
 import com.cinterion.io.BearerControl;
 import java.util.*;
 import javax.microedition.midlet.*;
@@ -22,28 +20,17 @@ import java.io.IOException;
  * @version	1.00 <BR> <i>Last update</i>: 28-05-2008
  * @author matteobo
  */
-public class AppMain extends MIDlet implements MovListener {
-    private String executionState;
-    
-    private String text;
-    private String msgRicevuto = "";
-    private boolean restart = false;
-    int timeToOff = 0;
-
-    MovSens movSens;
-    boolean moved = false;
-
+public class AppMain extends MIDlet {
     public boolean invalidSIM = false;
-    public boolean network = true;
-    
     public boolean airplaneMode = false;
+    public boolean alarm = false;
 
-    final public int ignitionWakeup = 1;
-    final public int motionWakeup = 2;
-    final public int alarmWakeup = 3;
-    public int wakeupMode = motionWakeup;
+    final public String ignitionWakeup = "IgnitionWakeup";
+    final public String motionWakeup = "MotionWakeup";
+    final public String alarmWakeup = "AlarmWakeup";
+    public String wakeupMode = motionWakeup;
     
-        /**
+    /**
      * Application execution status
      */
     public static final String execFIRST = "FirstExecution";
@@ -55,6 +42,7 @@ public class AppMain extends MIDlet implements MovListener {
     public static final String execPOSTRESET = "PostResetExecution";
     public static final String execBATTSCARICA = "BatteriaScaricaExecution";
     public static final String execSMStrack = "TrackingFromSMSExecution";
+    private String executionState;
 
     /**
      * Application closure modes
@@ -72,30 +60,8 @@ public class AppMain extends MIDlet implements MovListener {
     public static final String closeAppOTAP = "OTAP";
     public static final String closeAIR = "closeAIR";
 
-    Settings settings;
-
-    /**
-     * <BR> Timer for cyclic monitoring of network registration status.
-     */
-    Timer regTimer;
-    /**
-     * <BR> Task for execute operations about network registration status
-     * monitoring.
-     */
-    TimeoutTask regTimeoutTask;
-
     UserwareWatchDogTask userwareWatchDogTask;
     GPIO6WatchDogTask gpio6WatchDogTask;
-
-    /**
-     * <BR> Timer for delay tracking start when key is activated.
-     */
-    Timer trackTimer;
-    private boolean trackTimerAlive = false;
-    /**
-     * <BR> Task for delay tracking start when key is activated.
-     */
-    TimeoutTask trackTimeoutTask;
 
     static AppMain appMain;
 
@@ -104,17 +70,16 @@ public class AppMain extends MIDlet implements MovListener {
     }
 
     public AppMain() {
+    }
 
+    protected void startApp() throws MIDletStateChangeException {
+        AppMain.appMain = this;
         CheckUpgrade fw = new CheckUpgrade("");
 
-        settings = Settings.getInstance();
+        Settings settings = Settings.getInstance();
         settings.setfileURL("file:///a:/file/OwnTracks.properties");
 
-        System.out.println(
-                "Running " + getAppProperty("MIDlet-Name")
-                + " " + getAppProperty("MIDlet-Vendor")
-                + " " +  getAppProperty("MIDlet-Version")
-        );
+        System.out.println("Running " + getAppProperty("MIDlet-Version") + " @ " + new Date());
 
         ATManager.getInstance();
 
@@ -124,68 +89,15 @@ public class AppMain extends MIDlet implements MovListener {
         ProcessSMSThread.setup();
 
         SocketGPRSThread.getInstance().put(
-                Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                settings.getSetting("publish", "owntracks/gw/")
+                + settings.getSetting("clientID", MicroManager.getInstance().getIMEI())
                 + "/sw/midlet",
-                Settings.getInstance().getSetting("qos", 1),
-                Settings.getInstance().getSetting("retain", true),
-                (getAppProperty("MIDlet-Name")
-                + " " + getAppProperty("MIDlet-Vendor")
-                + " " +  getAppProperty("MIDlet-Version")).getBytes()
+                settings.getSetting("qos", 1),
+                settings.getSetting("retain", true),
+                getAppProperty("MIDlet-Version").getBytes()
         );
 
         BearerControl.addListener(Bearer.getInstance());
-    }
-
-    /*
-     *  methods
-     */
-    /**
-     * Contains the main body of the application.
-     * <BR> ---------- <BR>
-     * Executed operations: <br>
-     * <ul type="disc">
-     * <li> Threads init and start;
-     * <li> Recover system settings from the configuration file;
-     * <li> Determination of the STATE with which start the application;
-     * <li> Retrieving data stored in the internal flash by RecordStore;
-     * <li> Set AUTOSTART (only if applicazion is in state <i>execFIRST</i> or
-     * <i>execPOSTRESET</i>);
-     * <li> Execution of AT^SJNET to set UDP connections through GPRS;
-     * <li> GPIO driver activation;
-     * <li> Check key status (GPIO n.7). If key is active, the device is powered
-     * up at voltage 24 VDC and GPIO n.7 has logic value "0". The device must
-     * remain powered up in STAND-BY mode (accessible but with tracking
-     * disabled), then the application waits for GPIO n.7 goes to logic value
-     * "1". If at application startup the key is active yet, then it means that
-     * the device has been awakened from trailer coupling. If trailer is
-     * attached when application is executed with status different from
-     * <i>execCHIAVEattivata</i>, then application goes to STAND-BY mode.
-     * <li> Disabling motion sensor;
-     * <li> Preparing timeout about FIX GPS and position strings sending through
-     * GPRS connection;
-     * <li> Possible radio parts activation (AIRPLANE MODE) and start of GPS
-     * receiver in transparent mode;
-     * <li> Wait for messages from threads and messages management, main class
-     * waiting for messages from threads and coordinates operations to do, based
-     * on received messages and priorities.
-     * <li> Power of module and stop application.
-     * </ul>
-     * ---------- <BR>
-     * Messages sent from threads or events managed in AppMain are the
-     * following:
-     * <ul type="circle">
-     * <li> Key activation/deactivation;
-     * <li> Valid FIX GPS or 'FIXtimeout' expired;
-     * <li> Request to send GPS position strings through GPRS;
-     * <li> Sending successfully completed of position strings through GPRS or
-     * 'FIXgprsTimeout' expired;
-     * <li> Request to close application or transition to STAND-BY mode;
-     * <li> RING event (CSD call) to configure application parameters.
-     * </ul>
-     */
-    protected void startApp() throws MIDletStateChangeException {
-        AppMain.appMain = this;
         try {
             if (Settings.getInstance().getSetting("mainDebug", false)) {
                 System.out.println("AppMain: Recover system settings in progress...");
@@ -200,8 +112,6 @@ public class AppMain extends MIDlet implements MovListener {
                 executionState = execFIRST;
             } else if (closeMode.equalsIgnoreCase(closeAIR)) {
                 executionState = execNORMALE;
-                airplaneMode = true;
-                wakeupMode = alarmWakeup;
             } else if (closeMode.equalsIgnoreCase(closeAppNormaleOK)) {
                 executionState = execNORMALE;
             } else if (closeMode.equalsIgnoreCase(closeAppNormaleTimeout)) {
@@ -223,7 +133,7 @@ public class AppMain extends MIDlet implements MovListener {
             } else if (closeMode.equalsIgnoreCase(closeAppBatteriaScarica)) {
                 executionState = execPOSTRESET;
             } else {
-                new LogError("AppMain: ERROR, I can not determine the status of execution of the application!");
+                Log.log("AppMain: ERROR, I can not determine the status of execution of the application!");
             }
 
             if (Settings.getInstance().getSetting("mainDebug", false)) {
@@ -273,20 +183,15 @@ public class AppMain extends MIDlet implements MovListener {
 
             ATManager.getInstance().executeCommandSynchron("AT^SCKS=1\r");
 
-            movSens = new MovSens();
-            movSens.addMovListener(this);
-            
-            if (Settings.getInstance().getSetting("motion", 4) > 0) {
-                movSens.setMovSens(Settings.getInstance().getSetting("motion", 4));
-            }
-
             BatteryManager.getInstance();
             GPIOInputManager.getInstance();
 
             if (GPIOInputManager.getInstance().gpio7 == 0) {
                 wakeupMode = ignitionWakeup;
+            } else if (alarm) {
+                wakeupMode = alarmWakeup;
             }
-
+            
             if (Settings.getInstance().getSetting("mainDebug", false)) {
                 System.out.println("AppMain: wakeupMode is " + wakeupMode);
             }
@@ -294,17 +199,13 @@ public class AppMain extends MIDlet implements MovListener {
                 System.out.println("AppMain: airplaneMode is " + airplaneMode);
             }
             if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: moved is " + moved);
+                System.out.println("AppMain: moved is " + MicroManager.getInstance().hasMoved());
             }
-
-            movSens.movSensOff();
+            if (Settings.getInstance().getSetting("mainDebug", false)) {
+                System.out.println("AppMain: alarm is " + alarm);
+            }
             
             ATManager.getInstance().executeCommandSynchron("at+crc=1\r");
-
-            // Not sure what to do here
-            //ATManager.getInstance().executeCommandSynchron("AT^SCFG=\"MEopMode/Airplane\",\"off\"\r");
-            //Settings.getInstance().setSetting("closeMode", closeAIR);
-            //reboot
 
             if (!airplaneMode) {
                 if (Settings.getInstance().getSetting("mainDebug", false)) {
@@ -322,6 +223,8 @@ public class AppMain extends MIDlet implements MovListener {
                     Thread.sleep(1000);
                 }
 
+                cleanup();
+                
                 CommGPSThread.getInstance().terminate = true;
                 CommGPSThread.getInstance().join();
 
@@ -330,11 +233,9 @@ public class AppMain extends MIDlet implements MovListener {
             }
             shutdown();
         } catch (InterruptedException ie) {
-            new LogError("Interrupted Exception AppMain");
+            Log.log("Interrupted Exception AppMain");
         } catch (NumberFormatException nfe) {
-            new LogError("NumberFormatException AppMain");
-        } catch (IOException ioe) {
-            new LogError("IOException AppMain");
+            Log.log("NumberFormatException AppMain");
         }
     }
 
@@ -356,6 +257,26 @@ public class AppMain extends MIDlet implements MovListener {
         notifyDestroyed();
     }
 
+    protected void cleanup() {
+        if (Settings.getInstance().getSetting("mainDebug", false)) {
+            System.out.println("AppMain: cleanup");
+        }
+        if (Settings.getInstance().getSetting("mainDebug", false)) {
+            System.out.println("AppMain: sending remaining messages");
+        }
+        
+        while (!SocketGPRSThread.getInstance().isTimeout() &&
+                SocketGPRSThread.getInstance().qSize() > 0) {
+            if (Settings.getInstance().getSetting("mainDebug", false)) {
+                System.out.println("AppMain: waiting qSize= " + SocketGPRSThread.getInstance().qSize());
+            } 
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ie) {
+                //
+            }
+        }        
+    }
     protected void shutdown() {
         if (Settings.getInstance().getSetting("mainDebug", false)) {
             System.out.println("AppMain: shutdown");
@@ -397,6 +318,13 @@ public class AppMain extends MIDlet implements MovListener {
                 System.out.println("PAppMain: powerDown on low battery, no wakeup call");
             }
 
+        } else if (airplaneMode) {
+            if (Settings.getInstance().getSetting("mainDebug", false)) {
+                System.out.println("PAppMain: powerDown on airplaneMode");
+            }
+            
+            ATManager.getInstance().executeCommandSynchron("AT^SCFG=\"MEopMode/Airplane\",\"off\"\r");
+
         } else {
             date.setTime(date.getTime() + Settings.getInstance().getSetting("sleep", 6 * 3600) * 1000L);
 
@@ -420,20 +348,6 @@ public class AppMain extends MIDlet implements MovListener {
             ATManager.getInstance().executeCommandSynchron(rtc);
         }
 
-        if (BatteryManager.getInstance().isBatteryVoltageLow()) {
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain, low battery: motion sensor DISABLED!");
-            }
-        } else {
-            if (Settings.getInstance().getSetting("motion", 4) > 0) {
-                try {
-                    movSens.movSensOn();
-                } catch (IOException ioe) {
-                    System.err.println("IOException movSensOn");
-                }
-            }
-        }
-
         if (executionState.equalsIgnoreCase(execFIRST)) {
             Settings.getInstance().setSetting("closeMode", closeAppDisattivChiaveFIRST);
         } else if (executionState.equalsIgnoreCase(execNORMALE)) {
@@ -454,6 +368,10 @@ public class AppMain extends MIDlet implements MovListener {
             Settings.getInstance().setSetting("closeMode", closeAppPostReset);
         }
 
+        if (airplaneMode) {
+            Settings.getInstance().setSetting("closeMode", closeAIR);            
+        }
+        
         if (BatteryManager.getInstance().isBatteryVoltageLow()) {
             Settings.getInstance().setSetting("closeMode", closeAppBatteriaScarica);
         }
@@ -461,11 +379,12 @@ public class AppMain extends MIDlet implements MovListener {
         if (Settings.getInstance().getSetting("mainDebug", false)) {
             System.out.println("AppMain: powerDown closeMode is " + Settings.getInstance().getSetting("closeMode", closeAppNormaleOK));
         }
-        
+
         ATManager.getInstance().executeCommandSynchron("AT^SPIO=0\r");
         
         gpio6WatchDogTask.stop();
         userwareWatchDogTask.stop();
+        
         if (Settings.getInstance().getSetting("mainDebug", false)) {
             System.out.println("AppMain: watchdogs stopped");
             System.out.flush();
@@ -483,30 +402,6 @@ public class AppMain extends MIDlet implements MovListener {
         }
     }
 
-    public void ringEvent(String event) {
-        if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("ringEvent " + event);
-        }
-    }
-    
-    public void underVoltageEvent(String event) {
-        if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("underVoltageEvent " + event);
-        }
-    }
-    
-    public void movSensEvent(String event) {
-        if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("movSensEvent " + event);
-        }
-
-        if (event.equalsIgnoreCase("^MOVE: 0")) {
-            moved = false;
-        } else if (event.equalsIgnoreCase("^MOVE: 1")) {
-            moved = true;
-        }
-    }
-
     private boolean loop() {
         if (invalidSIM) {
             if (Settings.getInstance().getSetting("mainDebug", false)) {
@@ -515,30 +410,42 @@ public class AppMain extends MIDlet implements MovListener {
             return true;
         }
 
-        if (wakeupMode == motionWakeup && LocationManager.getInstance().dateLastFix() != null) {
+        if ((wakeupMode.equals(motionWakeup) || wakeupMode.equals(alarmWakeup)) &&
+                LocationManager.getInstance().dateLastFix() != null &&
+                SocketGPRSThread.getInstance().qSize() == 0) {
             if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: motionWakeup && dateLastFix");
+                System.out.println("AppMain: " + wakeupMode + " && dateLastFix && qSize");
             }
             return true;
         }
 
-        if (wakeupMode == motionWakeup && LocationManager.getInstance().isTimeout()) {
+        if (LocationManager.getInstance().isTimeout()) {
             if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: motionWakeup && isTimeout");
+                System.out.println("AppMain: fixTimeout");
             }
             return true;
         }
 
-        if (wakeupMode == alarmWakeup && LocationManager.getInstance().dateLastFix() != null) {
+        if (SocketGPRSThread.getInstance().isTimeout()) {
             if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: alarmWakeup && dateLastFix");
+                System.out.println("AppMain: gprsTimeout");
             }
             return true;
         }
 
-        if (wakeupMode == alarmWakeup && LocationManager.getInstance().isTimeout()) {
+        if (wakeupMode.equals(ignitionWakeup) &&
+                GPIOInputManager.getInstance().gpio7 == 1 &&
+                SocketGPRSThread.getInstance().qSize() == 0) {
+
             if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: alarmWakeup && isTimeout");
+                System.out.println("AppMain: " + wakeupMode + " && gpio7 && qSize");
+            }
+            return true;
+        }
+
+        if (BatteryManager.getInstance().isBatteryVoltageLow()) {
+            if (Settings.getInstance().getSetting("mainDebug", false)) {
+                System.out.println("AppMain: lowBattery");
             }
             return true;
         }

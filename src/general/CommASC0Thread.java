@@ -71,7 +71,7 @@ public class CommASC0Thread extends Thread {
                     }
             } while ((char) rx != '\r');
             } catch (IOException ie) {
-                ie.printStackTrace();
+               //
             }
 
             if (comando.startsWith("$")) {
