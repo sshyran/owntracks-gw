@@ -45,7 +45,7 @@ Features of the OwnTracks Edition
   - when ignition is switched off
   - movement sensor detects the device is stationary
   - alarm clock
-* [Device information published upon startup](Topics.md)
+* [Device information published upon startup](Topics.md) includes battery levels, software/hardware versions, etc.
 
 Requirements
 ------------
