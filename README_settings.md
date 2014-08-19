@@ -68,6 +68,7 @@ login expires after "loginTimeout" (settings) seconds
 | apn         |        | internet | reboot   | GPRS access point name     |
 | apnUser     |        |          | reboot   | GPRS access point user id  |
 | apnPassword |        |          | reboot   | GPRS access point password |
+| gprsTimeout | 1-...  | 600      | next loop| time in seconds after which the system does not expect gprs anymore |
 
 ### Device
 
@@ -75,6 +76,12 @@ login expires after "loginTimeout" (settings) seconds
 |:------------|:--------:|:--------:|---------:|:---------------------------|
 | sleep       | 0...     | 21600(6h)| reboot   | sleep after device off     |
 | motion      | 0,1..255 | 4        | reboot   | sensivity for motion sensor, 0=off, 1 highest sensitivity|
+| otapUser         |  `""` | string   | upgrade    | HTTP basic auth username for [OTAP](OTAP.md) |
+| otapPassword     |  `""` | string   | upgrade    | HTTP basic auth password for [OTAP](OTAP.md) |
+| otapURI          |  `""` | string   | upgrade    | URL to `OwnTracks.jad` for [OTAP](OTAP.md) |
+| notifyURI        |  `""` | string   | upgrade    | URL to POST result of [OTAP](OTAP.md) |
+| lowBattery       |  `""` | 3599   | immediately    | Threshold to assume low Battery in mV |
+
 
 ### MQTT
 
@@ -98,10 +105,6 @@ login expires after "loginTimeout" (settings) seconds
 | subscription     |       | =publish + /cmd | reboot    | client listens for commands here |
 | subscriptionQos  |  0..2 | 1    | reboot    | MQTT subscriptionQos |
 | clientID         |       | IMEI | reboot    | used as MQTT connect client id and is appended to base publish topic|
-| otapUser         |  `""` | string   | upgrade    | HTTP basic auth username for [OTAP](OTAP.md) |
-| otapPassword     |  `""` | string   | upgrade    | HTTP basic auth password for [OTAP](OTAP.md) |
-| otapURI          |  `""` | string   | upgrade    | URL to `OwnTracks.jad` for [OTAP](OTAP.md) |
-| notifyURI        |  `""` | string   | upgrade    | URL to POST result of [OTAP](OTAP.md) |
 
 
 `$set clientID=<id>` sets the MQTT clientID for the publish (default is the device's IMEI number). This identifier is also appended to `$set publish=<basetopic>`, default owntracks/gw
@@ -116,8 +119,7 @@ login expires after "loginTimeout" (settings) seconds
 | maxInterval      | 0-... | 0        | immediate | maximum time before before next publish in move mode in seconds |
 | minInterval      | 0-... | 0        | immediate | minimum time before before publish in stationary mode in seconds |
 | fields           |       | course,speed,altitude,distance,battery | immediate | comma separated list of optional fields in publish message |
-
-locations are published when tracking is on and maxInterval has passed or minSpeed or minDistance are exceeded
+| fixTimeout       | 1-... | 600      | next loop | time in seconds after which the system does not expect a fix anymore |
 
 
 ### Debugging
