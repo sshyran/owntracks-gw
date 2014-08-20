@@ -21,11 +21,12 @@ public class LocationManager {
     private boolean stationary = false;
 
     private Location firstLocation = null;
+    private Location lastLocation = null;
     private Location lastReportedLocation = null;
     private Location currentLocation = null;
     private String reason = "";
 
-    private double travel = 0.0;
+    private double trip = 0.0;
 
     private String rmc;
     private Date tempDate;
@@ -60,8 +61,9 @@ public class LocationManager {
 
         public void run() {
             if (Settings.getInstance().getSetting("locDebug", false)) {
-                System.out.println("FixTimeout");
+                System.out.println("fixTimeout");
             }
+            Log.log("fixTimeout");
             timeout = true;
         }
     }
@@ -152,9 +154,6 @@ public class LocationManager {
         if (components.length == 13) {
             try {
                 tempDate = new DateParser(components[9], components[1].substring(0, 6)).getDate();
-                if (Settings.getInstance().getSetting("locDebug", false)) {
-                    System.out.println("LocationManager tempDate: " + tempDate);
-                }
 
                 if (fix) {
                     if (!components[2].equalsIgnoreCase("A")) {
@@ -303,7 +302,7 @@ public class LocationManager {
     }
 
     private void rollLocation(Date date, double lon, double lat, double cog, double vel, double alt) {
-
+        
         int minDistance = Settings.getInstance().getSetting("minDistance", 100);
         int minSpeed = Settings.getInstance().getSetting("minSpeed", 5);
         int maxInterval = Settings.getInstance().getSetting("maxInterval", 60);
@@ -319,8 +318,15 @@ public class LocationManager {
 
         if (firstLocation == null) {
             firstLocation = currentLocation;
-            travel = 0.0;
+            trip = 0.0;
         }
+        
+        if (lastLocation != null) {
+            if (vel > minSpeed) {
+                trip += lastLocation.distance(currentLocation);
+            }
+        }
+        lastLocation = currentLocation;
 
         if (lastReportedLocation != null) {
             double distance = lastReportedLocation.distance(currentLocation);
@@ -328,7 +334,6 @@ public class LocationManager {
 
             if (vel > minSpeed || distance > minDistance) {
                 stationary = false;
-                travel += lastReportedLocation.distance(currentLocation);
             } else {
                 if (!stationary) {
                     transitionFromMoveToPark = true;
@@ -342,7 +347,7 @@ public class LocationManager {
                     || (!stationary && timeSinceLast > maxInterval)
                     || transitionFromMoveToPark) {
                 reason = (stationary ? transitionFromMoveToPark ? "k" : "T" : "t");
-                String[] fields = StringSplitter.split(Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,battery"), ",");
+                String[] fields = StringSplitter.split(Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,battery,trip"), ",");
                 SocketGPRSThread.getInstance().put(
                         Settings.getInstance().getSetting("publish", "owntracks/gw/")
                         + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI()),
@@ -375,9 +380,14 @@ public class LocationManager {
 
     private String getJSONString(String[] fields) {
         if (currentLocation != null) {
+            double distance = 0;
+            if (lastReportedLocation != null) {
+                distance = currentLocation.speed > Settings.getInstance().getSetting("minSpeed", 5) ? 
+                            lastReportedLocation.distance(currentLocation) : 0;
+            }
             lastReportedLocation = currentLocation;
             currentLocation = null;
-            return JSONString(lastReportedLocation, fields, reason);
+            return JSONString(lastReportedLocation, fields, reason, distance);
         } else {
             return null;
         }
@@ -385,13 +395,13 @@ public class LocationManager {
 
     public String getlastJSONString(String[] fields) {
         if (currentLocation != null) {
-            return JSONString(currentLocation, fields, "m");
+            return JSONString(currentLocation, fields, "m", 0);
         } else {
-            return JSONString(lastReportedLocation, fields, "m");
+            return JSONString(lastReportedLocation, fields, "m", 0);
         }
     }
 
-    private String JSONString(Location location, String[] fields, String reason) {
+    private String JSONString(Location location, String[] fields, String reason, double distance) {
         if (location != null) {
             String json;
             json = "{\"_type\":\"location\"";
@@ -410,7 +420,10 @@ public class LocationManager {
                 json = json.concat(",\"alt\":\"" + location.altitude + "\"");
             }
             if (isInStringArray("distance", fields)) {
-                json = json.concat(",\"dist\":\"" + (long) travel + "\"");
+                json = json.concat(",\"dist\":\"" + (long) distance + "\"");
+            }
+            if (isInStringArray("trip", fields)) {
+                json = json.concat(",\"trip\":\"" + (long) trip + "\"");
             }
             if (isInStringArray("battery", fields)) {
                 json = json.concat(",\"batt\":\"" + BatteryManager.getInstance().getExternalVoltageString() + "\"");
@@ -447,8 +460,7 @@ public class LocationManager {
             human = human.concat("Altitude " + (long)location.altitude + "m\r\n");
             human = human.concat("Speed " + (long)location.speed + "kph\r\n");
             human = human.concat("Course " + (long)location.course + "\r\n");
-            human = human.concat("Distance " + (long) travel + "m\r\n");
-            human = human.concat("Battery " + BatteryManager.getInstance().getExternalVoltageString() + "\r\n");
+            human = human.concat("Trip " + (long) trip + "m\r\n");
 
             return human;
         } else {

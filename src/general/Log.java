@@ -28,7 +28,7 @@ public class Log {
     
     public static void log(String error) {
         if (Settings.getInstance().getSetting("generalDebug", false)) {
-            System.out.println("LogError: " + error);
+            System.out.println("Log: " + error);
         }
         getLogSemaphore();
         write(error);

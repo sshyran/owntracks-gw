@@ -114,7 +114,7 @@ public class CommandProcessor {
             }
             
             String[] fields = StringSplitter.split(
-                    settings.getSetting("fields", "course,speed,altitude,distance,battery"), ",");
+                    settings.getSetting("fields", "course,speed,altitude,distance,battery,trip"), ",");
             String json = locationManager.getlastJSONString(fields);
             if (json != null) {
                 SocketGPRSThread.getInstance().put(
@@ -233,7 +233,7 @@ public class CommandProcessor {
         message = message.concat(";BATT:" + BatteryManager.getInstance().getBatteryVoltage());
         message = message.concat(";EXTV:" + BatteryManager.getInstance().getExternalVoltage());
         message = message.concat(";gpsQ:" + SocketGPRSThread.getInstance().qSize());
-        message = message.concat(";sending:" + SocketGPRSThread.getInstance().isSending());
+        message = message.concat(";connected:" + SocketGPRSThread.getInstance().isConnected());
         message = message.concat(";network:" + SocketGPRSThread.getInstance().isNetwork());
         message = message.concat(";operator:" + SocketGPRSThread.getInstance().getOperator());
         message = message.concat(";uFW:" + MicroManager.getInstance().getRelease()
@@ -242,6 +242,7 @@ public class CommandProcessor {
         message = message.concat(";SW:" + AppMain.getInstance().getAppProperty("MIDlet-Version"));
         message = message.concat(";EG5:" + MicroManager.getInstance().getInfo());
         message = message.concat(";IMEI:" + MicroManager.getInstance().getIMEI());
+        message = message.concat(";DATE:" + new Date().toString());
         return true;
     }
 

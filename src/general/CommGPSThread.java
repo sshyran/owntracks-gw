@@ -25,7 +25,7 @@ public class CommGPSThread extends Thread {
     private static final int[] PWRLOW = {181, 98, 6, 17, 2, 0, 0, 1, 26, 130, 181, 98, 6, 9, 13, 0, 0, 0, 0, 0, 255, 255, 0, 0, 0, 0, 0, 0, 7, 33, 175};
     private static final int[] PM0sec = {181, 98, 6, 50, 24, 0, 0, 6, 0, 0, 4, 144, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 234, 232};
 
-    private static int loopSleep = 100;
+    private static final int loopSleep = 100;
     
     public boolean terminate = false;
 

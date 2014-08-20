@@ -265,8 +265,7 @@ public class AppMain extends MIDlet {
             System.out.println("AppMain: sending remaining messages");
         }
         
-        while (!SocketGPRSThread.getInstance().isTimeout() &&
-                SocketGPRSThread.getInstance().qSize() > 0) {
+        while (SocketGPRSThread.getInstance().qSize() > 0) {
             if (Settings.getInstance().getSetting("mainDebug", false)) {
                 System.out.println("AppMain: waiting qSize= " + SocketGPRSThread.getInstance().qSize());
             } 
@@ -409,26 +408,21 @@ public class AppMain extends MIDlet {
             }
             return true;
         }
+        
+        if (LocationManager.getInstance().isTimeout() ||
+                SocketGPRSThread.getInstance().isGPRSTimeout() ||
+                SocketGPRSThread.getInstance().isMQTTTimeout()) {
+            if (Settings.getInstance().getSetting("mainDebug", false)) {
+                System.out.println("fixTimeout | gprsTimeout | mqttTimeout");
+            }
+            return true;
+        }
 
         if ((wakeupMode.equals(motionWakeup) || wakeupMode.equals(alarmWakeup)) &&
                 LocationManager.getInstance().dateLastFix() != null &&
                 SocketGPRSThread.getInstance().qSize() == 0) {
             if (Settings.getInstance().getSetting("mainDebug", false)) {
                 System.out.println("AppMain: " + wakeupMode + " && dateLastFix && qSize");
-            }
-            return true;
-        }
-
-        if (LocationManager.getInstance().isTimeout()) {
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: fixTimeout");
-            }
-            return true;
-        }
-
-        if (SocketGPRSThread.getInstance().isTimeout()) {
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: gprsTimeout");
             }
             return true;
         }

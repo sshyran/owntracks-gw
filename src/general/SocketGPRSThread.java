@@ -9,32 +9,27 @@ package general;
 import java.util.Timer;
 import java.util.TimerTask;
 
-/**
- * Task that tales care of sending strings through a GPRS connection using a TCP
- * socket service
- *
- * @version	1.01 <BR> <i>Last update</i>: 05-10-2007
- * @author alessioza
- *
- */
 public class SocketGPRSThread extends Thread {
 
-    private Timer timeoutTimer = null;
-    private TimerTask timeoutTimerTask = null;
-    private boolean timeout;
+    private Timer MQTTTimeoutTimer = null;
+    private TimerTask MQTTTimeoutTimerTask = null;
+    private boolean MQTTTimeout;    
+    
+    private Timer GPRSTimeoutTimer = null;
+    private TimerTask GPRSTimeoutTimerTask = null;
+    private boolean GPRSTimeout;
 
     final private int nothingSleep = 500;
     final private int errorSleep = 5000;
     final private int closingSleep = 2000;
 
     public boolean terminate = false;
-    private boolean sending = false;
     private boolean network = false;
     private String operator = "";
-    
+
     public int creg = -1;
     public int cgreg = -1;
-    
+
     private final Queue gpsQ;
     private Publish publish = null;
 
@@ -42,32 +37,33 @@ public class SocketGPRSThread extends Thread {
     private final TimerTask timerTask;
     private final int NetworkCheckLoop = 30;
 
-    public boolean isSending() {
-        return sending;
+    public boolean isConnected() {
+        return MQTTHandler.getInstance().isConnected();
     }
 
     public boolean isNetwork() {
         return network;
     }
-    
+
     public String getOperator() {
         return operator;
     }
 
-    public boolean isTimeout() {
-        return timeout;
+    public boolean isGPRSTimeout() {
+        return GPRSTimeout;
     }
-    
+
+    public boolean isMQTTTimeout() {
+        return MQTTTimeout;
+    }
+
     public SocketGPRSThread() {
-        if (Settings.getInstance().getSetting("generalDebug", false)) {
-            System.out.println("TT*SocketGPRStask: CREATED");
-        }
         gpsQ = new Queue(100, "gpsQ");
-        
+
         timer = new Timer();
         timerTask = new NetworkCheckTimerTask();
         timer.schedule(timerTask, 0, NetworkCheckLoop * 1000);
-        
+
         startTimeoutTimer();
     }
 
@@ -75,29 +71,50 @@ public class SocketGPRSThread extends Thread {
 
         public void run() {
             if (Settings.getInstance().getSetting("gprsDebug", false)) {
-                System.out.println("GPRSTimeout");
+                System.out.println("gprsTimeout");
             }
-            timeout = true;
+            Log.log("gprsTimeout");
+            GPRSTimeout = true;
+        }
+    }
+
+    class MQTTTimeout extends TimerTask {
+
+        public void run() {
+            if (Settings.getInstance().getSetting("gprsDebug", false)) {
+                System.out.println("mqttTimeout");
+            }
+            Log.log("mqttTimeout");
+            MQTTTimeout = true;
         }
     }
 
     private void startTimeoutTimer() {
         stopTimeoutTimer();
-        timeoutTimer = new Timer();
-        timeoutTimerTask = new GPRSTimeout();
-        timeoutTimer.schedule(timeoutTimerTask, Settings.getInstance().getSetting("gprsTimeout", 600) * 1000);
+        
+        GPRSTimeoutTimer = new Timer();
+        GPRSTimeoutTimerTask = new GPRSTimeout();
+        GPRSTimeoutTimer.schedule(GPRSTimeoutTimerTask, Settings.getInstance().getSetting("gprsTimeout", 600) * 1000);
+        
+        MQTTTimeoutTimer = new Timer();
+        MQTTTimeoutTimerTask = new MQTTTimeout();
+        MQTTTimeoutTimer.schedule(MQTTTimeoutTimerTask, Settings.getInstance().getSetting("mqttTimeout", 600) * 1000);
+        
         if (Settings.getInstance().getSetting("gprsDebug", false)) {
-            System.out.println("start gprsTimeout timer");
+            System.out.println("start gprsTimeout  & mqttTimeout timer");
         }
     }
 
     private void stopTimeoutTimer() {
-        if (timeoutTimer != null) {
-            timeoutTimer.cancel();
+        if (GPRSTimeoutTimer != null) {
+            GPRSTimeoutTimer.cancel();
         }
-        timeout = false;
+        if (MQTTTimeoutTimer != null) {
+            MQTTTimeoutTimer.cancel();
+        }
+        GPRSTimeout = false;
+        MQTTTimeout = false;
     }
-
 
     public static SocketGPRSThread getInstance() {
         return SocketGPRSThreadHolder.INSTANCE;
@@ -108,14 +125,14 @@ public class SocketGPRSThread extends Thread {
         private static final SocketGPRSThread INSTANCE = new SocketGPRSThread();
     }
 
-
     class Publish {
+
         public String topic;
         public byte[] payload;
         public boolean retain;
         public int qos;
     }
-    
+
     public synchronized boolean put(String topic, int qos, boolean retain, byte[] payload) {
         Publish publish = new Publish();
         publish.topic = topic;
@@ -128,11 +145,11 @@ public class SocketGPRSThread extends Thread {
         }
         return putResult;
     }
-    
+
     public synchronized int qSize() {
         return gpsQ.size() + ((publish == null) ? 0 : 1);
     }
-    
+
     public void open() {
         ATManager.getInstance().executeCommandSynchron("at^smong\r");
         try {
@@ -164,13 +181,11 @@ public class SocketGPRSThread extends Thread {
             );
             MQTTHandler.getInstance().connectToBroker();
         }
-        sending = MQTTHandler.getInstance().isConnected(); 
     }
 
     public void close() {
         MQTTHandler.getInstance().disconnect();
         ATManager.getInstance().executeCommandSynchron("at+cgatt=0\r");
-        sending = false;
     }
 
     public void run() {
@@ -178,15 +193,15 @@ public class SocketGPRSThread extends Thread {
             AppMain.getInstance().userwareWatchDogTask.GPRSRunning = true;
             AppMain.getInstance().gpio6WatchDogTask.GPRSRunning = true;
 
-            if (!sending) {
+            if (!MQTTHandler.getInstance().isConnected()) {
                 open();
             }
-            if (sending) {
+            if (MQTTHandler.getInstance().isConnected()) {
                 if (publish == null) {
                     if (Settings.getInstance().getSetting("gprsDebug", false)) {
                         System.out.println("gpsQ.size " + qSize());
                     }
-                    publish = (Publish)gpsQ.get();
+                    publish = (Publish) gpsQ.get();
                     if (Settings.getInstance().getSetting("gprsDebug", false)) {
                         System.out.println("gpsQ.size " + qSize());
                     }
@@ -195,7 +210,6 @@ public class SocketGPRSThread extends Thread {
                     if (processMessage(publish)) {
                         publish = null;
                     } else {
-                        sending = false;
                         try {
                             Thread.sleep(errorSleep);
                         } catch (InterruptedException e) {
@@ -220,19 +234,28 @@ public class SocketGPRSThread extends Thread {
         MQTTHandler.getInstance().publish(publish.topic, publish.qos, publish.retain, publish.payload);
         return MQTTHandler.getInstance().isConnected();
     }
-    
+
     class NetworkCheckTimerTask extends TimerTask {
+
         public void run() {
             String response = ATManager.getInstance().executeCommandSynchron("AT+COPS?\r");
-            final String COPS = "+COPS: ";
-            if (response.indexOf(COPS) >= 0 &&
-                    response.length() > response.indexOf(COPS) + COPS.length()) {
-                String[] values = StringSplitter.split(response.substring(response.indexOf(COPS) + COPS.length()), ",");
-                if (values.length == 3) {
-                    stopTimeoutTimer();
-                    network = true;
-                    operator = values[2];
-                    
+            String[] lines = StringSplitter.split(response, "\r\n");
+            if (lines.length >= 2) {
+                final String COPS = "+COPS: ";
+                if (lines[1].startsWith(COPS)
+                        && lines[1].length() > COPS.length()) {
+                    String[] values = StringSplitter.split(lines[1].substring(COPS.length()), ",");
+                    if (values.length == 3) {
+                        stopTimeoutTimer();
+                        network = true;
+                        operator = values[2];
+                    } else {
+                        if (network) {
+                            startTimeoutTimer();
+                        }
+                        network = false;
+                        operator = "";
+                    }
                 } else {
                     if (network) {
                         startTimeoutTimer();

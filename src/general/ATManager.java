@@ -65,7 +65,9 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
         } catch (ATCommandFailedException atcfe) {
             Log.log("ATCommandFailedException send " + command);
         }
-
+        if (response.indexOf("ERROR") >= 0) {
+            Log.log(response);
+        }
         return response;
     }
 
@@ -132,6 +134,9 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
     public void ATResponse(String response) {
         if (Settings.getInstance().getSetting("gsmDebug", false)) {
             System.out.println("commandResponse: " + response);
+        }
+        if (response.indexOf("ERROR") >= 0) {
+            Log.log(response);
         }
     }
 }
