@@ -69,6 +69,7 @@ login expires after "loginTimeout" (settings) seconds
 | apnUser     |        |          | reboot   | GPRS access point user id  |
 | apnPassword |        |          | reboot   | GPRS access point password |
 | gprsTimeout | 1-...  | 600      | next loop| time in seconds after which the system does not expect gprs anymore |
+| mqttTimeout | 1-...  | 600      | next loop| time in seconds after which the system does not expect mqtt anymore |
 
 ### Device
 
@@ -118,7 +119,7 @@ login expires after "loginTimeout" (settings) seconds
 | minDistance      | 0-... | 0        | immediate | distance sincde last publis in meters to switch to move mode|
 | maxInterval      | 0-... | 0        | immediate | maximum time before before next publish in move mode in seconds |
 | minInterval      | 0-... | 0        | immediate | minimum time before before publish in stationary mode in seconds |
-| fields           |       | course,speed,altitude,distance,battery | immediate | comma separated list of optional fields in publish message |
+| fields           |       | course,speed,altitude,distance,battery,trip | immediate | comma separated list of optional fields in publish message |
 | fixTimeout       | 1-... | 600      | next loop | time in seconds after which the system does not expect a fix anymore |
 
 
@@ -157,10 +158,4 @@ owntracks/gw/dev1/status 1
 ```
 
 Similarly, a retained `0` will be published when the device goes offline. When the device does an "intended shutdown", e.g. you disable tracking with
-
-```
-$set tracking=0
-```
-
-the device publishes a retained `-1` to status.
 
