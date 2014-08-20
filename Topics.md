@@ -20,10 +20,11 @@ The base topic is used for [JSON payloads](https://github.com/owntracks/owntrack
 
 ### `../hw`
 
-Upon startup, the device publishes the hardware model of the chip. Example:
+Upon startup, the device publishes the hardware model of the chip and the IMEI. Example:
 
 ```
 owntracks/gw/GWCAR-jp/hw Cinterion,EGS5-X,REVISION 02.004
+owntracks/gw/GWCAR-jp/hw/imei 012345678901234
 ```
 
 ### `../sw/`
@@ -32,7 +33,7 @@ Upon startup, the device publishes the Greenwich version as well as the applicat
 
 ```
 owntracks/gw/GWCAR-jp/sw/gw 02.16B,02.01,02.16
-owntracks/gw/GWCAR-jp/sw/midlet OwnTracks Choral 0.5.43
+owntracks/gw/GWCAR-jp/sw/midlet 0.5.43
 ```
 
 ### `../voltage`
