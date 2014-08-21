@@ -152,6 +152,7 @@ public class SocketGPRSThread extends Thread {
 
     public void open() {
         ATManager.getInstance().executeCommandSynchron("at^smong\r");
+        
         try {
             Thread.sleep(1001);
         } catch (InterruptedException ie) {

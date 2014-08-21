@@ -141,7 +141,12 @@ public class AppMain extends MIDlet {
             }
 
             ATManager.getInstance().executeCommandSynchron("AT\r");
-            ATManager.getInstance().executeCommandSynchron("at+cpin=5555\r");
+            
+            String pin = Settings.getInstance().getSetting("pin", "");
+            if (pin.length() > 0) {
+                ATManager.getInstance().executeCommandSynchron("at+cpin=" + pin + "\r");
+            }
+            
             ATManager.getInstance().executeCommandSynchron("at^spio=1\r");
             
             if (Settings.getInstance().getSetting("mainDebug", false)) {
