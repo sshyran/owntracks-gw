@@ -6,6 +6,7 @@
  */
 package general;
 
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -153,12 +154,15 @@ public class SocketGPRSThread extends Thread {
     public void open() {
         ATManager.getInstance().executeCommandSynchron("at^smong\r");
         
-        try {
-            Thread.sleep(1001);
-        } catch (InterruptedException ie) {
-            //
-        }
-        ATManager.getInstance().executeCommandSynchron("at+cgatt=1\r");
+        String cgatt;
+        do {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ie) {
+                //
+            }
+            cgatt = ATManager.getInstance().executeCommandSynchron("at+cgatt=1\r");
+        } while (cgatt.indexOf("ERROR") >= 0);
 
         if (!MQTTHandler.getInstance().isConnected()) {
             MQTTHandler.getInstance().init(

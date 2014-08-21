@@ -322,7 +322,7 @@ public class LocationManager {
         }
         
         if (lastLocation != null) {
-            if (vel > minSpeed) {
+            if (currentLocation.speed > 3) {
                 trip += lastLocation.distance(currentLocation);
             }
         }
@@ -382,8 +382,7 @@ public class LocationManager {
         if (currentLocation != null) {
             double distance = 0;
             if (lastReportedLocation != null) {
-                distance = currentLocation.speed > Settings.getInstance().getSetting("minSpeed", 5) ? 
-                            lastReportedLocation.distance(currentLocation) : 0;
+                distance = lastReportedLocation.distance(currentLocation);
             }
             lastReportedLocation = currentLocation;
             currentLocation = null;
