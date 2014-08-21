@@ -65,6 +65,7 @@ login expires after "loginTimeout" (settings) seconds
 
 | Key         | Values | Default  | Validity | Description                |
 |:------------|:------:|:--------:|---------:|:---------------------------|
+| pin         |        | "" (none)| reboot   | SIM pin, if none given, no cpin command|
 | apn         |        | internet | reboot   | GPRS access point name     |
 | apnUser     |        |          | reboot   | GPRS access point user id  |
 | apnPassword |        |          | reboot   | GPRS access point password |
