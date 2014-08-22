@@ -70,7 +70,6 @@ login expires after "loginTimeout" (settings) seconds
 | apnUser     |        |          | reboot   | GPRS access point user id  |
 | apnPassword |        |          | reboot   | GPRS access point password |
 | gprsTimeout | 1-...  | 600      | next loop| time in seconds after which the system does not expect gprs anymore |
-| mqttTimeout | 1-...  | 600      | next loop| time in seconds after which the system does not expect mqtt anymore |
 
 ### Device
 
@@ -107,6 +106,7 @@ login expires after "loginTimeout" (settings) seconds
 | subscription     |       | =publish + /cmd | reboot    | client listens for commands here |
 | subscriptionQos  |  0..2 | 1    | reboot    | MQTT subscriptionQos |
 | clientID         |       | IMEI | reboot    | used as MQTT connect client id and is appended to base publish topic|
+| mqttTimeout      | 1-... | 600  | next loop | time in seconds after which the system does not expect mqtt anymore |
 
 
 `$set clientID=<id>` sets the MQTT clientID for the publish (default is the device's IMEI number). This identifier is also appended to `$set publish=<basetopic>`, default owntracks/gw
@@ -116,10 +116,11 @@ login expires after "loginTimeout" (settings) seconds
 
 | Key  | Values | Default | Validity | Description |
 |:-----|:------:|:-------:|---------:|:------------|
-| minSpeed         | 0-... | 0        | immediate | minimum speed in km/h to switch to move move|
-| minDistance      | 0-... | 0        | immediate | distance sincde last publis in meters to switch to move mode|
-| maxInterval      | 0-... | 0        | immediate | maximum time before before next publish in move mode in seconds |
-| minInterval      | 0-... | 0        | immediate | minimum time before before publish in stationary mode in seconds |
+| sensitivity      | 0-... | 3        | immediate | threshold in km/h to exclude movement artefacts from trip calculation|
+| minSpeed         | 0-... | 5        | immediate | minimum speed in km/h to switch to move move|
+| minDistance      | 0-... | 100      | immediate | distance sincde last publis in meters to switch to move mode|
+| maxInterval      | 0-... | 60       | immediate | maximum time before before next publish in move mode in seconds |
+| minInterval      | 0-... | 3600     | immediate | minimum time before before publish in stationary mode in seconds |
 | fields           |       | course,speed,altitude,distance,battery,trip | immediate | comma separated list of optional fields in publish message |
 | fixTimeout       | 1-... | 600      | next loop | time in seconds after which the system does not expect a fix anymore |
 
@@ -130,6 +131,8 @@ login expires after "loginTimeout" (settings) seconds
 |:-----|:------:|:-------:|---------:|:------------|
 | generalDebug| 0/1 | 0 | immediate|controls the debug output for most of the code |
 | locDebug    | 0/1 | 0 | immediate|controls the debug output of the LocationManager |
+| gprsDebug   | 0/1 | 0 | immediate|controls the debug output of the SocketGPRSThread |
+| cmdDebug    | 0/1 | 0 | immediate|controls the debug output of the CommandProcessor |
 | timerDebug  | 0/1 | 0 | immediate|controls the debug output of the WatchDogs |
 | usbDebug    | 0/1 | 0 | immediate|if set to 1, debug output flows to USB instead of ASC0 |
 | gsmDebug    | 0/1 | 0 | immediate|controls the debug output for all AT commands and responses |
