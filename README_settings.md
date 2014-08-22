@@ -123,6 +123,7 @@ login expires after "loginTimeout" (settings) seconds
 | minInterval      | 0-... | 3600     | immediate | minimum time before before publish in stationary mode in seconds |
 | fields           |       | course,speed,altitude,distance,battery,trip | immediate | comma separated list of optional fields in publish message |
 | fixTimeout       | 1-... | 600      | next loop | time in seconds after which the system does not expect a fix anymore |
+| tid              | alpha | last 2 letters of clientID | next publish | short tracker id (typically 2 letters) |
 
 
 ### Debugging
