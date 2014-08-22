@@ -116,7 +116,7 @@ login expires after "loginTimeout" (settings) seconds
 
 | Key  | Values | Default | Validity | Description |
 |:-----|:------:|:-------:|---------:|:------------|
-| sensitivity      | 0-... | 3        | immediate | threshold in km/h to exclude movement artifacts from trip calculation|
+| sensitivity      | 0-... | 1        | immediate | threshold in m to exclude movement artifacts from trip calculation|
 | minSpeed         | 0-... | 5        | immediate | minimum speed in km/h to switch to move mode|
 | minDistance      | 0-... | 100      | immediate | distance sincde last publish in meters to switch to move mode|
 | maxInterval      | 0-... | 60       | immediate | maximum time before before next publish in move mode in seconds |
