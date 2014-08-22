@@ -83,6 +83,9 @@ public class LocationManager {
             timer.cancel();
         }
         timeout = false;
+        if (Settings.getInstance().getSetting("locDebug", false)) {
+            System.out.println("stop fixTimeout timer");
+        }
     }
 
     private void setLED(boolean on) {
@@ -303,6 +306,7 @@ public class LocationManager {
 
     private void rollLocation(Date date, double lon, double lat, double cog, double vel, double alt) {
         
+        int sensitivity = Settings.getInstance().getSetting("sensitivity", 1);
         int minDistance = Settings.getInstance().getSetting("minDistance", 100);
         int minSpeed = Settings.getInstance().getSetting("minSpeed", 5);
         int maxInterval = Settings.getInstance().getSetting("maxInterval", 60);
@@ -322,8 +326,13 @@ public class LocationManager {
         }
         
         if (lastLocation != null) {
-            if (currentLocation.speed > 3) {
-                trip += lastLocation.distance(currentLocation);
+            double distance = lastLocation.distance(currentLocation);
+            if (Settings.getInstance().getSetting("locDebug", false)) {
+                System.out.println("move: " + distance + 
+                        " speed: " + currentLocation.speed);
+            }
+            if (distance > sensitivity) {
+                trip += distance;
             }
         }
         lastLocation = currentLocation;
@@ -383,6 +392,9 @@ public class LocationManager {
             double distance = 0;
             if (lastReportedLocation != null) {
                 distance = lastReportedLocation.distance(currentLocation);
+                if (Settings.getInstance().getSetting("locDebug", false)) {
+                    System.out.println("dist: " + distance);
+                }
             }
             lastReportedLocation = currentLocation;
             currentLocation = null;
@@ -405,6 +417,20 @@ public class LocationManager {
             String json;
             json = "{\"_type\":\"location\"";
             json = json.concat(",\"t\":\"" + reason + "\"");
+            
+            String tid = Settings.getInstance().getSetting("tid", null);
+            if (tid == null) {
+                String clientID = Settings.getInstance().getSetting("clientID",
+                    MicroManager.getInstance().getIMEI());
+                int len = clientID.length();
+                if (len > 2) {
+                    tid = clientID.substring(len - 2);
+                } else {
+                    tid = clientID;
+                }
+            }
+            json = json.concat(",\"tid\":\"" + tid + "\"");
+            
             json = json.concat(",\"tst\":\"" + (location.date.getTime() / 1000) + "\"");
             json = json.concat(",\"lon\":\"" + location.longitude + "\"");
             json = json.concat(",\"lat\":\"" + location.latitude + "\"");
@@ -419,10 +445,10 @@ public class LocationManager {
                 json = json.concat(",\"alt\":\"" + location.altitude + "\"");
             }
             if (isInStringArray("distance", fields)) {
-                json = json.concat(",\"dist\":\"" + (long) distance + "\"");
+                json = json.concat(",\"dist\":\"" + (long)distance + "\"");
             }
             if (isInStringArray("trip", fields)) {
-                json = json.concat(",\"trip\":\"" + (long) trip + "\"");
+                json = json.concat(",\"trip\":\"" + (long)trip + "\"");
             }
             if (isInStringArray("battery", fields)) {
                 json = json.concat(",\"batt\":\"" + BatteryManager.getInstance().getExternalVoltageString() + "\"");
@@ -459,7 +485,7 @@ public class LocationManager {
             human = human.concat("Altitude " + (long)location.altitude + "m\r\n");
             human = human.concat("Speed " + (long)location.speed + "kph\r\n");
             human = human.concat("Course " + (long)location.course + "\r\n");
-            human = human.concat("Trip " + (long) trip + "m\r\n");
+            human = human.concat("Trip " + (long) (trip * 1000.0) + "m\r\n");
 
             return human;
         } else {

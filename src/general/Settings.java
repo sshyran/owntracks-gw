@@ -19,7 +19,8 @@ public class Settings {
 
     private String fileURL = "file:///a:/file/settings.properties";
     private Hashtable hashTable;
-
+    private Vector vector;
+    
     private Settings() {
     }
 
@@ -231,6 +232,25 @@ public class Settings {
     }
 
     public Enumeration keys() {
-        return hashTable.keys();
+        if (vector == null) {
+            vector = new Vector();
+        } else {
+            vector.removeAllElements();
+        }
+        
+        Enumeration enumeration = hashTable.keys();
+        while (enumeration.hasMoreElements()) {
+            String key = (String)enumeration.nextElement();
+            int i;
+            for (i = 0; i < vector.size(); i++) {
+                String vectorKey = (String)vector.elementAt(i);
+                if (key.compareTo(vectorKey) < 0) {
+                    break;
+                }
+            }
+            vector.insertElementAt(key, i);
+        }
+        
+        return vector.elements();
     }
 }

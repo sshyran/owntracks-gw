@@ -21,24 +21,53 @@ public class Location {
     public double speed;
     public double altitude; 
     
-    double acos(double a) {
-        final double epsilon = 1.0E-7;
+    /** arcus cosinus implementation
+     * using Newton's iterative method
+     * @param a the angle in radians
+     * @return the arcus cosinus of a 
+     */
+    double acos(double asin) {
+        return -1 * (asin - Math.PI / 2);
+    }
+    
+    /** arcus sinus implementation
+     * using Newton's iterative method
+     * @param a the angle in radians
+     * @return the arcus sinus of a 
+     */
+    double asin(double a) {
         double x = a;
         do {
-            x -= (Math.sin(x) - a) / Math.cos(x);
-        } while (Math.abs(Math.sin(x) - a) > epsilon);
+            x -=(Math.sin(x) - a) / Math.cos(x);
+        } while (Math.abs(Math.sin(x) - a) > Math.E);
+        return x;
+}
 
-        return -1 * (x - Math.PI / 2);
-    }
-
+    /** Calculate the great circle distance between two points 
+     * on the earth (specified in decimal degrees)
+     * @param location the other location which distance is to be calculated
+     * @return the distance to the other location in m
+     */
     public double distance(Location location) {
-        double lambdaA = Math.toRadians(longitude);
-        double lambdaB = Math.toRadians(location.longitude);
-        double phiA = Math.toRadians(latitude);
-        double phiB = Math.toRadians(location.latitude);
-
-        double dist = acos((Math.sin(phiA) * Math.sin(phiB) + Math.cos(phiA) * Math.cos(phiB) * Math.cos(lambdaB - lambdaA))) * 6370;
+        // convert decimal degrees to radians 
+        double lon1 = Math.toRadians(longitude);
+        double lon2 = Math.toRadians(location.longitude);
+        double lat1 = Math.toRadians(latitude);
+        double lat2 = Math.toRadians(location.latitude);
         
-        return dist;
+        // haversine formula
+        double dlon = lon2 - lon1;
+        double dlat = lat2 - lat1;
+        
+        // haversine formula 
+        double sinDlat = Math.sin(dlat/2);
+        double sinDlon = Math.sin(dlon/2);
+        
+        double a = sinDlat * sinDlat + Math.cos(lat1) * Math.cos(lat2) * sinDlon * sinDlon; 
+        double c = 2 * asin(Math.sqrt(a));
+        
+        // 6367 km is the radius of the Earth
+        double m = 6367000.0 * c;
+        return m;
     }    
 }

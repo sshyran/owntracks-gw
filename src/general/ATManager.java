@@ -44,11 +44,6 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
 
     private synchronized String execute(String command, String text, ATCommandResponseListener listener) {
         String response = "";
-
-        if (Settings.getInstance().getSetting("gsmDebug", false)) {
-            System.out.println("execute Command: " + command);
-            System.out.flush();
-        }
         try {
             if (listener == null) {
                 response = atCommand.send(command);

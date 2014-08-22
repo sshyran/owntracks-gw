@@ -21,6 +21,7 @@ import java.io.IOException;
  * @author matteobo
  */
 public class AppMain extends MIDlet {
+    
     public boolean invalidSIM = false;
     public boolean airplaneMode = false;
     public boolean alarm = false;
@@ -274,6 +275,10 @@ public class AppMain extends MIDlet {
             if (Settings.getInstance().getSetting("mainDebug", false)) {
                 System.out.println("AppMain: waiting qSize= " + SocketGPRSThread.getInstance().qSize());
             } 
+            if (SocketGPRSThread.getInstance().isGPRSTimeout() ||
+                    SocketGPRSThread.getInstance().isMQTTTimeout()) {
+                break;
+            }
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ie) {

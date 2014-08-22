@@ -79,6 +79,7 @@ public class MicroManager implements MovListener {
             
         if (Settings.getInstance().getSetting("motion", 4) > 0) {
             try {
+                movSens.setMovSens(Settings.getInstance().getSetting("motion", 4));
                 movSens.movSensOn();
             } catch (IOException ioe) {
                 System.err.println("IOException movSensOn");
