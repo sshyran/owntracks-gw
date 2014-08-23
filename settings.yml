@@ -193,9 +193,39 @@
 
            FIXME: Christoph, please try to give recommendations for different combinations
            of minSpeed, minDistance, max- and minInterval for scenairos of
+           
+           sensitivity, fixTimeout, minSpeed, minDistance are parameters used to fine tune the functionality:
+           re. sensitivity: will have to find out how gps works...on my desk gw "wanders" less than 1 meter
+           
+           re. fixTimeout: will have to find out what if we really need this. If the car is in a parking garage,
+            probably no fix at all, never. While driving in the open, fix should come within ??? seconds.
 
-           low data volume (few publishes)
-           frequent publishes (high precision)
+           re. minSpeed: on my desk, gw "speeds" up to about 3 km/h. When in a car/bus, I would set this to
+           5 km/h. Means, whenever the car comes to a stop, it transmits a "k" message and enters drive_mode when it
+           accelerates to more then 5 km/h.
+           
+           re. minDistance: probably we don't need this at all because minSpeed threshold will be crossed earlier,
+           except when crawling very slowly...
+          
+           The two parameters influencing the precision/data volume from a user point of view are:
+           
+           low data volume (few publishes): maxInterval = 300 (5min), minInterval = 18000 (5h)
+           While driving, report every 5 minutes when actually moving + everytime the car stops.
+           Autobahn 5min ~ 6-20 km, Landstrasse 6 km, Stadt probably only when stopped. While parked,
+           typically overnight, will give 2 positions before started again next morning.
+           Useful when general information is necessary.
+           
+           medium publishes: maxInterval = 60, minInterval = 9000 (2,5h)
+           Reports on Autobahn (80-240kmh) every 1.3-4km, on Landstrasse (75kmh) every 1,2 km, in town (30 kmh)
+           every 500 m. This setting would allow to actually follow a vehicle
+           whithout missing significant crossroads or landmarks.
+           
+           frequent publishes (high precision): maxInterval = 5, minInterval = 3600 (1h)
+           While driving, report every 5 seconds when actually moving + everytime the car stops.
+           Autobahn 100 m - 300 m, Landstrasse 80m, Stadt 40m. This would allow to follow the vehicle
+           as it moves on screen. It would allow for speed monitoring.
+           
+           Settings for pedestrians, runners, bicycle riders, race cars would be different.
                  
   - sensitivity:
       values: "0-..."
