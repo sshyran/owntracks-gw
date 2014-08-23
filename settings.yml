@@ -39,7 +39,7 @@
       values: 0..
       validity: reboot
       default: 21600
-      desc: sleep after device off
+      desc: sleep <sleep> seconds after device off before device is woken up by alarm (21600s ~ 6 hours)
   - motion:
       values: 0,1..255
       validity: reboot
@@ -69,7 +69,7 @@
       values: string
       validity: immediate
       default: "3599"
-      desc: FIXME Threshold to assume low battery in mV
+      desc: Threshold for low battery in mV (e.g. battery voltage below 3.599V will switch off the device)
 
 - MQTT:
   - block: >
@@ -113,17 +113,12 @@
       values: 1-..
       validity: next loop
       default: 600
-      desc: time in seconds after which device no longer expects MQTT. FIXME-reboot as consequence?
+      desc: time in seconds after which device no longer expects establishing an MQTT connection. System will reboot.
   - port:
       values: 1-..
       validity: reboot
       default: 1883
       desc: TCP/UDP port to connect to. When using `ssl://` in `host`, this should probably be changed to, say, 8883.
-  - protocol:
-      values: TCP/UDP
-      validity: reboot
-      default: TCP
-      desc: Publish via TCP/MQTT or UDP/CSV. FIXME-does this work?
   - qos:
       values: 0-2
       validity: reboot
@@ -199,7 +194,7 @@
       values: "0-..."
       validity: immediate
       default: "1"
-      desc: Threshold in minutes to exclude movement artifacts from trip calculation
+      desc: Threshold in meters to exclude movement artifacts from trip calculation
   - minSpeed:
       values: "0-..."
       validity: immediate
@@ -224,7 +219,7 @@
       values: "1-..."
       validity: immediate
       default: "600"
-      desc: Time in seconds after which the device no longer expects a GPS fix FIXME-reboot here?
+      desc: Time in seconds after which the device no longer expects a GPS fix. Device will reboot.
 
 - Debugging:
   - block: >
