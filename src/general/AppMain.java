@@ -5,12 +5,11 @@
  */
 package general;
 
-import com.m2mgo.util.GPRSConnectOptions;
 import choral.io.CheckUpgrade;
 import com.cinterion.io.BearerControl;
-import java.util.*;
+import com.m2mgo.util.GPRSConnectOptions;
+import java.util.Date;
 import javax.microedition.midlet.*;
-import java.io.IOException;
 
 /**
  * Main application class.
@@ -29,6 +28,7 @@ public class AppMain extends MIDlet {
     final public String ignitionWakeup = "IgnitionWakeup";
     final public String motionWakeup = "MotionWakeup";
     final public String alarmWakeup = "AlarmWakeup";
+    final public String batteryWakeup = "BatteryWakeup";
     public String wakeupMode = motionWakeup;
     
     /**
@@ -80,7 +80,7 @@ public class AppMain extends MIDlet {
         Settings settings = Settings.getInstance();
         settings.setfileURL("file:///a:/file/OwnTracks.properties");
 
-        System.out.println("Running " + getAppProperty("MIDlet-Version") + " @ " + new Date());
+        System.out.println("Running " + getAppProperty("MIDlet-Version") + " " + DateFormatter.isoString(new Date()));
 
         ATManager.getInstance();
 
@@ -192,12 +192,16 @@ public class AppMain extends MIDlet {
             BatteryManager.getInstance();
             GPIOInputManager.getInstance();
 
-            if (GPIOInputManager.getInstance().gpio7 == 0) {
-                wakeupMode = ignitionWakeup;
-            } else if (alarm) {
-                wakeupMode = alarmWakeup;
+            if (Settings.getInstance().getSetting("battery", false)) {
+                wakeupMode = batteryWakeup;
+            } else {
+                if (GPIOInputManager.getInstance().gpio7 == 0) {
+                    wakeupMode = ignitionWakeup;
+                } else if (alarm) {
+                    wakeupMode = alarmWakeup;
+                }
             }
-            
+
             if (Settings.getInstance().getSetting("mainDebug", false)) {
                 System.out.println("AppMain: wakeupMode is " + wakeupMode);
             }
@@ -297,20 +301,11 @@ public class AppMain extends MIDlet {
         Date date = LocationManager.getInstance().dateLastFix();
         if (date != null) {
             if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: powerDown @ last fix time " + date.toString());
+                System.out.println("AppMain: powerDown @ last fix time " + DateFormatter.isoString(date));
             }
 
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(date);
-
             String rtc = "at+cclk=\""
-                    + two(cal.get(Calendar.YEAR) - 2000)
-                    + "/" + two(cal.get(Calendar.MONTH) + 1)
-                    + "/" + two(cal.get(Calendar.DAY_OF_MONTH))
-                    + ","
-                    + two(cal.get(Calendar.HOUR) + (cal.get(Calendar.AM_PM) == Calendar.PM ? 12 : 0))
-                    + ":" + two(cal.get(Calendar.MINUTE))
-                    + ":" + two(cal.get(Calendar.SECOND))
+                    + DateFormatter.atString(date)
                     + "\"\r";
 
             ATManager.getInstance().executeCommandSynchron(rtc);
@@ -319,7 +314,7 @@ public class AppMain extends MIDlet {
         }
 
         if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("AppMain: powerDown @ " + date.toString());
+            System.out.println("AppMain: powerDown @ " + DateFormatter.isoString(date));
         }
 
         if (BatteryManager.getInstance().isBatteryVoltageLow()) {
@@ -335,23 +330,17 @@ public class AppMain extends MIDlet {
             ATManager.getInstance().executeCommandSynchron("AT^SCFG=\"MEopMode/Airplane\",\"off\"\r");
 
         } else {
-            date.setTime(date.getTime() + Settings.getInstance().getSetting("sleep", 6 * 3600) * 1000L);
-
+            if (wakeupMode.equals(batteryWakeup)) {
+                date.setTime(date.getTime() + 1 * 1000L);
+            } else {
+                date.setTime(date.getTime() + Settings.getInstance().getSetting("sleep", 6 * 3600) * 1000L);                
+            }
             if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: powerDown setting wakeup call for " + date.toString());
+                System.out.println("AppMain: powerDown setting wakeup call for " + DateFormatter.isoString(date));
             }
 
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(date);
-
             String rtc = "at+cala=\""
-                    + two(cal.get(Calendar.YEAR) - 2000)
-                    + "/" + two(cal.get(Calendar.MONTH) + 1)
-                    + "/" + two(cal.get(Calendar.DAY_OF_MONTH))
-                    + ","
-                    + two(cal.get(Calendar.HOUR) + (cal.get(Calendar.AM_PM) == Calendar.PM ? 12 : 0))
-                    + ":" + two(cal.get(Calendar.MINUTE))
-                    + ":" + two(cal.get(Calendar.SECOND))
+                    + DateFormatter.atString(date)
                     + "\"\r";
 
             ATManager.getInstance().executeCommandSynchron(rtc);

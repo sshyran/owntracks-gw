@@ -78,9 +78,9 @@ public class CommASC0Thread extends Thread {
                 CommandProcessor commandProcessor = CommandProcessor.getInstance();
                 try {
                     if (commandProcessor.execute(comando.substring(1), false)) {
-                        serialOut.write(("ACK: " + commandProcessor.message + "\r\n").getBytes());
+                        serialOut.write((commandProcessor.message + "\r\n").getBytes());
                     } else {
-                        serialOut.write(("NACK: " + commandProcessor.message + "\r\n").getBytes());
+                        serialOut.write(("NACK:" + commandProcessor.message + "\r\n").getBytes());
                     }
                 } catch (IOException ioe) {
                     if (Settings.getInstance().getSetting("generalDebug", false)) {

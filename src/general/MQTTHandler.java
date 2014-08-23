@@ -224,7 +224,7 @@ public class MQTTHandler implements MqttCallback {
         }
         CommandProcessor commandProcessor = CommandProcessor.getInstance();
         if (commandProcessor.execute(message.toString(), false)) {
-            SocketGPRSThread.getInstance().put(topic.getName() + "/out", 0, false, ("ACK: " + commandProcessor.message).getBytes());
+            SocketGPRSThread.getInstance().put(topic.getName() + "/out", 0, false, (commandProcessor.message).getBytes());
         } else {
             SocketGPRSThread.getInstance().put(topic.getName() + "/out", 0, false, ("NACK: " + commandProcessor.message).getBytes());
         }

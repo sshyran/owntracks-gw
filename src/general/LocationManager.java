@@ -156,7 +156,7 @@ public class LocationManager {
         String[] components = StringSplitter.split(rmc, ",");
         if (components.length == 13) {
             try {
-                tempDate = new DateParser(components[9], components[1].substring(0, 6)).getDate();
+                tempDate = DateFormatter.parse(components[9], components[1].substring(0, 6));
 
                 if (fix) {
                     if (!components[2].equalsIgnoreCase("A")) {
@@ -477,15 +477,14 @@ public class LocationManager {
              * 0123456789012345678901234567
              * 0         1         2
              */
-            String s = location.date.toString();
-
-            human = s.substring(4, 19) + "\r\n";
+            
+            human = DateFormatter.isoString(location.date) + "\r\n";
             human = human.concat("Latitude " + location.latitude + "\r\n");
             human = human.concat("Longitude " + location.longitude + "\r\n");
             human = human.concat("Altitude " + (long)location.altitude + "m\r\n");
             human = human.concat("Speed " + (long)location.speed + "kph\r\n");
             human = human.concat("Course " + (long)location.course + "\r\n");
-            human = human.concat("Trip " + (long) (trip * 1000.0) + "m\r\n");
+            human = human.concat("Trip " + (long)trip + "m\r\n");
 
             return human;
         } else {

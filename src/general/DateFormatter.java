@@ -5,17 +5,16 @@
  */
 package general;
 
+import java.util.Calendar;
 import java.util.Date;
 
 /**
  *
  * @author christoph
  */
-public class DateParser {
-
-    private Date date;
-
-    public DateParser(String DDMMYY, String HHMMSS) {
+public class DateFormatter {
+    
+    public static Date parse(String DDMMYY, String HHMMSS) {
         long timeStamp = 0;
 
         int sYear;
@@ -75,10 +74,44 @@ public class DateParser {
         } catch (NumberFormatException nfe) {
             System.err.println("NumberFormatException " + DDMMYY + " " + HHMMSS);
         }
-        date = new Date(timeStamp * 1000L);
+        return new Date(timeStamp * 1000L);
+    }
+    
+    public static String atString(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+
+        String s = leadingZeroes(cal.get(Calendar.YEAR) - 2000, 2)
+                + "/" + leadingZeroes(cal.get(Calendar.MONTH) + 1, 2)
+                + "/" + leadingZeroes(cal.get(Calendar.DAY_OF_MONTH), 2)
+                + ","
+                + leadingZeroes(cal.get(Calendar.HOUR) + (cal.get(Calendar.AM_PM) == Calendar.PM ? 12 : 0), 2)
+                + ":" + leadingZeroes(cal.get(Calendar.MINUTE), 2)
+                + ":" + leadingZeroes(cal.get(Calendar.SECOND), 2);
+        return s;
     }
 
-    public Date getDate() {
-        return date;
+    public static String isoString(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+
+        int year = cal.get(Calendar.YEAR);
+        String s = ((year < 0) ? "-" : "") 
+                + leadingZeroes(Math.abs(cal.get(Calendar.YEAR)), 4)
+                + "-" + leadingZeroes(cal.get(Calendar.MONTH) + 1, 2)
+                + "-" + leadingZeroes(cal.get(Calendar.DAY_OF_MONTH), 2)
+                + " "
+                + leadingZeroes(cal.get(Calendar.HOUR) + (cal.get(Calendar.AM_PM) == Calendar.PM ? 12 : 0), 2)
+                + ":" + leadingZeroes(cal.get(Calendar.MINUTE), 2)
+                + ":" + leadingZeroes(cal.get(Calendar.SECOND), 2);
+        return s;
+    }
+
+    private static String leadingZeroes(int i, int length) {
+        String s = "" + i;
+        while (s.length() < length) {
+            s = "0" + s;
+        }
+        return s;
     }
 }

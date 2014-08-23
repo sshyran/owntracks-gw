@@ -230,19 +230,20 @@ public class CommandProcessor {
         message = message.concat(";BEARER:" + Bearer.getInstance().getBearerState());
         message = message.concat(";CREG:" + SocketGPRSThread.getInstance().creg);
         message = message.concat(";CGREG:" + SocketGPRSThread.getInstance().cgreg);
-        message = message.concat(";BATT:" + BatteryManager.getInstance().getBatteryVoltage());
-        message = message.concat(";EXTV:" + BatteryManager.getInstance().getExternalVoltage());
-        message = message.concat(";gpsQ:" + SocketGPRSThread.getInstance().qSize());
-        message = message.concat(";connected:" + SocketGPRSThread.getInstance().isConnected());
-        message = message.concat(";network:" + SocketGPRSThread.getInstance().isNetwork());
-        message = message.concat(";operator:" + SocketGPRSThread.getInstance().getOperator());
+        message = message.concat(";BATT:" + BatteryManager.getInstance().getBatteryVoltageString());
+        message = message.concat(";EXTV:" + BatteryManager.getInstance().getExternalVoltageString());
+        message = message.concat(";Q:" + SocketGPRSThread.getInstance().qSize());
+        message = message.concat(";CONN:" + (SocketGPRSThread.getInstance().isConnected() ? 1 : 0));
+        message = message.concat(";NETW:" + (SocketGPRSThread.getInstance().isNetwork() ? 1 : 0));
+        message = message.concat(";OPER:" + SocketGPRSThread.getInstance().getOperator());
+        message = message.concat(";WAKEUP:" + AppMain.getInstance().wakeupMode);
         message = message.concat(";uFW:" + MicroManager.getInstance().getRelease()
                 + "," + MicroManager.getInstance().getBootRelease()
                 + "," + MicroManager.getInstance().getJavaRelease());
         message = message.concat(";SW:" + AppMain.getInstance().getAppProperty("MIDlet-Version"));
         message = message.concat(";EG5:" + MicroManager.getInstance().getInfo());
         message = message.concat(";IMEI:" + MicroManager.getInstance().getIMEI());
-        message = message.concat(";DATE:" + new Date().toString());
+        message = message.concat(";DATE:" + DateFormatter.isoString(new Date()));
         return true;
     }
 
