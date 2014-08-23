@@ -4,7 +4,7 @@ Greenwich devices have up to five user-programmable [GPIO](http://en.wikipedia.o
 
 This is the 14pin Molex connector seen from the back (i.e. plugged into `S1` on the Greenwich)
 
-![Molex connector](assets/molex.png)
+![Molex connector](art/molex.png)
 
 * `GPIO1`, Pin S1-5, light-blue cable, topic name: `/gpio/1`
 * `GPIO3`, Pin S1-12, grey cable, topic name: `/gpio/3`
@@ -22,7 +22,7 @@ owntracks/gw/GWCAR-jp/gpio/3 1
 owntracks/gw/GWCAR-jp/gpio/7 0
 ```
 
-![Arduino](assets/arduino.png)
+![Arduino](art/arduino.png)
 
 In order to toggle these pins with, say, an Arduino, you can use a small sketch on a basic Arduino board. The following is a variation of the _blink_ sketch which flips PIN 10 connected to GPIO1 on the Greenwich every 5 seconds, and blinks LED13 on the Arduino accordingly.
 
