@@ -1,0 +1,290 @@
+---
+- GPRS:
+  - block: >
+           These settings are related to the modem and GPRS, and include settings
+           for the modem to be able to connect via the SIM card operator to the
+           Internet.
+  - pin:
+      values: 4 digits
+      validity: reboot
+      default: ""
+      desc: SIM PIN. If it is not set, no `AT CPIN` command will be issued to the modem.
+  - apn:
+      values: string
+      validity: reboot
+      default: internet
+      desc: GPRS access point name
+  - apnUser:
+      values: string
+      validity: reboot
+      default: ""
+      desc: GPRS access point user-id, required by some providers
+  - apnPassword:
+      values: string
+      validity: reboot
+      default: ""
+      desc: GPRS access point password (for `apnUser`), required by some providers
+  - gprsTimeout:
+      values: 1...
+      validity: next loop
+      default: 600
+      desc: time in seconds after which the system no longer expects GPRS
+  
+- Device:
+  - block: >
+           The device-related settings lay down how the device operates in general.
+           Particular attention should be paid to the _OTAP_ settings if OTAP is
+           required.
+  - sleep:
+      values: 0..
+      validity: reboot
+      default: 21600
+      desc: sleep after device off
+  - motion:
+      values: 0,1..255
+      validity: reboot
+      default: 4
+      desc: Sensitivity for motion sensor. 0=off, 1=highest sensitivity
+  - otapUser:
+      values: string
+      validity: upgrade
+      default: ""
+      desc: HTTP basic auth username for OTAP
+  - otapPassword:
+      values: string
+      validity: upgrade
+      default: ""
+      desc: HTTP basic auth password for OTAP, related to `otapUser`.
+  - otapURI:
+      values: string
+      validity: upgrade
+      default: ""
+      desc: URL to `OwnTracks.jad` for OTAP.
+  - notifyURI:
+      values: string
+      validity: upgrade
+      default: ""
+      desc: optional URL to POST result of an OTAP upgrade. If this is not set, no notification will be posted
+  - lowBattery:
+      values: string
+      validity: immediate
+      default: "3599"
+      desc: FIXME Threshold to assume low battery in mV
+
+- MQTT:
+  - block: >
+           This section documents the MQTT-related parameters. Of particular importance
+           are `host` and `port`, where the former also contains a _scheme_. For securely
+           connecting to a TLSv1 broker, make sure to specify the `ssl://` scheme in the
+           `host` setting.
+
+
+           MQTT topics are used as follows: `publish` specifies a top-level topic branch
+           to which the device publishes. The configured `clientID` (which defaults to
+           the device's IMEI) is appended to that. The device subscribes to the `subscription`
+           topic (default's to `publish/clientID/cmd`) for commands.
+
+  - cleanSession:
+      values: 0/1
+      validity: reboot
+      default: "1"
+      desc: Whether or not to set the MQTT _cleanSession_ flag.
+  - clientID:
+      values: string
+      validity: reboot
+      default: "IMEI"
+      desc: Used in MQTT connect and appended to `publish` topic.
+  - fields:
+      values: ""
+      validity: immediate
+      default: ""
+      desc: Comma separated list of optional fields in published message. May include any of `course`, `speed`, `altitude`, `distance`, `battery`, `trip`
+  - host:
+      values: string
+      validity: reboot
+      default: ""
+      desc: Scheme and hostname or IP address to connect to. Valid schemes are `tcp:` and `ssl:`
+  - keepAlive:
+      values: "1.."
+      validity: reboot
+      default: 60
+      desc: MQTT keepalive in seconds
+  - mqttTimeout:
+      values: 1-..
+      validity: next loop
+      default: 600
+      desc: time in seconds after which device no longer expects MQTT. FIXME-reboot as consequence?
+  - port:
+      values: 1-..
+      validity: reboot
+      default: 1883
+      desc: TCP/UDP port to connect to. When using `ssl://` in `host`, this should probably be changed to, say, 8883.
+  - protocol:
+      values: TCP/UDP
+      validity: reboot
+      default: TCP
+      desc: Publish via TCP/MQTT or UDP/CSV. FIXME-does this work?
+  - qos:
+      values: 0-2
+      validity: reboot
+      default: 1
+      desc: Quality of Service (QoS) for MQTT publishes
+  - raw:
+      values: 0/1
+      validity: immediate
+      default: 1
+      desc: Publish raw GPS string to the `../raw` topic
+  - retained:
+      values: 0/1
+      validity: reboot
+      default: 1
+      desc: Publish locations with a retained flag
+  - user:
+      values: ""
+      validity: reboot
+      default: ""
+      desc: Username for MQTT connect. Default means no authentication
+  - password:
+      values: ""
+      validity: reboot
+      default: ""
+      desc: Password for MQTT connect.
+  - publish:
+      values: ""
+      validity: reboot
+      default: owntracks/gw
+      desc: Base topic for MQTT publishes
+  - subscription:
+      values: ""
+      validity: reboot
+      default: "../cmd"
+      desc: Device listens for commands at this topic
+  - subscriptionQos:
+      values: "0..2"
+      validity: reboot
+      default: "1"
+      desc: QoS for `subscription`
+  - tid:
+      values: "alnum"
+      validity: next pub
+      default: "<xx>"
+      desc: Short tracker-ID, typically two letters, which defaults to last two characters of `clientID`
+  - will:
+      values: ""
+      validity: reboot
+      default: "0"
+      desc: The message published as LwT
+  - willQos:
+      values: "0..2"
+      validity: reboot
+      default: "1"
+      desc: QoS for `willTopic` publish
+  - willRetain:
+      values: "0/1"
+      validity: reboot
+      default: "1"
+      desc: Wether or not to retain the message published to `willTopic`
+  - willTopic:
+      values: ""
+      validity: reboot
+      default: see above
+      desc: Topic for MQTT Last Will and Testament
+
+- LocationManager:
+  - block: >
+           The LocationManager is responsible for determining when to publish
+           a location. These settings can be used to alter its behaviour and
+           they influence _how often_ data is published.
+  - sensitivity:
+      values: "0-..."
+      validity: immediate
+      default: "1"
+      desc: Threshold in minutes to exclude movement artifacts from trip calculation
+  - minSpeed:
+      values: "0-..."
+      validity: immediate
+      default: "5"
+      desc: Mininum speed in Km/h to switch to _move_ mode
+  - minDistance:
+      values: "0-..."
+      validity: immediate
+      default: "100"
+      desc: Distance since last publish in meters to switch to _move_ mode
+  - maxInterval:
+      values: "0-..."
+      validity: immediate
+      default: "60"
+      desc: Maximum time in seconds before next publish in _move_ mode
+  - minInterval:
+      values: "0-..."
+      validity: immediate
+      default: "3600"
+      desc: Mininum time in seconds before publish in _stationary_ (park) mode
+  - fixTimeout:
+      values: "1-..."
+      validity: immediate
+      default: "600"
+      desc: Time in seconds after which the device no longer expects a GPS fix FIXME-reboot here?
+
+- Debugging:
+  - block: >
+           These settings are useful for debugging purposes.
+  - generalDebug:
+      values: "0/1"
+      validity: immediate
+      default: "0"
+      desc: controls the debug output for most of the code
+  - locDebug:
+      values: "0/1"
+      validity: immediate
+      default: "0"
+      desc: controls the debug output of the LocationManager
+  - gprsDebug:
+      values: "0/1"
+      validity: immediate
+      default: "0"
+      desc: controls the debug output of the SocketGPRSThread
+  - cmdDebug:
+      values: "0/1"
+      validity: immediate
+      default: "0"
+      desc: controls the debug output of the CommandProcessor
+  - timerDebug:
+      values: "0/1"
+      validity: immediate
+      default: "0"
+      desc: controls the debug output of the WatchDogs
+  - usbDebug:
+      values: "0/1"
+      validity: immediate
+      default: "0"
+      desc: if set to 1, debug output flows to USB instead of ASC0
+  - gsmDebug:
+      values: "0/1"
+      validity: immediate
+      default: "0"
+      desc: controls the debug output for all AT commands and responses
+  - mainDebug:
+      values: "0/1"
+      validity: immediate
+      default: "0"
+      desc: controls the debug output for main taks
+  - keyDebug:
+      values: "0/1"
+      validity: immediate
+      default: "0"
+      desc: controls the debug output of ignition key management
+
+- Miscellaneous:
+  - block: >
+           
+  - secret:
+      values: digits
+      validity: immediate
+      default: "1234567890"
+      desc: The secret required to issue a `login` command to the device
+  - loginTimeout:
+      values: 0-...
+      validity: immediate
+      default: "30"
+      desc: Successful logins expire after this number of seconds
