@@ -17,9 +17,9 @@ The OwnTracks-Edition of the software surfaces the state (HIGH/LOW) of these pin
 The topic used for publishing is the general topic of the device with `/gpio/<pin>` appended to it:
 
 ```
-owntracks/gw/GWCAR-jp/gpio/1 1
-owntracks/gw/GWCAR-jp/gpio/3 1
-owntracks/gw/GWCAR-jp/gpio/7 0
+owntracks/acme/van17/gpio/1 1
+owntracks/acme/van17/gpio/3 1
+owntracks/acme/van17/gpio/7 0
 ```
 
 ![Arduino](art/arduino.png)
@@ -44,3 +44,4 @@ void loop() {
     delay(5000);
 }
 ```
+\newpage
