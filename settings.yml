@@ -190,6 +190,13 @@
            The LocationManager is responsible for determining when to publish
            a location. These settings can be used to alter its behaviour and
            they influence _how often_ data is published.
+
+           FIXME: Christoph, please try to give recommendations for different combinations
+           of minSpeed, minDistance, max- and minInterval for scenairos of
+
+           low data volume (few publishes)
+           frequent publishes (high precision)
+                 
   - sensitivity:
       values: "0-..."
       validity: immediate
