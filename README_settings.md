@@ -33,10 +33,10 @@ Commands are:
 * - gps (requests location update)
 * - state (shows state)
 * + log `[old/delete]` (shows or resets log files)
-* - close (closes CSD)
 * - destroy (switches back to non-Java AT-mode)
 * + upgrade (perform an [OTA upgrade](OTAP.md)
 * - exec _at-command_ (pass command to modem)
+* + reconnect (disconnects and establishes new MQTT connection)
 
 commands marked with `+` require login
 
