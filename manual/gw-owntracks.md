@@ -45,7 +45,5 @@ vehicle movement (e.g. theft) even when in this low-power consumption mode. (FIX
 
 \newpage
 
-[^mqttspec]: The current MQTT specification can be found at [jpmens.org](http://jpmens.org).
-
 [owntracks]: http://owntracks.org
 [choral]: http://choral.it
