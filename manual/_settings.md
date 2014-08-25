@@ -44,6 +44,8 @@ The device-related settings lay down how the device operates in general. Particu
 +-----------------+----------------+-----------------+--------------+---------------------------+
 | `dBattVoltage`  | 100            | integer         | immediate    | controls the battery voltage monitoring. Reports when voltage varies by more than the value given as mV |
 +-----------------+----------------+-----------------+--------------+---------------------------+
+| `battery`       | 0              | 0/1             | reboot       | if 0, device will shutdown when external power is disconnectd. if 1, device will keep running until lowBattery is detected |
++-----------------+----------------+-----------------+--------------+---------------------------+
 
 \newpage
 
