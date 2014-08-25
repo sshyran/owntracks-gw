@@ -58,4 +58,14 @@ with Google Earth.
 
 ![OwnTracks GPX export](art/ey-belgium.png)
 
+Our use of MQTT means adding new subscribers which act on data as it arrives at
+the MQTT broker is easy. As an example, we want to be alerted when our vehicles
+enter a particular area, say, a customer site or one of our warehouses. A small
+utility called [mqttwarn](http://github.com/jpmens/mqttwarn) can route MQTT
+payloads to a large number of services. The following example shows how an
+alert of a van entering a particular area would look like using the Pushover.net
+service:
+
+![Pushover alerts of an expected van entering customer site](art/v7-pushover.png)
+
 \newpage
