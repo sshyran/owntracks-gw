@@ -261,54 +261,84 @@
       default: "600"
       desc: Time in seconds after which the device no longer expects a GPS fix. Device will reboot.
 
-- Debugging:
-  - block: >
-           These settings are useful for debugging purposes.
-  - generalDebug:
-      values: "0/1"
+- Debugging and Logging:
+  - block: |
+           The app provides debug and logging information prioritised and categorised by component.
+
+	   The used priorities are specified by a character (similar to syslog) with "P" for emergency beeing the highest priority:
+           * P Emergency (Panic)
+           * A Alert
+           * C Critical
+           * E Error
+           * W Warning
+           * N Notice
+           * I Informational
+           * D Debug
+
+	   Debug and logging output can be written to the standard error stream (typically a connected terminal), a file on the device
+	   and published via MQTT to the .../log topic.
+
+	   The level of output is specified by the
+	   * stderrLogLevel
+	   * fileLogLevel
+	   * topicLogLevel	   
+
+	   The specified character assigned to each of the output media limits the output to priorities higher or equal to the priority given.
+           Examples:
+		stderrLogLevel=D, all logging levels and debug is written to standard error
+		topicLogLevel=C, only critical, alert and emergency log messages are sent via MQTT
+		fileLogLevel=E, error, critical, alert and emergency log messages are writte to the local file. Warning, notice, informational and
+			debug messages are ignored
+
+	   To limit the amount of debug messages, the set of components for which the messages are written can be controlled by the 
+	   * debugComponents
+	   parameter. If set to "all", all debug messages are shown. When "none" is specified, no debug messages will be shown. "none" is the default value. 
+	   Otherwise a comma separated list of components allows granular control of the output (e.g. "AppMain,LocationManager"). Currently the following
+   	   components exist:
+
+	   * AppMain
+	   * ATManager
+           * BatteryManager
+           * CommASCThread
+           * CommGPSThread
+	   * CommandProcessor
+           * DateFormatter
+           * GPIO6WatchDogTask
+           * GPIOInputManager
+	   * LocationManager
+ 	   * MQTTHandler
+           * MicroManager
+           * ProcessSMSThread
+           * Settings
+	   * SocketGPRSThread
+	   * SSLSocketFactory
+	   * UserwareWatchDogTask
+
+  - debugComponents:
+      values: comma separated list of components to debug
       validity: immediate
-      default: "0"
-      desc: controls the debug output for most of the code
-  - locDebug:
-      values: "0/1"
+      default: "none"
+      desc: controls the debug output e.g. "AppMain,LocationManager"
+  - stderrLogLevel:
+      values: string
       validity: immediate
-      default: "0"
-      desc: controls the debug output of the LocationManager
-  - gprsDebug:
-      values: "0/1"
+      default: "D"
+      desc: controls the logging to the device's standard error device (terminal)
+  - fileLogLevel:
+      values: string
       validity: immediate
-      default: "0"
-      desc: controls the debug output of the SocketGPRSThread
-  - cmdDebug:
-      values: "0/1"
+      default: "E"
+      desc: controls the logging into the device's log file
+  - topicLogLevel:
+      values: string
       validity: immediate
-      default: "0"
-      desc: controls the debug output of the CommandProcessor
-  - timerDebug:
-      values: "0/1"
-      validity: immediate
-      default: "0"
-      desc: controls the debug output of the WatchDogs
+      default: "E"
+      desc: controls the logging to the MQTT broker on .../log/<priority>/<log-message>
   - usbDebug:
       values: "0/1"
       validity: immediate
       default: "0"
-      desc: if set to 1, debug output flows to USB instead of ASC0
-  - gsmDebug:
-      values: "0/1"
-      validity: immediate
-      default: "0"
-      desc: controls the debug output for all AT commands and responses
-  - mainDebug:
-      values: "0/1"
-      validity: immediate
-      default: "0"
-      desc: controls the debug output for main taks
-  - keyDebug:
-      values: "0/1"
-      validity: immediate
-      default: "0"
-      desc: controls the debug output of ignition key management
+      desc: if set to 1, debug output flows to USB instead of ASC0 via standard error
 
 - Miscellaneous:
   - block: >

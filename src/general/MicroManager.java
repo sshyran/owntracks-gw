@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package general;
 
 import choral.io.InfoMicro;
@@ -16,13 +15,14 @@ import java.io.IOException;
  * @author christoph krey
  */
 public class MicroManager implements MovListener {
+
     private String ati = "unknown";
     private String imei = "unknown";
     private String release = "unknown";
     private String bootRelease = "unknown";
     private String javaRelease = "unknown";
-    
-    private MovSens movSens;
+
+    final private MovSens movSens;
     private boolean moved = false;
 
     private MicroManager() {
@@ -39,7 +39,7 @@ public class MicroManager implements MovListener {
         response = ATManager.getInstance().executeCommandSynchron("AT+CGSN\r");
         lines = StringSplitter.split(response, "\r\n");
         imei = lines[1];
-   
+
         InfoMicro infoMicro = new InfoMicro();
         try {
             release = infoMicro.getRelease();
@@ -48,7 +48,7 @@ public class MicroManager implements MovListener {
         } catch (IOException ie) {
             //
         }
-        
+
         SocketGPRSThread.getInstance().put(
                 Settings.getInstance().getSetting("publish", "owntracks/gw/")
                 + Settings.getInstance().getSetting("clientID", imei)
@@ -73,30 +73,28 @@ public class MicroManager implements MovListener {
                 Settings.getInstance().getSetting("retain", true),
                 (release + "," + bootRelease + "," + javaRelease).getBytes()
         );
-        
+
         movSens = new MovSens();
         movSens.addMovListener(this);
-            
+
         if (Settings.getInstance().getSetting("motion", 4) > 0) {
             try {
                 movSens.setMovSens(Settings.getInstance().getSetting("motion", 4));
                 movSens.movSensOn();
             } catch (IOException ioe) {
-                System.err.println("IOException movSensOn");
+                SLog.log(SLog.Error, "MicroManager", "IOException movSensOn");
             }
         } else {
             try {
                 movSens.movSensOff();
             } catch (IOException ioe) {
-                System.err.println("IOException movSensOff");
-            }            
+                SLog.log(SLog.Error, "MicroManager", "IOException movSensOff");
+            }
         }
     }
-    
+
     public void movSensEvent(String event) {
-        if (Settings.getInstance().getSetting("microDebug", false)) {
-            System.out.println("movSensEvent " + event);
-        }
+        SLog.log(SLog.Debug, "MicroManager", "movSensEvent " + event);
 
         if (event.equalsIgnoreCase("^MOVE: 0")) {
             //moved = false;
@@ -105,12 +103,10 @@ public class MicroManager implements MovListener {
         }
     }
 
-
-    
     public static MicroManager getInstance() {
         return MicroManagerHolder.INSTANCE;
     }
-    
+
     private static class MicroManagerHolder {
 
         private static final MicroManager INSTANCE = new MicroManager();
@@ -119,19 +115,23 @@ public class MicroManager implements MovListener {
     public String getInfo() {
         return ati;
     }
+
     public String getIMEI() {
         return imei;
     }
+
     public String getRelease() {
         return release;
     }
+
     public String getBootRelease() {
         return bootRelease;
     }
+
     public String getJavaRelease() {
         return javaRelease;
     }
-    
+
     public boolean hasMoved() {
         return moved;
     }
