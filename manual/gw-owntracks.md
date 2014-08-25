@@ -22,12 +22,15 @@ You have a small or large fleet of vehicles, say, busses, transport vans,
 trucks, or even just a single vehicle you want to keep track of, and you've
 asked yourself one or more of these questions.
 
-* Where are my vehicles currently?
+* Where are my vehicles currently? View them on a Web page from within your organization
+  or on one of the OwnTracks' mobile apps.
+* A customer has called to ask when the service technician will arrive; where is he?
+  Your credibility rises if you can give your customer an honest and reliable answer.
 * How far away is vehicle number 17 (in other words, when can I expect it back?)
 * What is the weather like at the vehicle's location?
-
-Even if you're simply an avid traveller and wish to have an exact record of your trips,
-Greenwich _OwnTracks Edition_ is just what you need.
+* Even if you're simply an avid traveller and wish to have an exact record of your trips,
+  Greenwich _OwnTracks Edition_ is just what you need.
+* CAN BUS integration is possible
 
 The data collected on a per-vehicle basis may include location (latitude, longitude), altitude,
 velocity, course over ground, battery levels (both internal Greenwich battery and external
@@ -40,7 +43,7 @@ Connecting a Greenwich to your vehicle is easy. The device requires power, which
 taken from the vehicle's battery (or via a cigarette lighter), and it requires
 a GPS and GSM antenna, both of which are available as a combi-antenna. If the device
 is connected to the vehicle's _ignition_, then it can shutdown cleanly and report
-vehicle movement (e.g. theft) even when in this low-power consumption mode. (FIXME: true?)
+vehicle movement (e.g. theft) even when in this low-power consumption mode.
 
 
 \newpage

@@ -14,6 +14,9 @@ port = 1883
 
 branch = 'tt/simu'
 
+# annie is "me" (device owner) with face from 
+# http://www.pageresource.com/clipart/clipart/people/bodyparts/bwfaces/bad-hair-day.png
+
 list = [
     # topic      tid     lat            lon             cog         vel
     ('mannheim', 'V7',  '49.508675',    '8.561470',     '340.94',  '98' ),

@@ -72,6 +72,8 @@ Output of commands sent to the device (e.g. `login`, `set`, etc.) is published t
 ```
 owntracks/acme/van17/cmd login xxx
 owntracks/acme/van17/cmd/out NACK: incorrect login
+owntracks/acme/van17/cmd login 1234567890
+owntracks/acme/van17/cmd/out login accepted
 ```
 
 \newpage

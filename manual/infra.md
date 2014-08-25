@@ -43,5 +43,14 @@ are minimal. A computer as small as a Rasperry Pi or a Beagle Bone Black is
 capable of handling the workload for several dozen Greenwich devices. You can of
 course host the required infrastructure within your existing data center.
 
+The requirements for operating one or more Greenwich devices are:
+
+* Greenwich hardware and software (OwnTracks Edition)
+* SIM card with data plan. If your vehicles intend to cross international borders,
+  you must consider roaming charges or obtain a data plan which includes
+  international roaming.
+* A "server" (even though that can be ver small) with sufficient storage
+* An Internet connection
+* Maintenance
 
 \newpage

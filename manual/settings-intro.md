@@ -41,10 +41,9 @@ prior authentication to the device:
 * `-` `gps` (requests location update which is also published over MQTT)
 * `-` `state` (shows state)
 * `+` `log` `[old/delete]` (shows or resets log files)
-* `-` `close` (closes CSD) FIXME: this still exists?
 * `-` `destroy` (switches back to non-Java AT-mode)
 * `+` `upgrade` (perform an [OTA upgrade](OTAP.md)
-* `-` `exec` _at-command_ (pass command to modem)	FIXME: this still exists?
+* `-` `exec` _at-command_ (pass command to modem)
 
 
 When configuring the device via SMS or MQTT, the operator must authenticate to
