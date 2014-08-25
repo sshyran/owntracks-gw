@@ -153,30 +153,72 @@ Settings for pedestrians, runners, bicycle riders, race cars would be different.
 
 \newpage
 
-### Debugging
+### Debugging and Logging
 
-These settings are useful for debugging purposes.
+The app provides debug and logging information prioritised and categorised by component.
+
+The used priorities are specified by a character (similar to syslog) with "P" for emergency beeing the highest priority:
+
+* `P` Emergency (Panic)
+* `A` Alert
+* `C` Critical
+* `E` Error
+* `W` Warning
+* `N` Notice
+* `I` Informational
+* `D` Debug
+
+Debug and logging output can be written to the standard error stream
+(typically a connected terminal), a file on the device (`log.txt`), and it can be
+published via MQTT to the `../log` topic.
+
+The level of output is specified by the settings
+
+* `stderrLogLevel`
+* `fileLogLevel`
+* `topicLogLevel`
+
+The specified character assigned to each of the output media limits the
+output to priorities higher or equal to the priority given. Examples:
+
+`stderrLogLevel=D`, all logging levels and debug is written to standard error.
+`topicLogLevel=C`, only critical, alert and emergency log messages are sent via MQTT.
+`fileLogLevel=E`, error, critical, alert, and emergency log messages are written to the local file. Warning, notice, informational anddebug messages are ignored
+
+To limit the amount of debug messages, the set of components for which the messages are written can be controlled by the `dbgComp` parameter. If set to `"all"`, all debug messages are shown. When `"none"` is specified, no debug messages will be shown. `"none" is the default value. 
+
+Otherwise a comma separated list of components allows granular control of the output (e.g. `"AppMain,LocationManager"`). Currently the following components exist:
+
+* AppMain
+* ATManager
+    * BatteryManager
+    * CommASCThread
+    * CommGPSThread
+* CommandProcessor
+    * DateFormatter
+    * GPIO6WatchDogTask
+    * GPIOInputManager
+* LocationManager
+* MQTTHandler
+    * MicroManager
+    * ProcessSMSThread
+    * Settings
+* SocketGPRSThread
+* SSLSocketFactory
+* UserwareWatchDogTask
 
 +-----------------+----------------+-----------------+--------------+---------------------------+
 | Setting         | Default        | Values          | Validity     | Meaning                        |
 +=================+================+=================+==============+===========================+
-| `generalDebug`  | 0              | 0/1             | immediate    | controls the debug output for most of the code |
+| `dbgComp`       | none           | list            | immediate    | comma-separated list of components to debug; controls the debug output e.g. `"AppMain,LocationManager"` |
 +-----------------+----------------+-----------------+--------------+---------------------------+
-| `locDebug`      | 0              | 0/1             | immediate    | controls the debug output of the LocationManager |
+| `stderrLogLevel` | D              | string          | immediate    | controls the logging to the device's standard error device (terminal) |
 +-----------------+----------------+-----------------+--------------+---------------------------+
-| `gprsDebug`     | 0              | 0/1             | immediate    | controls the debug output of the SocketGPRSThread |
+| `fileLogLevel`  | E              | string          | immediate    | controls the logging into the device's log file |
 +-----------------+----------------+-----------------+--------------+---------------------------+
-| `cmdDebug`      | 0              | 0/1             | immediate    | controls the debug output of the CommandProcessor |
+| `topicLogLevel` | E              | string          | immediate    | controls the logging to the MQTT broker on `../log/<priority>/<log-message>` |
 +-----------------+----------------+-----------------+--------------+---------------------------+
-| `timerDebug`    | 0              | 0/1             | immediate    | controls the debug output of the WatchDogs |
-+-----------------+----------------+-----------------+--------------+---------------------------+
-| `usbDebug`      | 0              | 0/1             | immediate    | if set to 1, debug output flows to USB instead of ASC0 |
-+-----------------+----------------+-----------------+--------------+---------------------------+
-| `gsmDebug`      | 0              | 0/1             | immediate    | controls the debug output for all AT commands and responses |
-+-----------------+----------------+-----------------+--------------+---------------------------+
-| `mainDebug`     | 0              | 0/1             | immediate    | controls the debug output for main taks |
-+-----------------+----------------+-----------------+--------------+---------------------------+
-| `keyDebug`      | 0              | 0/1             | immediate    | controls the debug output of ignition key management |
+| `usbDebug`      | 0              | 0/1             | immediate    | if set to 1, debug output flows to USB instead of ASC0 via standard error |
 +-----------------+----------------+-----------------+--------------+---------------------------+
 
 \newpage

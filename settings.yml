@@ -263,62 +263,63 @@
 
 - Debugging and Logging:
   - block: |
-           The app provides debug and logging information prioritised and categorised by component.
+       The app provides debug and logging information prioritised and categorised by component.
 
-	   The used priorities are specified by a character (similar to syslog) with "P" for emergency beeing the highest priority:
-           * P Emergency (Panic)
-           * A Alert
-           * C Critical
-           * E Error
-           * W Warning
-           * N Notice
-           * I Informational
-           * D Debug
+       The used priorities are specified by a character (similar to syslog) with "P" for emergency beeing the highest priority:
 
-	   Debug and logging output can be written to the standard error stream (typically a connected terminal), a file on the device
-	   and published via MQTT to the .../log topic.
+       * `P` Emergency (Panic)
+       * `A` Alert
+       * `C` Critical
+       * `E` Error
+       * `W` Warning
+       * `N` Notice
+       * `I` Informational
+       * `D` Debug
 
-	   The level of output is specified by the
-	   * stderrLogLevel
-	   * fileLogLevel
-	   * topicLogLevel	   
+       Debug and logging output can be written to the standard error stream
+       (typically a connected terminal), a file on the device (`log.txt`), and it can be
+       published via MQTT to the `../log` topic.
 
-	   The specified character assigned to each of the output media limits the output to priorities higher or equal to the priority given.
-           Examples:
-		stderrLogLevel=D, all logging levels and debug is written to standard error
-		topicLogLevel=C, only critical, alert and emergency log messages are sent via MQTT
-		fileLogLevel=E, error, critical, alert and emergency log messages are writte to the local file. Warning, notice, informational and
-			debug messages are ignored
+       The level of output is specified by the settings
 
-	   To limit the amount of debug messages, the set of components for which the messages are written can be controlled by the 
-	   * debugComponents
-	   parameter. If set to "all", all debug messages are shown. When "none" is specified, no debug messages will be shown. "none" is the default value. 
-	   Otherwise a comma separated list of components allows granular control of the output (e.g. "AppMain,LocationManager"). Currently the following
-   	   components exist:
+       * `stderrLogLevel`
+       * `fileLogLevel`
+       * `topicLogLevel`
 
-	   * AppMain
-	   * ATManager
+       The specified character assigned to each of the output media limits the
+       output to priorities higher or equal to the priority given. Examples:
+
+       `stderrLogLevel=D`, all logging levels and debug is written to standard error.
+       `topicLogLevel=C`, only critical, alert and emergency log messages are sent via MQTT.
+       `fileLogLevel=E`, error, critical, alert, and emergency log messages are written to the local file. Warning, notice, informational anddebug messages are ignored
+
+       To limit the amount of debug messages, the set of components for which the messages are written can be controlled by the `dbgComp` parameter. If set to `"all"`, all debug messages are shown. When `"none"` is specified, no debug messages will be shown. `"none" is the default value. 
+
+       Otherwise a comma separated list of components allows granular control of the output (e.g. `"AppMain,LocationManager"`). Currently the following components exist:
+
+       * AppMain
+       * ATManager
            * BatteryManager
            * CommASCThread
            * CommGPSThread
-	   * CommandProcessor
+       * CommandProcessor
            * DateFormatter
            * GPIO6WatchDogTask
            * GPIOInputManager
-	   * LocationManager
- 	   * MQTTHandler
+       * LocationManager
+       * MQTTHandler
            * MicroManager
            * ProcessSMSThread
            * Settings
-	   * SocketGPRSThread
-	   * SSLSocketFactory
-	   * UserwareWatchDogTask
+       * SocketGPRSThread
+       * SSLSocketFactory
+       * UserwareWatchDogTask
 
-  - debugComponents:
-      values: comma separated list of components to debug
+  - dbgComp:
+      values: list
       validity: immediate
       default: "none"
-      desc: controls the debug output e.g. "AppMain,LocationManager"
+      desc: comma-separated list of components to debug; controls the debug output e.g. `"AppMain,LocationManager"`
   - stderrLogLevel:
       values: string
       validity: immediate
@@ -333,7 +334,7 @@
       values: string
       validity: immediate
       default: "E"
-      desc: controls the logging to the MQTT broker on .../log/<priority>/<log-message>
+      desc: controls the logging to the MQTT broker on `../log/<priority>/<log-message>`
   - usbDebug:
       values: "0/1"
       validity: immediate
