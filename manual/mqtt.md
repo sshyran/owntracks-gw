@@ -11,18 +11,21 @@ A JSON message as published by Greenwich could look like this (the in-line comme
 ```json
 {
   "_type": "location",         // type
-  "vel": "46.5315",            // velocity (speed)
+  "t": "t",                    // trigger type
   "tst": "1408810440",         // UNIX epoch timestamp
   "tid": "V7",                 // tracker-ID (configurable)
-  "cog": "283.35",             // course over ground
-  "dist": "569",               // distance
-  "trip": "8441",              // trip covered in meters
   "lat": "48.858334",          // latitude
   "lon": "2.295134",           // longitude
-  "alt": "38.0",               // altitude
-  "t": "t"                     // trigger type
+  "alt": "38.0",               // altitude (*)
+  "vel": "46.5315",            // velocity (speed) (*)
+  "batt": "12.4",              // external battery level (*)
+  "cog": "283.35",             // course over ground (*)
+  "dist": "569",               // distance (*)
+  "trip": "8441"               // trip covered in meters (*)
 }
 ```
+JSON elements marked with an asterisk `(*)` may or may not be present, depending on the
+configured `fields`.
 
 In addition to location messages as shown above, the Greenwich will also publish additional
 messages as follows:
@@ -47,7 +50,7 @@ owntracks/acme/van17/sw/midlet 0.5.43
 
 ### Voltages
 
-Built-in battery (`batt`) and external (`ext`) voltages are published to `../voltage/` when voltage changes "significantly" (this is currently when a change of 0.1V is detected).
+Built-in battery (`batt`) and external (`ext`) voltages are published to `../voltage/` when voltage changes "significantly", as configured with `dExtVoltage` and `dBattVoltage`:
 
 ```
 owntracks/acme/van17/voltage/batt 4.4
