@@ -32,11 +32,11 @@ Features of the OwnTracks Edition
 * Subscription to a configurable topic branch for remote-control / information retrieval.
 * Watchdog: device resets itself if GPS or GPRS unavailable or in case of the device hanging itself up.
 * Configurable via SMS.
-* [Over the Air upgrades](OTAP.md) (OTA)
+* [Over the Air upgrades](manual/OTAP.md) (OTA)
 * MQTT Last Will and Testament (LWT) messages for monitoring
 * The [OwnTracks Live Map](https://github.com/owntracks/contrib/tree/master/osm-leaf) has support for the additional JSON elements provided by Greenwich.
 * Configurable MQTT client-ID which defaults to the device's [IMEI](http://en.wikipedia.org/wiki/International_Mobile_Station_Equipment_Identity).
-* [GPIO states](GPIO.md) published over MQTT.
+* [GPIO states](manual/GPIO.md) published over MQTT.
 * Power-up handling:
   - when ignition is switched on
   - when movement with the builtin accelerometer is detected
