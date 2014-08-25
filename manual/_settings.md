@@ -38,7 +38,11 @@ The device-related settings lay down how the device operates in general. Particu
 +-----------------+----------------+-----------------+--------------+---------------------------+
 | `notifyURI`     |                | string          | upgrade      | optional URL to POST result of an OTAP upgrade. If this is not set, no notification will be posted |
 +-----------------+----------------+-----------------+--------------+---------------------------+
-| `lowBattery`    | 3599           | string          | immediate    | Threshold for low battery in mV (e.g. battery voltage below 3.599V will switch off the device) |
+| `lowBattery`    | 3599           | integer         | immediate    | Threshold for low battery in mV (e.g. battery voltage below 3.599V will switch off the device) |
++-----------------+----------------+-----------------+--------------+---------------------------+
+| `dExtVoltage`   | 500            | integer         | immediate    | controls the external voltage monitoring. Reports when voltage varies by more than the value given as mV |
++-----------------+----------------+-----------------+--------------+---------------------------+
+| `dBattVoltage`  | 100            | integer         | immediate    | controls the battery voltage monitoring. Reports when voltage varies by more than the value given as mV |
 +-----------------+----------------+-----------------+--------------+---------------------------+
 
 \newpage
