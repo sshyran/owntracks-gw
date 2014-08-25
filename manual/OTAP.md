@@ -2,7 +2,13 @@
 
 Over the Air Provisioning is supported by the OwnTracks Edition, and it can be
 triggered by an MQTT publish, via SMS, or via the console with an `upgrade`
-command. The following prerequisites must be met.
+command. While the command to upgrade can be initiated via these mechanisms, the
+upgrade itself is obtained via HTTP from a Web server your devices can access via
+the Internet connection provided by the on-board modem. Note that upgrades, while
+they're not terribly large (somewhere in the order of 300KB), will incurr additional
+charges in your data plan; you should keep this in mind.
+
+The following prerequisites must be met for being able to perform an Over-The-Air upgrade.
 
 Configure the following settings:
 
@@ -56,3 +62,5 @@ See also: [OTAP on JavaCint](http://www.javacint.com/OTAP)
 
 * We haven't been able to convice the module to perform OTA upgrades if the `otapURI` doesn't end in the string `".jad"`, irrespective of filename, content-type or content-disposition.
 * `otapURI` is invoked with an HTTP GET method, whereas `notifyURI` is POSTed to.
+
+\newpage
