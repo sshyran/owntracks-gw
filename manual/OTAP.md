@@ -1,10 +1,10 @@
 # OTAP
 
 Over the Air Provisioning is supported by the OwnTracks Edition, and it can be
-triggered by an MQTT publish or via the console. The following prerequisites
-must be met.
+triggered by an MQTT publish, via SMS, or via the console with an `upgrade`
+command. The following prerequisites must be met.
 
-Configure the following either within the `.properties` file or on the console:
+Configure the following settings:
 
 ```
 set otapURI=http://example.com/files/@/OwnTracks.jad
@@ -41,7 +41,10 @@ MIDlet-Jar-URL: http://example.com/files/OwnTracks.jar
 
 Only if the device can access the URL for the _jar_ will it actually perform a software upgrade. Of course this _jad_ could be generated on-the-fly with a pointer to the location of the _jar_.
 
-As soon as the Greenwich has performed the upgrade, it will send an HTTP POST to the specified _NotifyURL_. This contains something like:
+As soon as the Greenwich has performed the upgrade, it will send an HTTP POST
+to the specified _NotifyURL_. If the upgrade is interrupted for any reason or
+the downloaded data is corrupt, the upgrade is revoked, i.e. the device will
+reboot with the previously running software. The POST contains something like:
 
 ```
 900 Success
