@@ -66,10 +66,20 @@
       default: ""
       desc: optional URL to POST result of an OTAP upgrade. If this is not set, no notification will be posted
   - lowBattery:
-      values: string
+      values: integer
       validity: immediate
-      default: "3599"
+      default: 3599
       desc: Threshold for low battery in mV (e.g. battery voltage below 3.599V will switch off the device)
+  - dExtVoltage:
+      values: integer
+      validity: immediate
+      default: 500
+      desc: controls the external voltage monitoring. Reports when voltage varies by more than the value given as mV
+  - dBattVoltage:
+      values: integer
+      validity: immediate
+      default: 100
+      desc: controls the battery voltage monitoring. Reports when voltage varies by more than the value given as mV
 
 - MQTT:
   - block: >
