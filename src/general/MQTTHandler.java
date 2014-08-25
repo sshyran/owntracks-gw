@@ -73,19 +73,17 @@ public class MQTTHandler implements MqttCallback {
     }
 
     public synchronized void connectToBroker() {
-        if (Settings.getInstance().getSetting("mqttDebug", false)) {
-            System.out.println("connectToBroker " + brokerURL
-                    + " as " + clientId
-                    + "(c" + (cleanSession ? "1" : "0")
-                    + " k" + keepAlive
-                    + " u" + ((userName == null) ? "<null>" : userName) + ")");
-        }
+        SLog.log(SLog.Debug, "MQTTHandler", "connectToBroker " + brokerURL
+                + " as " + clientId
+                + "(c" + (cleanSession ? "1" : "0")
+                + " k" + keepAlive
+                + " u" + ((userName == null) ? "<null>" : userName) + ")");
         if (client == null) {
             try {
                 client = new MqttClient(brokerURL, clientId, new MemoryPersistence());
                 client.setCallback(this);
             } catch (MqttException e) {
-                System.err.println("Error setCallback: " + e.getReasonCode());
+                SLog.log(SLog.Error, "MQTTHandler", "setCallback: " + e.getReasonCode());
             }
         }
 
@@ -104,31 +102,27 @@ public class MQTTHandler implements MqttCallback {
                     options.setWill(client.getTopic(willTopic),
                             will, willQos, willRetain);
                 }
-                if (Settings.getInstance().getSetting("mqttDebug", false)) {
-                    System.out.println("connect w/ options");
-                }
+                SLog.log(SLog.Debug, "MQTTHandler", "connect w/ options");
 
                 client.connect(options);
-                
+
                 publishIfConnected(willTopic, willQos, willRetain, "1".getBytes());
 
                 if (subscription != null) {
                     if (cleanSession || firstConnect) {
-                        if (Settings.getInstance().getSetting("mqttDebug", false)) {
-                            System.out.println("subscribe");
-                        }
+                        SLog.log(SLog.Debug, "MQTTHandler", "subscribe");
 
                         client.subscribe(subscription, subscriptionQos);
                         firstConnect = false;
                     }
                 }
             } catch (MqttSecurityException e) {
-                System.err.println("Security Error connectToBroker: " + e.getReasonCode());
+                SLog.log(SLog.Error, "MQTTHandler", "Security connectToBroker: " + e.getReasonCode());
             } catch (MqttException e) {
-                System.err.println("Error connectToBroker: " + e.getReasonCode());
+                SLog.log(SLog.Warning, "MQTTHandler", "connectToBroker: " + e.getReasonCode());
             }
         }
-        
+
     }
 
     public synchronized void publishIfConnected(String topicName,
@@ -136,9 +130,7 @@ public class MQTTHandler implements MqttCallback {
             boolean retained,
             byte[] payload) {
 
-        if (Settings.getInstance().getSetting("mqttDebug", false)) {
-            System.out.println("publish");
-        }
+        SLog.log(SLog.Debug, "MQTTHandler", "publish");
 
         if (client.isConnected()) {
             MqttTopic topic = client.getTopic(topicName);
@@ -149,7 +141,7 @@ public class MQTTHandler implements MqttCallback {
             try {
                 MqttDeliveryToken token = topic.publish(message);
             } catch (MqttException e) {
-                System.err.println("Error publish: " + e.getReasonCode());
+                SLog.log(SLog.Warning, "MQTTHandler", "publish: " + e.getReasonCode());
             }
         } else {
             // not connected
@@ -169,14 +161,12 @@ public class MQTTHandler implements MqttCallback {
     }
 
     public synchronized void subscribe(String topicName, int qos) {
-        if (Settings.getInstance().getSetting("mqttDebug", false)) {
-            System.out.println("subscribe " + topicName + " " + qos);
-        }
+        SLog.log(SLog.Debug, "MQTTHandler", "subscribe " + topicName + " " + qos);
         if (client.isConnected()) {
             try {
                 client.subscribe(topicName, qos);
             } catch (MqttException e) {
-                System.err.println("Error subscribe: " + e.getReasonCode());
+                SLog.log(SLog.Warning, "MQTTHandler", "subscribe: " + e.getReasonCode());
             }
         } else {
             // not connected
@@ -184,10 +174,8 @@ public class MQTTHandler implements MqttCallback {
     }
 
     public synchronized void disconnect() {
-        if (Settings.getInstance().getSetting("mqttDebug", false)) {
-            System.out.println("disconnect");
-        }
-        
+        SLog.log(SLog.Debug, "MQTTHandler", "disconnect");
+
         if (client.isConnected()) {
             publish(willTopic, willQos, willRetain, "-1".getBytes());
         }
@@ -195,7 +183,7 @@ public class MQTTHandler implements MqttCallback {
         try {
             client.disconnect(0);
         } catch (MqttException e) {
-            System.err.println("Error disconnect: " + e.getReasonCode());
+            SLog.log(SLog.Warning, "MQTTHandler", "disconnect: " + e.getReasonCode());
         }
     }
 
@@ -209,21 +197,17 @@ public class MQTTHandler implements MqttCallback {
 
     // Callbacks
     public void connectionLost(Throwable cause) {
-        if (Settings.getInstance().getSetting("mqttDebug", false)) {
-            System.out.println("connectionLost");
-        }
+        SLog.log(SLog.Warning, "MQTTHandler", "connectionLost");
     }
 
     public void messageArrived(MqttTopic topic, MqttMessage message)
             throws Exception {
-        if (Settings.getInstance().getSetting("mqttDebug", false)) {
-            System.out.println("messageArrived " + topic.getName()
+        SLog.log(SLog.Debug, "MQTTHandler", "messageArrived " + topic.getName()
                 + " q" + message.getQos()
                 + " r" + (message.isRetained() ? "1" : "0")
                 + "\r\n" + new String(message.getPayload()));
-        }
         CommandProcessor commandProcessor = CommandProcessor.getInstance();
-        if (commandProcessor.execute(message.toString(), false)) {
+        if (commandProcessor.execute(message.toString())) {
             SocketGPRSThread.getInstance().put(topic.getName() + "/out", 0, false, (commandProcessor.message).getBytes());
         } else {
             SocketGPRSThread.getInstance().put(topic.getName() + "/out", 0, false, ("NACK: " + commandProcessor.message).getBytes());
@@ -231,8 +215,6 @@ public class MQTTHandler implements MqttCallback {
     }
 
     public void deliveryComplete(MqttDeliveryToken token) {
-        if (Settings.getInstance().getSetting("mqttDebug", false)) {
-            System.out.println("deliveryComplete");
-        }
+        SLog.log(SLog.Debug, "MQTTHandler", "deliveryComplete");
     }
 }

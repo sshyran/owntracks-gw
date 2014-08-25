@@ -26,7 +26,7 @@ public class CommGPSThread extends Thread {
     private static final int[] PM0sec = {181, 98, 6, 50, 24, 0, 0, 6, 0, 0, 4, 144, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 234, 232};
 
     private static final int loopSleep = 100;
-    
+
     public boolean terminate = false;
 
     InputStream is;
@@ -44,7 +44,6 @@ public class CommGPSThread extends Thread {
         private static final CommGPSThread INSTANCE = new CommGPSThread();
     }
 
-
     public void run() {
         CommConnection connGPS;
         InputStream is;
@@ -55,7 +54,7 @@ public class CommGPSThread extends Thread {
             is = connGPS.openInputStream();
             os = connGPS.openOutputStream();
         } catch (IOException e) {
-            Log.log("Th*CommGPStrasparent: IOException");
+            SLog.log(SLog.Error, "CommGPSThread", "IOException");
             return;
         }
 
@@ -78,10 +77,6 @@ public class CommGPSThread extends Thread {
                         }
                     } while (c != '\n' && c > 0);
 
-                    if (Settings.getInstance().getSetting("gpsDebug", false)) {
-                        System.out.println("gpsRead " + line);
-                    }
-
                     if (line.indexOf("$GPRMC") >= 0) {
                         LocationManager.getInstance().processGPRMCString(line);
                     } else if (line.indexOf("$GPGGA") >= 0) {
@@ -96,13 +91,13 @@ public class CommGPSThread extends Thread {
                     // ignore
                 }
             }
-            
+
             is.close();
             os.close();
             connGPS.close();
-            
+
         } catch (IOException ioe) {
-            Log.log("Th*CommGPStrasparent-while: IOException");
+            SLog.log(SLog.Error, "CommGPSThread", "while: IOException");
         }
     }
 

@@ -32,20 +32,16 @@ public class GPIO6WatchDogTask extends TimerTask {
         timer = new Timer();
         timer.scheduleAtFixedRate(this, 0, periodSec * 1000);
     }
-    
+
     public void stop() {
         timer.cancel();
     }
 
     public void run() {
-        if (Settings.getInstance().getSetting("timerDebug", false)) {
-            System.out.println("GPIO6WatchDogTask " + System.currentTimeMillis()/1000);
-        }
+        SLog.log(SLog.Debug, "GPIO6WatchDogTask", "run " + System.currentTimeMillis() / 1000);
 
         if (gpsRunning && GPRSRunning) {
-            if (Settings.getInstance().getSetting("timerDebug", false)) {
-                System.out.println("GPIO6WatchDogTask all threads are running");
-            }
+            SLog.log(SLog.Debug, "GPIO6WatchDogTask", "all threads are running");
 
             gpsRunning = false;
             GPRSRunning = false;
@@ -57,9 +53,7 @@ public class GPIO6WatchDogTask extends TimerTask {
             }
             gpio6On = !gpio6On;
 
-            if (Settings.getInstance().getSetting("timerDebug", false)) {
-                System.out.println("WatchDogTask gpio6 " + gpio6On);
-            }
+            SLog.log(SLog.Debug, "GPIO6WatchDogTask", "gpio6 " + gpio6On);
         }
     }
 }

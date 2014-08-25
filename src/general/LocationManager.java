@@ -38,7 +38,7 @@ public class LocationManager {
 
     private String gga;
     private double tempAlt;
-    
+
     private int numSat = 0;
 
     private LocationManager() {
@@ -60,10 +60,7 @@ public class LocationManager {
     class FixTimeout extends TimerTask {
 
         public void run() {
-            if (Settings.getInstance().getSetting("locDebug", false)) {
-                System.out.println("fixTimeout");
-            }
-            Log.log("fixTimeout");
+            SLog.log(SLog.Informational, "LocationManager", "fixTimeout");
             timeout = true;
         }
     }
@@ -73,9 +70,7 @@ public class LocationManager {
         timer = new Timer();
         timerTask = new FixTimeout();
         timer.schedule(timerTask, Settings.getInstance().getSetting("fixTimeout", 600) * 1000);
-        if (Settings.getInstance().getSetting("locDebug", false)) {
-            System.out.println("start fixTimeout timer");
-        }
+        SLog.log(SLog.Debug, "LocationManager", "start fixTimeout timer");
     }
 
     private void stopTimer() {
@@ -83,30 +78,26 @@ public class LocationManager {
             timer.cancel();
         }
         timeout = false;
-        if (Settings.getInstance().getSetting("locDebug", false)) {
-            System.out.println("stop fixTimeout timer");
-        }
+        SLog.log(SLog.Debug, "LocationManager", "stop fixTimeout timer");
     }
 
     private void setLED(boolean on) {
-        if (Settings.getInstance().getSetting("locDebug", false)) {
-            System.out.println("Setting LED: " + on);
-        }
+        SLog.log(SLog.Debug, "LocationManager", "Setting LED: " + on);
         try {
             userLed.setLed(on);
         } catch (IOException ioe) {
-            System.err.println("IOException UserLed.setLed");
+            SLog.log(SLog.Error, "LocationManager", "IOException UserLed.setLed");
         }
     }
 
     public boolean isFix() {
         return fix;
     }
-    
+
     public int getNumSat() {
         return numSat;
     }
-    
+
     public boolean isTimeout() {
         return timeout;
     }
@@ -126,15 +117,13 @@ public class LocationManager {
      * 12 1 2 3 4 5 6 7 8 9 10 11| | | | | | | | | | | | |
      * $--RMC,hhmmss.ss,A,llll.ll,a,yyyyy.yy,a,x.x,x.x,xxxx,x.x,a*hh<CR><LF>
      *
- Field Number: 1) UTC Time 2) Status, V = Navigation receiver warning, P =
+     * Field Number: 1) UTC Time 2) Status, V = Navigation receiver warning, P =
      * Precise 3) Latitude 4) N or S 5) Longitude 6) E or W 7) Speed over
      * ground, knots 8) Track made good, degrees true 9) Date, ddmmyy 10)
      * Magnetic Variation, degrees 11) E or W 12) Checksum
      */
     public void processGPRMCString(String gprmc) {
-        if (Settings.getInstance().getSetting("locDebug", false)) {
-            System.out.println("LocationManager.processGPRMCString: " + gprmc.substring(gprmc.indexOf("$GPRMC")));
-        }
+        SLog.log(SLog.Debug, "LocationManager", "processGPRMCString: " + gprmc.substring(gprmc.indexOf("$GPRMC")));
 
         rmc = gprmc.substring(gprmc.indexOf("$GPRMC"));
         int pos = rmc.indexOf("\r\n");
@@ -170,7 +159,7 @@ public class LocationManager {
                         fix = true;
                         setLED(true);
                         stopTimer();
-                    } 
+                    }
                 }
 
                 if (components[3].length() > 2) {
@@ -218,15 +207,15 @@ public class LocationManager {
                     tempVel = 0.0;
                 }
             } catch (NumberFormatException nfe) {
-                System.err.println("RMC NumberFormatException");
+                SLog.log(SLog.Error, "LocationManager", "RMC NumberFormatException");
                 rmc = null;
                 return;
             } catch (StringIndexOutOfBoundsException sioobe) {
-                System.err.println("RMC StringIndexOutOfBoundsException");
+                SLog.log(SLog.Error, "LocationManager", "RMC StringIndexOutOfBoundsException");
                 rmc = null;
                 return;
             } catch (ArrayIndexOutOfBoundsException aioobe) {
-                System.err.println("RMC ArrayIndexOutOfBoundsException");
+                SLog.log(SLog.Error, "LocationManager", "RMC ArrayIndexOutOfBoundsException");
                 rmc = null;
                 return;
             }
@@ -240,7 +229,7 @@ public class LocationManager {
      * 11 1 2 3 4 5 6 7 8 9 10 | 12 13 14 15 | | | | | | | | | | | | | | |
      * $--GGA,hhmmss.ss,llll.ll,a,yyyyy.yy,a,x,xx,x.x,x.x,M,x.x,M,x.x,xxxx*hh<CR><LF>
      *
- Field Number: 1) Universal Time Coordinated (UTC) 2) Latitude 3) N or S
+     * Field Number: 1) Universal Time Coordinated (UTC) 2) Latitude 3) N or S
      * (North or South) 4) Longitude 5) E or W (East or West) 6) GPS Quality
      * Indicator, 0 - fix not available, 1 - GPS fix, 2 - Differential GPS fix
      * 7) Number of satellites in view, 00 - 12 8) Horizontal Dilution of
@@ -253,9 +242,8 @@ public class LocationManager {
      * station ID, 0000-1023 15) Checksum
      */
     public void processGPGGAString(String gpgga) {
-        if (Settings.getInstance().getSetting("locDebug", false)) {
-            System.out.println("LocationManager.processGPGGAString: " + gpgga.substring(gpgga.indexOf("$GPGGA")));
-        }
+        SLog.log(SLog.Debug, "LocationManager", "processGPGGAString: " + gpgga.substring(gpgga.indexOf("$GPGGA")));
+
         gga = gpgga.substring(gpgga.indexOf("$GPGGA"));
         int pos = gga.indexOf("\r\n");
         if (pos >= 0) {
@@ -292,10 +280,10 @@ public class LocationManager {
                     tempAlt = 0.0;
                 }
             } catch (NumberFormatException nfe) {
-                System.err.println("GGA NumberFormatException");
+                SLog.log(SLog.Error, "LocationManager", "GGA NumberFormatException");
                 return;
             } catch (ArrayIndexOutOfBoundsException aioobe) {
-                System.err.println("GGA ArrayIndexOutOfBoundsException");
+                SLog.log(SLog.Error, "LocationManager", "GGA ArrayIndexOutOfBoundsException");
                 return;
             }
             if (fix && rmc != null) {
@@ -305,7 +293,7 @@ public class LocationManager {
     }
 
     private void rollLocation(Date date, double lon, double lat, double cog, double vel, double alt) {
-        
+
         int sensitivity = Settings.getInstance().getSetting("sensitivity", 1);
         int minDistance = Settings.getInstance().getSetting("minDistance", 100);
         int minSpeed = Settings.getInstance().getSetting("minSpeed", 5);
@@ -324,13 +312,11 @@ public class LocationManager {
             firstLocation = currentLocation;
             trip = 0.0;
         }
-        
+
         if (lastLocation != null) {
             double distance = lastLocation.distance(currentLocation);
-            if (Settings.getInstance().getSetting("locDebug", false)) {
-                System.out.println("move: " + distance + 
-                        " speed: " + currentLocation.speed);
-            }
+            SLog.log(SLog.Debug, "LocationManager",
+                    "move: " + distance + " speed: " + currentLocation.speed);
             if (distance > sensitivity) {
                 trip += distance;
             }
@@ -378,23 +364,12 @@ public class LocationManager {
         }
     }
 
-    private boolean isInStringArray(String string, String[] stringArray) {
-        for (int i = 0; i < stringArray.length; i++) {
-            if (string.equals(stringArray[i])) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private String getJSONString(String[] fields) {
         if (currentLocation != null) {
             double distance = 0;
             if (lastReportedLocation != null) {
                 distance = lastReportedLocation.distance(currentLocation);
-                if (Settings.getInstance().getSetting("locDebug", false)) {
-                    System.out.println("dist: " + distance);
-                }
+                SLog.log(SLog.Debug, "LocationManager", "dist: " + distance);
             }
             lastReportedLocation = currentLocation;
             currentLocation = null;
@@ -417,11 +392,11 @@ public class LocationManager {
             String json;
             json = "{\"_type\":\"location\"";
             json = json.concat(",\"t\":\"" + reason + "\"");
-            
+
             String tid = Settings.getInstance().getSetting("tid", null);
             if (tid == null) {
                 String clientID = Settings.getInstance().getSetting("clientID",
-                    MicroManager.getInstance().getIMEI());
+                        MicroManager.getInstance().getIMEI());
                 int len = clientID.length();
                 if (len > 2) {
                     tid = clientID.substring(len - 2);
@@ -430,27 +405,27 @@ public class LocationManager {
                 }
             }
             json = json.concat(",\"tid\":\"" + tid + "\"");
-            
+
             json = json.concat(",\"tst\":\"" + (location.date.getTime() / 1000) + "\"");
             json = json.concat(",\"lon\":\"" + location.longitude + "\"");
             json = json.concat(",\"lat\":\"" + location.latitude + "\"");
 
-            if (isInStringArray("course", fields)) {
+            if (StringSplitter.isInStringArray("course", fields)) {
                 json = json.concat(",\"cog\":\"" + location.course + "\"");
             }
-            if (isInStringArray("speed", fields)) {
+            if (StringSplitter.isInStringArray("speed", fields)) {
                 json = json.concat(",\"vel\":\"" + location.speed + "\"");
             }
-            if (isInStringArray("altitude", fields)) {
+            if (StringSplitter.isInStringArray("altitude", fields)) {
                 json = json.concat(",\"alt\":\"" + location.altitude + "\"");
             }
-            if (isInStringArray("distance", fields)) {
-                json = json.concat(",\"dist\":\"" + (long)distance + "\"");
+            if (StringSplitter.isInStringArray("distance", fields)) {
+                json = json.concat(",\"dist\":\"" + (long) distance + "\"");
             }
-            if (isInStringArray("trip", fields)) {
-                json = json.concat(",\"trip\":\"" + (long)trip + "\"");
+            if (StringSplitter.isInStringArray("trip", fields)) {
+                json = json.concat(",\"trip\":\"" + (long) trip + "\"");
             }
-            if (isInStringArray("battery", fields)) {
+            if (StringSplitter.isInStringArray("battery", fields)) {
                 json = json.concat(",\"batt\":\"" + BatteryManager.getInstance().getExternalVoltageString() + "\"");
             }
 
@@ -477,14 +452,13 @@ public class LocationManager {
              * 0123456789012345678901234567
              * 0         1         2
              */
-            
             human = DateFormatter.isoString(location.date) + "\r\n";
             human = human.concat("Latitude " + location.latitude + "\r\n");
             human = human.concat("Longitude " + location.longitude + "\r\n");
-            human = human.concat("Altitude " + (long)location.altitude + "m\r\n");
-            human = human.concat("Speed " + (long)location.speed + "kph\r\n");
-            human = human.concat("Course " + (long)location.course + "\r\n");
-            human = human.concat("Trip " + (long)trip + "m\r\n");
+            human = human.concat("Altitude " + (long) location.altitude + "m\r\n");
+            human = human.concat("Speed " + (long) location.speed + "kph\r\n");
+            human = human.concat("Course " + (long) location.course + "\r\n");
+            human = human.concat("Trip " + (long) trip + "m\r\n");
 
             return human;
         } else {

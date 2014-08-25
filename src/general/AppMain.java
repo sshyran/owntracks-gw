@@ -20,7 +20,7 @@ import javax.microedition.midlet.*;
  * @author matteobo
  */
 public class AppMain extends MIDlet {
-    
+
     public boolean invalidSIM = false;
     public boolean airplaneMode = false;
     public boolean alarm = false;
@@ -30,7 +30,7 @@ public class AppMain extends MIDlet {
     final public String alarmWakeup = "AlarmWakeup";
     final public String batteryWakeup = "BatteryWakeup";
     public String wakeupMode = motionWakeup;
-    
+
     /**
      * Application execution status
      */
@@ -80,14 +80,13 @@ public class AppMain extends MIDlet {
         Settings settings = Settings.getInstance();
         settings.setfileURL("file:///a:/file/OwnTracks.properties");
 
-        System.out.println("Running " + getAppProperty("MIDlet-Version") + " " + DateFormatter.isoString(new Date()));
-
         ATManager.getInstance();
-
-        CommGPSThread.getInstance();
         CommASC0Thread.getInstance();
         SocketGPRSThread.getInstance();
+        CommGPSThread.getInstance();
         ProcessSMSThread.setup();
+
+        SLog.log(SLog.Informational, "AppMain", "Running " + getAppProperty("MIDlet-Version") + " " + DateFormatter.isoString(new Date()));
 
         SocketGPRSThread.getInstance().put(
                 settings.getSetting("publish", "owntracks/gw/")
@@ -100,13 +99,9 @@ public class AppMain extends MIDlet {
 
         BearerControl.addListener(Bearer.getInstance());
         try {
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: Recover system settings in progress...");
-            }
+            SLog.log(SLog.Debug, "AppMain", "Recover system settings in progress...");
             String closeMode = Settings.getInstance().getSetting("closeMode", closeAppResetHW);
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: Last closing of application: " + closeMode);
-            }
+            SLog.log(SLog.Informational, "AppMain", "Last closing of application: " + closeMode);
             Settings.getInstance().setSetting("closeMode", closeAppResetHW);
 
             if (closeMode.equalsIgnoreCase(closeAppFactory)) {
@@ -134,25 +129,21 @@ public class AppMain extends MIDlet {
             } else if (closeMode.equalsIgnoreCase(closeAppBatteriaScarica)) {
                 executionState = execPOSTRESET;
             } else {
-                Log.log("AppMain: ERROR, I can not determine the status of execution of the application!");
+                SLog.log(SLog.Notice, "AppMain", "I can not determine the status of execution of the application!");
             }
 
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: STATOexecApp is " + executionState);
-            }
+            SLog.log(SLog.Informational, "AppMain", "excecutionState is " + executionState);
 
             ATManager.getInstance().executeCommandSynchron("AT\r");
-            
+
             String pin = Settings.getInstance().getSetting("pin", "");
             if (pin.length() > 0) {
                 ATManager.getInstance().executeCommandSynchron("at+cpin=" + pin + "\r");
             }
-            
+
             ATManager.getInstance().executeCommandSynchron("at^spio=1\r");
-            
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: watchdogs starting");
-            }
+
+            SLog.log(SLog.Debug, "AppMain", "watchdogs starting");
 
             userwareWatchDogTask = new UserwareWatchDogTask();
             gpio6WatchDogTask = new GPIO6WatchDogTask();
@@ -160,9 +151,7 @@ public class AppMain extends MIDlet {
             if (executionState.equalsIgnoreCase(execFIRST)
                     || executionState.equalsIgnoreCase(execPOSTRESET)) {
 
-                if (Settings.getInstance().getSetting("mainDebug", false)) {
-                    System.out.println("AppMain: Set AUTOSTART...");
-                }
+                SLog.log(SLog.Debug, "AppMain", "Set AUTOSTART...");
                 ATManager.getInstance().executeCommandSynchron("at^scfg=\"Userware/Autostart/AppName\",\"\",\"a:/app/"
                         + AppMain.getInstance().getAppProperty("MIDlet-Name") + ".jar\"\r");
                 ATManager.getInstance().executeCommandSynchron("at^scfg=\"Userware/Autostart/Delay\",\"\",10\r");
@@ -202,26 +191,16 @@ public class AppMain extends MIDlet {
                 }
             }
 
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: wakeupMode is " + wakeupMode);
-            }
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: airplaneMode is " + airplaneMode);
-            }
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: moved is " + MicroManager.getInstance().hasMoved());
-            }
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: alarm is " + alarm);
-            }
-            
+            SLog.log(SLog.Debug, "AppMain", "wakeupMode is " + wakeupMode);
+            SLog.log(SLog.Debug, "AppMain", "airplaneMode is " + airplaneMode);
+            SLog.log(SLog.Debug, "AppMain", "moved is " + MicroManager.getInstance().hasMoved());
+            SLog.log(SLog.Debug, "AppMain", "alarm is " + alarm);
+
             ATManager.getInstance().executeCommandSynchron("at+crc=1\r");
 
             if (!airplaneMode) {
-                if (Settings.getInstance().getSetting("mainDebug", false)) {
-                    System.out.println("AppMain: SWITCH ON RADIO PART of the module...");
-                }
-            
+                SLog.log(SLog.Debug, "AppMain", "SWITCH ON RADIO PART of the module...");
+
                 ATManager.getInstance().executeCommandSynchron("AT+CREG=1\r");
                 ATManager.getInstance().executeCommandSynchron("AT+CGREG=1\r");
 
@@ -234,7 +213,7 @@ public class AppMain extends MIDlet {
                 }
 
                 cleanup();
-                
+
                 CommGPSThread.getInstance().terminate = true;
                 CommGPSThread.getInstance().join();
 
@@ -243,16 +222,14 @@ public class AppMain extends MIDlet {
             }
             shutdown();
         } catch (InterruptedException ie) {
-            Log.log("Interrupted Exception AppMain");
+            //
         } catch (NumberFormatException nfe) {
-            Log.log("NumberFormatException AppMain");
+            SLog.log(SLog.Error, "AppMain", "NumberFormatException");
         }
     }
 
     protected void pauseApp() {
-        if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("AppMain: pauseApp");
-        }
+        SLog.log(SLog.Debug, "AppMain", "pauseApp");
         try {
             destroyApp(true);
         } catch (MIDletStateChangeException msce) {
@@ -261,26 +238,18 @@ public class AppMain extends MIDlet {
     }
 
     protected void destroyApp(boolean cond) throws MIDletStateChangeException {
-        if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("AppMain: destroyApp");
-        }
+        SLog.log(SLog.Informational, "AppMain", "destroyApp");
         notifyDestroyed();
     }
 
     protected void cleanup() {
-        if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("AppMain: cleanup");
-        }
-        if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("AppMain: sending remaining messages");
-        }
-        
+        SLog.log(SLog.Debug, "AppMain", "cleanup");
+
+        SLog.log(SLog.Debug, "AppMain", "sending remaining messages");
         while (SocketGPRSThread.getInstance().qSize() > 0) {
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: waiting qSize= " + SocketGPRSThread.getInstance().qSize());
-            } 
-            if (SocketGPRSThread.getInstance().isGPRSTimeout() ||
-                    SocketGPRSThread.getInstance().isMQTTTimeout()) {
+            SLog.log(SLog.Debug, "AppMain", "waiting qSize= " + SocketGPRSThread.getInstance().qSize());
+            if (SocketGPRSThread.getInstance().isGPRSTimeout()
+                    || SocketGPRSThread.getInstance().isMQTTTimeout()) {
                 break;
             }
             try {
@@ -288,22 +257,15 @@ public class AppMain extends MIDlet {
             } catch (InterruptedException ie) {
                 //
             }
-        }        
+        }
     }
-    protected void shutdown() {
-        if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("AppMain: shutdown");
-        }
-        if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("AppMain: powerDown from " + executionState);
-        }
 
+    protected void shutdown() {
+        SLog.log(SLog.Debug, "AppMain", "shutdown");
+        SLog.log(SLog.Debug, "AppMain", "powerDown from " + executionState);
         Date date = LocationManager.getInstance().dateLastFix();
         if (date != null) {
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: powerDown @ last fix time " + DateFormatter.isoString(date));
-            }
-
+            SLog.log(SLog.Debug, "AppMain", "powerDown @ last fix time " + DateFormatter.isoString(date));
             String rtc = "at+cclk=\""
                     + DateFormatter.atString(date)
                     + "\"\r";
@@ -313,31 +275,21 @@ public class AppMain extends MIDlet {
             date = new Date();
         }
 
-        if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("AppMain: powerDown @ " + DateFormatter.isoString(date));
-        }
-
+        SLog.log(SLog.Informational, "AppMain", "powerDown @ " + DateFormatter.isoString(date));
         if (BatteryManager.getInstance().isBatteryVoltageLow()) {
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("PAppMain: powerDown on low battery, no wakeup call");
-            }
+            SLog.log(SLog.Debug, "AppMain", "powerDown on low battery, no wakeup call");
 
         } else if (airplaneMode) {
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("PAppMain: powerDown on airplaneMode");
-            }
-            
+            SLog.log(SLog.Debug, "AppMain", "powerDown on airplaneMode");
             ATManager.getInstance().executeCommandSynchron("AT^SCFG=\"MEopMode/Airplane\",\"off\"\r");
 
         } else {
             if (wakeupMode.equals(batteryWakeup)) {
                 date.setTime(date.getTime() + 1 * 1000L);
             } else {
-                date.setTime(date.getTime() + Settings.getInstance().getSetting("sleep", 6 * 3600) * 1000L);                
+                date.setTime(date.getTime() + Settings.getInstance().getSetting("sleep", 6 * 3600) * 1000L);
             }
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: powerDown setting wakeup call for " + DateFormatter.isoString(date));
-            }
+            SLog.log(SLog.Informational, "AppMain", "powerDown setting wakeup call for " + DateFormatter.isoString(date));
 
             String rtc = "at+cala=\""
                     + DateFormatter.atString(date)
@@ -367,79 +319,67 @@ public class AppMain extends MIDlet {
         }
 
         if (airplaneMode) {
-            Settings.getInstance().setSetting("closeMode", closeAIR);            
+            Settings.getInstance().setSetting("closeMode", closeAIR);
         }
-        
+
         if (BatteryManager.getInstance().isBatteryVoltageLow()) {
             Settings.getInstance().setSetting("closeMode", closeAppBatteriaScarica);
         }
 
-        if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("AppMain: powerDown closeMode is " + Settings.getInstance().getSetting("closeMode", closeAppNormaleOK));
-        }
+        SLog.log(SLog.Informational, "AppMain", "powerDown closeMode is " + Settings.getInstance().getSetting("closeMode", closeAppNormaleOK));
 
         ATManager.getInstance().executeCommandSynchron("AT^SPIO=0\r");
-        
+
         gpio6WatchDogTask.stop();
         userwareWatchDogTask.stop();
-        
-        if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("AppMain: watchdogs stopped");
-            System.out.flush();
-        }
-        
+
+        SLog.log(SLog.Debug, "AppMain", "watchdogs stopped");
+
         BatteryManager.getInstance().lowPowerMode();
-        if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("AppMain: lowPowerMode");
-            System.out.flush();
-        }
+        SLog.log(SLog.Debug, "AppMain", "lowPowerMode");
         ATManager.getInstance().executeCommandSynchron("AT^SMSO\r");
-        if (Settings.getInstance().getSetting("mainDebug", false)) {
-            System.out.println("AppMain: SMSO");
-            System.out.flush();
-        }
+        SLog.log(SLog.Debug, "AppMain", "SMSO");
     }
 
     private boolean loop() {
         if (invalidSIM) {
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("invalidSim");
-            }
-            return true;
-        }
-        
-        if (LocationManager.getInstance().isTimeout() ||
-                SocketGPRSThread.getInstance().isGPRSTimeout() ||
-                SocketGPRSThread.getInstance().isMQTTTimeout()) {
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("fixTimeout | gprsTimeout | mqttTimeout");
-            }
+            SLog.log(SLog.Debug, "AppMain", "invalidSim");
             return true;
         }
 
-        if ((wakeupMode.equals(motionWakeup) || wakeupMode.equals(alarmWakeup)) &&
-                LocationManager.getInstance().dateLastFix() != null &&
-                SocketGPRSThread.getInstance().qSize() == 0) {
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: " + wakeupMode + " && dateLastFix && qSize");
-            }
+        if (LocationManager.getInstance().isTimeout()) {
+            SLog.log(SLog.Debug, "AppMain", "fixTimeout");
             return true;
         }
 
-        if (wakeupMode.equals(ignitionWakeup) &&
-                GPIOInputManager.getInstance().gpio7 == 1 &&
-                SocketGPRSThread.getInstance().qSize() == 0) {
-
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: " + wakeupMode + " && gpio7 && qSize");
-            }
+        if (SocketGPRSThread.getInstance().isGPRSTimeout()) {
+            SLog.log(SLog.Debug, "AppMain", "gprsTimeout");
             return true;
         }
 
-        if (BatteryManager.getInstance().isBatteryVoltageLow()) {
-            if (Settings.getInstance().getSetting("mainDebug", false)) {
-                System.out.println("AppMain: lowBattery");
-            }
+        if (SocketGPRSThread.getInstance().isMQTTTimeout()) {
+            SLog.log(SLog.Debug, "AppMain", "mqttTimeout");
+            return true;
+        }
+
+        if ((wakeupMode.equals(motionWakeup) || wakeupMode.equals(alarmWakeup))
+                && LocationManager.getInstance().dateLastFix() != null
+                && SocketGPRSThread.getInstance().qSize() == 0) {
+            SLog.log(SLog.Debug, "AppMain", wakeupMode + " && dateLastFix && qSize");
+            return true;
+        }
+
+        if (wakeupMode.equals(ignitionWakeup)
+                && GPIOInputManager.getInstance().gpio7 == 1
+                && SocketGPRSThread.getInstance().qSize() == 0) {
+
+            SLog.log(SLog.Debug, "AppMain", wakeupMode + " && gpio7 && qSize");
+            return true;
+        }
+
+        if (BatteryManager.getInstance()
+                .isBatteryVoltageLow()) {
+            SLog.log(SLog.Debug, "AppMain", "lowBattery");
             return true;
         }
 

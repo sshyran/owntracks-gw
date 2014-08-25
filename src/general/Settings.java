@@ -38,10 +38,8 @@ public class Settings {
     }
     
     private synchronized void set(String key, String value, boolean write) {
-        //System.out.println("setSetting " + key + " " + ((value == null) ? value : "null"));
         if (hashTable == null) {
             loadSettings();
-            //System.out.println("loaded");
         }
         if (value == null || value.length() == 0) {
             hashTable.remove(key);
@@ -62,20 +60,16 @@ public class Settings {
     }
 
     public synchronized String getSetting(String key, String defaultValue) {
-        //System.out.println("getSetting " + key);
         if (hashTable == null) {
             loadSettings();
-            //System.out.println("loaded");
         }
 
         String value;
         value = (String) hashTable.get(key);
 
-        //System.out.println("getSetting found" + ((value == null) ? value : "null"));
         if (value == null) {
             value = defaultValue;
         }
-        //System.out.println("getSetting returns " + value);
         return value;
     }
 
@@ -110,24 +104,19 @@ public class Settings {
     }
 
     public synchronized void loadSettings() {
-        //System.out.println("loadSettings");
         if (hashTable == null) {
             hashTable = new Hashtable();
-            //System.out.println("new HashTable");
         }
 
         try {
             FileConnection fconn = (FileConnection) Connector.open(fileURL);
-            //System.out.println("Connector.open");
             if (!fconn.exists()) {
                 fconn.create();
                 fconn.setReadable(true);
                 fconn.setWritable(true);
-                //System.out.println("fconn.create");
             }
 
             InputStream is = fconn.openInputStream();
-            //System.out.println("fconn.openInputStream");
             
             String line = null;
 
@@ -140,7 +129,6 @@ public class Settings {
                     if (i == -1) {
                         break;
                     }
-                    //System.out.print("." + i + ".");
 
                     if (i != '\r') {
                         if (line == null) {
@@ -148,7 +136,6 @@ public class Settings {
                         }
 
                         if (i == '\n') {
-                            //System.out.println("\r\nline " + line + line.length());
                             if (line.length() == 0 || line.charAt(0) == '#') {
                                 // comment
                             } else {
@@ -157,9 +144,7 @@ public class Settings {
                                     // illegal
                                 } else {
                                     String key = line.substring(0, equal);
-                                    //System.out.println("\r\nkey " + key + key.length());
                                     String value = line.substring(equal + 1);
-                                    //System.out.println("\r\nline " + value + value.length());
                                     hashTable.put(key, value);
                                 }
                             }
@@ -171,25 +156,18 @@ public class Settings {
                 } while (i != -1);
             } while (line != null);
 
-            //System.out.println(hashTable.toString());
             is.close();
-            //System.out.println("is.close");
 
             fconn.close();
-            //System.out.println("fconn.close");
         
         } catch (IOException ioe) {
-            ioe.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
+            SLog.log(SLog.Error, "Settings", "load IOException"); 
         }
     }
 
     public synchronized void writeSettings() {
-        //System.out.println("writeSettings");
         if (hashTable == null) {
             loadSettings();
-            //System.out.println("loaded");
         }
 
         try {
@@ -201,11 +179,9 @@ public class Settings {
             } else {
                 fconn.truncate(0);
             }
-            //System.out.println("Connector.open");
         
             try {
                 OutputStream os = fconn.openOutputStream();
-                //System.out.println("fconn.openOutputStream");
 
                 os.write(("# " + fileURL + " written: " + new Date() + "\n").getBytes("UTF-8"));
                 
@@ -218,16 +194,12 @@ public class Settings {
 
                 os.flush();
                 os.close();
-                //System.out.println("os.close");
             } catch (IOException ioe) {
-                ioe.printStackTrace();
+                SLog.log(SLog.Debug, "Settings", "write IOException");
             }
             fconn.close();
-            //System.out.println("fconn.close");
         } catch (IOException ioe) {
-            ioe.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
+            SLog.log(SLog.Debug, "Settings", "write open IOException");
         }
     }
 

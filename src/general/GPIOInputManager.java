@@ -28,7 +28,7 @@ public class GPIOInputManager {
         processSGIO(ATManager.getInstance().executeCommandSynchron("at^sgio=2\r"));
         processSGIO(ATManager.getInstance().executeCommandSynchron("at^sgio=6\r"));
     }
-    
+
     public static GPIOInputManager getInstance() {
         return GPIOInputManagerHolder.INSTANCE;
     }
@@ -39,14 +39,10 @@ public class GPIOInputManager {
     }
 
     public void eventGPIOValueChanged(String message) {
-        if (Settings.getInstance().getSetting("gpioDebug", false)) {
-            System.out.println("Received SCPOL: " + message);
-        }
+        SLog.log(SLog.Debug, "GPIOInputManager", "Received SCPOL: " + message);
 
         String[] lines = StringSplitter.split(message, "\r\n");
-        if (Settings.getInstance().getSetting("gpioDebug", false)) {
-            System.out.println("lines.length: " + lines.length);
-        }
+        SLog.log(SLog.Debug, "GPIOInputManager", "lines.length: " + lines.length);
 
         if (lines.length < 1) {
             return;
@@ -80,14 +76,10 @@ public class GPIOInputManager {
     }
 
     private void processSGIO(String message) {
-        if (Settings.getInstance().getSetting("gpioDebug", false)) {
-            System.out.println("Received SGIO: " + message);
-        }
+        SLog.log(SLog.Debug, "GPIOInputManager", "Received SGIO: " + message);
 
         String[] lines = StringSplitter.split(message, "\r\n");
-        if (Settings.getInstance().getSetting("gpioDebug", false)) {
-            System.out.println("lines.length: " + lines.length);
-        }
+        SLog.log(SLog.Debug, "GPIOInputManager", "lines.length: " + lines.length);
 
         if (lines.length < 2) {
             return;
@@ -106,7 +98,7 @@ public class GPIOInputManager {
                 try {
                     value = Integer.parseInt(valueString);
                 } catch (NumberFormatException nfe) {
-                    System.err.println("SGIO value NumberFormatException");
+                    SLog.log(SLog.Error, "GPIOInputManager", "SGIO value NumberFormatException");
                     value = -1;
                 }
             } else {
@@ -119,49 +111,49 @@ public class GPIOInputManager {
                 try {
                     ioID = Integer.parseInt(lines[0].substring(pos + 1, lines[0].length() - 1));
                 } catch (NumberFormatException nfe) {
-                    System.err.println("SGIO index NumberFormatException");
+                    SLog.log(SLog.Error, "GPIOInputManager", "SGIO index NumberFormatException");
                     ioID = -1;
                 }
             } else {
                 ioID = -1;
-            }            
+            }
             process(ioID, value);
         }
     }
-    
+
     private void process(int ioID, int value) {
         switch (ioID) {
             case 0:
                 gpio1 = value;
                 SocketGPRSThread.getInstance().put(
-                    Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
-                    + "/gpio/1",
-                    Settings.getInstance().getSetting("qos", 1),
-                    Settings.getInstance().getSetting("retain", true),
-                    ("" + value).getBytes()
+                        Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                        + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                        + "/gpio/1",
+                        Settings.getInstance().getSetting("qos", 1),
+                        Settings.getInstance().getSetting("retain", true),
+                        ("" + value).getBytes()
                 );
                 break;
             case 2:
                 gpio3 = value;
                 SocketGPRSThread.getInstance().put(
-                    Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
-                    + "/gpio/3",
-                    Settings.getInstance().getSetting("qos", 1),
-                    Settings.getInstance().getSetting("retain", true),
-                    ("" + value).getBytes()
+                        Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                        + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                        + "/gpio/3",
+                        Settings.getInstance().getSetting("qos", 1),
+                        Settings.getInstance().getSetting("retain", true),
+                        ("" + value).getBytes()
                 );
                 break;
             case 6:
                 gpio7 = value;
                 SocketGPRSThread.getInstance().put(
-                    Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
-                    + "/gpio/7",
-                    Settings.getInstance().getSetting("qos", 1),
-                    Settings.getInstance().getSetting("retain", true),
-                    ("" + value).getBytes()
+                        Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                        + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                        + "/gpio/7",
+                        Settings.getInstance().getSetting("qos", 1),
+                        Settings.getInstance().getSetting("retain", true),
+                        ("" + value).getBytes()
                 );
                 break;
             default:

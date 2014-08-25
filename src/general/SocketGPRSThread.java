@@ -14,8 +14,8 @@ public class SocketGPRSThread extends Thread {
 
     private Timer MQTTTimeoutTimer = null;
     private TimerTask MQTTTimeoutTimerTask = null;
-    private boolean MQTTTimeout;    
-    
+    private boolean MQTTTimeout;
+
     private Timer GPRSTimeoutTimer = null;
     private TimerTask GPRSTimeoutTimerTask = null;
     private boolean GPRSTimeout;
@@ -71,10 +71,7 @@ public class SocketGPRSThread extends Thread {
     class GPRSTimeout extends TimerTask {
 
         public void run() {
-            if (Settings.getInstance().getSetting("gprsDebug", false)) {
-                System.out.println("gprsTimeout");
-            }
-            Log.log("gprsTimeout");
+            SLog.log(SLog.Informational, "SocketGRPSThread", "gprsTimeout");
             GPRSTimeout = true;
         }
     }
@@ -82,28 +79,23 @@ public class SocketGPRSThread extends Thread {
     class MQTTTimeout extends TimerTask {
 
         public void run() {
-            if (Settings.getInstance().getSetting("gprsDebug", false)) {
-                System.out.println("mqttTimeout");
-            }
-            Log.log("mqttTimeout");
+            SLog.log(SLog.Informational, "SocketGRPSThread", "mqttTimeout");
             MQTTTimeout = true;
         }
     }
 
     private void startTimeoutTimer() {
         stopTimeoutTimer();
-        
+
         GPRSTimeoutTimer = new Timer();
         GPRSTimeoutTimerTask = new GPRSTimeout();
         GPRSTimeoutTimer.schedule(GPRSTimeoutTimerTask, Settings.getInstance().getSetting("gprsTimeout", 600) * 1000);
-        
+
         MQTTTimeoutTimer = new Timer();
         MQTTTimeoutTimerTask = new MQTTTimeout();
         MQTTTimeoutTimer.schedule(MQTTTimeoutTimerTask, Settings.getInstance().getSetting("mqttTimeout", 600) * 1000);
-        
-        if (Settings.getInstance().getSetting("gprsDebug", false)) {
-            System.out.println("start gprsTimeout  & mqttTimeout timer");
-        }
+
+        SLog.log(SLog.Debug, "SocketGRPSThread", "start gprsTimeout  & mqttTimeout timer");
     }
 
     private void stopTimeoutTimer() {
@@ -141,9 +133,7 @@ public class SocketGPRSThread extends Thread {
         publish.retain = retain;
         publish.qos = qos;
         boolean putResult = gpsQ.put(publish);
-        if (Settings.getInstance().getSetting("gprsDebug", false)) {
-            System.out.println("gpsQ.size " + qSize());
-        }
+        SLog.log(SLog.Debug, "SocketGRPSThread", "gpsQ.size " + qSize());
         return putResult;
     }
 
@@ -153,7 +143,7 @@ public class SocketGPRSThread extends Thread {
 
     public void open() {
         ATManager.getInstance().executeCommandSynchron("at^smong\r");
-        
+
         String cgatt;
         do {
             try {
@@ -203,13 +193,9 @@ public class SocketGPRSThread extends Thread {
             }
             if (MQTTHandler.getInstance().isConnected()) {
                 if (publish == null) {
-                    if (Settings.getInstance().getSetting("gprsDebug", false)) {
-                        System.out.println("gpsQ.size " + qSize());
-                    }
+                    SLog.log(SLog.Debug, "SocketGRPSThread", "pre gpsQ.size " + qSize());
                     publish = (Publish) gpsQ.get();
-                    if (Settings.getInstance().getSetting("gprsDebug", false)) {
-                        System.out.println("gpsQ.size " + qSize());
-                    }
+                    SLog.log(SLog.Debug, "SocketGRPSThread", "post gpsQ.size " + qSize());
                 }
                 if (publish != null) {
                     if (processMessage(publish)) {
@@ -233,9 +219,7 @@ public class SocketGPRSThread extends Thread {
     }
 
     boolean processMessage(Publish publish) {
-        if (Settings.getInstance().getSetting("gprsDebug", false)) {
-            System.out.println("processMessage: " + publish.topic);
-        }
+        SLog.log(SLog.Debug, "SocketGRPSThread", "processMessage: " + publish.topic);
         MQTTHandler.getInstance().publish(publish.topic, publish.qos, publish.retain, publish.payload);
         return MQTTHandler.getInstance().isConnected();
     }

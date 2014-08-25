@@ -14,6 +14,7 @@ package general;
  *
  */
 public class ProcessSMSThread extends Thread {
+
     public static void setup() {
         ATManager.getInstance().executeCommandSynchron("AT+CMGF=1\r");
         ATManager.getInstance().executeCommandSynchron("AT+CPMS=\"MT\",\"MT\",\"MT\"\r");
@@ -23,21 +24,15 @@ public class ProcessSMSThread extends Thread {
     }
 
     public ProcessSMSThread() {
-        if (Settings.getInstance().getSetting("smsDebug", false)) {
-            System.out.println("ProcessSMSThread created");
-        }
+        SLog.log(SLog.Debug, "ProcessSMSThread", "created");
     }
 
     public void run() {
         String cmgs = ATManager.getInstance().executeCommandSynchron("AT+CPMS?\r");
-        if (Settings.getInstance().getSetting("smsDebug", false)) {
-            System.out.println("processCMGS " + cmgs);
-        }
+        SLog.log(SLog.Debug, "ProcessSMSThread", "processCMGS " + cmgs);
 
         String[] lines = StringSplitter.split(cmgs, "\r\n");
-        if (Settings.getInstance().getSetting("smsDebug", false)) {
-            System.out.println("lines.length: " + lines.length);
-        }
+        SLog.log(SLog.Debug, "ProcessSMSThread", "lines.length: " + lines.length);
 
         if (lines.length < 2) {
             return;
@@ -50,9 +45,7 @@ public class ProcessSMSThread extends Thread {
          */
         if (lines[1].startsWith("+CPMS: ")) {
             String[] values = StringSplitter.split(lines[1].substring(7), ",");
-            if (Settings.getInstance().getSetting("smsDebug", false)) {
-                System.out.println("values.length: " + values.length);
-            }
+            SLog.log(SLog.Debug, "ProcessSMSThread", "values.length: " + values.length);
 
             if (values.length == 9) {
                 int numberOfCurrentMessages;
@@ -68,10 +61,9 @@ public class ProcessSMSThread extends Thread {
                 } catch (NumberFormatException e) {
                     numberOfStorageMessages = 0;
                 }
-                if (Settings.getInstance().getSetting("smsDebug", false)) {
-                    System.out.println("numberOfCurrentMessages: " + numberOfCurrentMessages
-                            + " numberOfStorageMessages: " + numberOfStorageMessages);
-                }
+                SLog.log(SLog.Debug, "ProcessSMSThread",
+                        "numberOfCurrentMessages: " + numberOfCurrentMessages
+                        + " numberOfStorageMessages: " + numberOfStorageMessages);
 
                 if (numberOfCurrentMessages > 0) {
                     for (int i = 1; i <= numberOfStorageMessages; i++) {
@@ -84,14 +76,10 @@ public class ProcessSMSThread extends Thread {
     }
 
     public static void eventSMSArrived(String cmti) {
-        if (Settings.getInstance().getSetting("smsDebug", false)) {
-            System.out.println("processCMTI " + cmti);
-        }
+        SLog.log(SLog.Debug, "ProcessSMSThread", "processCMTI " + cmti);
 
         String[] lines = StringSplitter.split(cmti, "\r\n");
-        if (Settings.getInstance().getSetting("smsDebug", false)) {
-            System.out.println("lines.length: " + lines.length);
-        }
+        SLog.log(SLog.Debug, "ProcessSMSThread", "lines.length: " + lines.length);
 
         if (lines.length < 2) {
             return;
@@ -112,9 +100,7 @@ public class ProcessSMSThread extends Thread {
                     numberOfNewMessages = 0;
                 }
 
-                if (Settings.getInstance().getSetting("smsDebug", false)) {
-                    System.out.println("" + numberOfNewMessages + " new messages arrived");
-                }
+                SLog.log(SLog.Debug, "ProcessSMSThread", "" + numberOfNewMessages + " new messages arrived");
                 ProcessSMSThread processSMSThread = new ProcessSMSThread();
                 processSMSThread.start();
             }
@@ -122,14 +108,10 @@ public class ProcessSMSThread extends Thread {
     }
 
     void processCMGR(String cmgr) {
-        if (Settings.getInstance().getSetting("smsDebug", false)) {
-            System.out.println("processCMGR " + cmgr);
-        }
+        SLog.log(SLog.Debug, "ProcessSMSThread", "processCMGR " + cmgr);
 
         String[] lines = StringSplitter.split(cmgr, "\r\n");
-        if (Settings.getInstance().getSetting("smsDebug", false)) {
-            System.out.println("lines.length: " + lines.length);
-        }
+        SLog.log(SLog.Debug, "ProcessSMSThread", "lines.length: " + lines.length);
 
         if (lines.length < 2) {
             return;
@@ -144,9 +126,7 @@ public class ProcessSMSThread extends Thread {
          */
         if (lines[1].startsWith("+CMGR: ")) {
             String[] values = StringSplitter.split(lines[1].substring(7), ",");
-            if (Settings.getInstance().getSetting("smsDebug", false)) {
-                System.out.println("values.length: " + values.length);
-            }
+            SLog.log(SLog.Debug, "ProcessSMSThread", "values.length: " + values.length);
             if (values.length > 3) {
                 int index = 0;
                 int pos = lines[0].indexOf('=');
@@ -154,16 +134,12 @@ public class ProcessSMSThread extends Thread {
                     index = Integer.parseInt(lines[0].substring(pos + 1, lines[0].length() - 1));
                 }
 
-                if (Settings.getInstance().getSetting("smsDebug", false)) {
-                    System.out.println("index " + index);
-                }
+                SLog.log(SLog.Debug, "ProcessSMSThread", "index " + index);
 
                 String telephoneNo;
                 telephoneNo = values[1];
 
-                if (Settings.getInstance().getSetting("smsDebug", false)) {
-                    System.out.println("telephoneNo " + telephoneNo);
-                }
+                SLog.log(SLog.Debug, "ProcessSMSThread", "telephoneNo " + telephoneNo);
 
                 String text;
                 text = lines[2];
@@ -171,23 +147,19 @@ public class ProcessSMSThread extends Thread {
                     text = text.concat(lines[i]);
                 }
 
-                if (Settings.getInstance().getSetting("smsDebug", false)) {
-                    System.out.println("text >" + text + "<");
-                }
+                SLog.log(SLog.Debug, "ProcessSMSThread", "text >" + text + "<");
 
                 ATManager.getInstance().executeCommandSynchron("AT+CMGD=" + index + "\r");
 
                 CommandProcessor commandProcessor = CommandProcessor.getInstance();
                 String response;
-                if (commandProcessor.execute(text, false)) {
+                if (commandProcessor.execute(text)) {
                     response = commandProcessor.message;
                 } else {
                     response = "NACK: " + commandProcessor.message;
                 }
 
-                if (Settings.getInstance().getSetting("smsDebug", false)) {
-                    System.out.println("response (" + response.length() + "): " + response);
-                }
+                SLog.log(SLog.Debug, "ProcessSMSThread", "response (" + response.length() + "): " + response);
 
                 // max length SMS 140/160 
                 if (response.length() > 140) {

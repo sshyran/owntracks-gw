@@ -17,7 +17,7 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
             atCommand = new ATCommand(true);
             atCommand.addListener(this);
         } catch (ATCommandFailedException atcfe) {
-            System.err.println("ATCommandFailedException new ATCommand");
+            SLog.log(SLog.Critical, "ATManager", "ATCommandFailedException new ATCommand");
         }
     }
 
@@ -47,10 +47,7 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
         try {
             if (listener == null) {
                 response = atCommand.send(command);
-                if (Settings.getInstance().getSetting("gsmDebug", false)) {
-                    System.out.println("commandResponse: " + response);
-                    System.out.flush();
-                }
+                SLog.log(SLog.Debug, "ATManager", "commandResponse: " + response);
                 if (text != null) {
                     response = response + atCommand.send(text + "\032");
                 }
@@ -58,10 +55,10 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
                 atCommand.send(command, listener);
             }
         } catch (ATCommandFailedException atcfe) {
-            Log.log("ATCommandFailedException send " + command);
+            SLog.log(SLog.Alert, "ATManager", "ATCommandFailedException send " + command);
         }
         if (response.indexOf("ERROR") >= 0) {
-            Log.log(response);
+            SLog.log(SLog.Warning, "ATManager", response);
         }
         return response;
     }
@@ -71,9 +68,7 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
             return;
         }
 
-        if (Settings.getInstance().getSetting("gsmDebug", false)) {
-            System.out.println("ATListenerEvents: (" + event.length() + ") " + event);
-        }
+        SLog.log(SLog.Debug, "ATManager", "ATListenerEvents: (" + event.length() + ") " + event);
         
         if (event.indexOf("^SYSSTART AIRPLANE MODE") >= 0) {
             AppMain.getInstance().airplaneMode = true;
@@ -103,14 +98,12 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
         } else if (event.indexOf("^SBC: Undervoltage") >= 0) {
             BatteryManager.getInstance().eventLowBattery();
         } else if (event.indexOf("^SCKS") >= 0) {
-            Log.log(event);
             if (event.indexOf("2") >= 0) {
                 AppMain.getInstance().invalidSIM = true;
+                SLog.log(SLog.Alert, "ATManager", event);
             }
         } else {
-            if (Settings.getInstance().getSetting("gsmDebug", false)) {
-                System.out.println("ATListenerEvents: nothing to do");
-            }
+            SLog.log(SLog.Debug, "ATManager", "ATListenerEvents: nothing to do");
         }
     }
 
@@ -127,11 +120,9 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
     }
 
     public void ATResponse(String response) {
-        if (Settings.getInstance().getSetting("gsmDebug", false)) {
-            System.out.println("commandResponse: " + response);
-        }
+        SLog.log(SLog.Debug, "ATManager", "commandResponse: " + response);
         if (response.indexOf("ERROR") >= 0) {
-            Log.log(response);
+            SLog.log(SLog.Error, "ATManager", response);
         }
     }
 }

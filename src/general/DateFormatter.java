@@ -69,10 +69,10 @@ public class DateFormatter {
                 }
                 timeStamp += (sDay - 1) * 24L * 3600L + sHour * 3600L + sMinute * 60L + sSecond;
             } else {
-                System.err.println("Illegal date/time " + DDMMYY + " " + HHMMSS);
+                SLog.log(SLog.Warning, "DateFormatter", "Illegal date/time " + DDMMYY + " " + HHMMSS);
             }
         } catch (NumberFormatException nfe) {
-            System.err.println("NumberFormatException " + DDMMYY + " " + HHMMSS);
+            SLog.log(SLog.Error, "DateFormatter", "NumberFormatException " + DDMMYY + " " + HHMMSS);
         }
         return new Date(timeStamp * 1000L);
     }

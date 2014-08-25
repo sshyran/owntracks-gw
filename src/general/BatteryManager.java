@@ -23,7 +23,6 @@ public class BatteryManager {
     private double batteryVoltage;
     private double lastBatteryVoltage = -1.0;
     private double lastExternalVoltage = -1.0;
-    private final double significantVoltageChange = 0.1;
 
     private final PowerManager powerManager;
     private final Timer timer;
@@ -69,7 +68,7 @@ public class BatteryManager {
                 long longVoltage = (long)(voltage * 1000.0);
                 voltage = longVoltage / 1000.0;
             }
-            if (Math.abs(lastExternalVoltage - voltage) > significantVoltageChange) {
+            if (Math.abs(lastExternalVoltage - voltage) > Settings.getInstance().getSetting("dExtVoltage", 500) / 1000.0) {
                 SocketGPRSThread.getInstance().put(
                         Settings.getInstance().getSetting("publish", "owntracks/gw/")
                         + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
@@ -82,7 +81,7 @@ public class BatteryManager {
             }
             return voltage;
         } catch (IOException ioe) {
-            System.err.println("IOException powerManager.getDoubleVIN");
+            SLog.log(SLog.Error, "BatteryManager", "IOException powerManager.getDoubleVIN");
             return 0.0;
         }
     }
@@ -96,7 +95,7 @@ public class BatteryManager {
             long longVoltage = (long)(voltage * 1000.0);
             voltage = longVoltage / 1000.0;
         }
-        if (Math.abs(lastBatteryVoltage - voltage) > significantVoltageChange) {
+        if (Math.abs(lastBatteryVoltage - voltage) > Settings.getInstance().getSetting("dBattVoltage", 100) / 1000.0) {
             SocketGPRSThread.getInstance().put(
                     Settings.getInstance().getSetting("publish", "owntracks/gw/")
                     + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
@@ -118,7 +117,7 @@ public class BatteryManager {
         try {
             return (powerManager.setReboot() == 1);
         } catch (IOException ioe) {
-            System.err.println("IOException powerManager.setReboot");
+            SLog.log(SLog.Error, "BatteryManager", "IOException powerManager.setReboot");
             return false;
         }
     }
@@ -127,7 +126,7 @@ public class BatteryManager {
         try {
             return (powerManager.setLowPwrMode() == 1);
         } catch (IOException ioe) {
-            System.err.println("IOException powerManager.setLowPowerMode");
+            SLog.log(SLog.Error, "BatteryManager", "IOException powerManager.setLowPowerMode");
             return false;
         }
     }
@@ -144,7 +143,7 @@ public class BatteryManager {
                 setBatteryVoltage(voltage / 1000);
                 getExternalVoltage();
             } catch (NumberFormatException nfe) {
-                System.err.println("NumberFormatException " + response);
+                SLog.log(SLog.Error, "BatteryManager", "NumberFormatException " + response);
             }
         }
     }

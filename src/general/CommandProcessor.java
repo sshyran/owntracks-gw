@@ -20,28 +20,18 @@ public class CommandProcessor {
     private final String set = "set";
     private final String reboot = "reboot";
     private final String upgrade = "upgrade";
-    private final String close = "close";
     private final String reconnect = "reconnect";
     private final String exec = "exec";
     private final String destroy = "destroy";
     private final String log = "log";
     private final String dump = "dump";
 
-    private final String[] authorizedCommands = {set, reboot, reconnect, dump, log, logout, destroy, exec, upgrade, close};
+    private final String[] authorizedCommands = {set, reboot, reconnect, dump, log, logout, destroy, exec, upgrade};
 
     private final String CRLF = "\r\n";
 
     private long authorizedSince = 0;
     public String message = null;
-
-    private boolean isInStringArray(String string, String[] stringArray) {
-        for (int i = 0; i < stringArray.length; i++) {
-            if (string.equalsIgnoreCase(stringArray[i])) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     private CommandProcessor() {
     }
@@ -55,21 +45,17 @@ public class CommandProcessor {
         private static final CommandProcessor INSTANCE = new CommandProcessor();
     }
 
-    public synchronized boolean execute(String commandLine, boolean atThread) {
+    public synchronized boolean execute(String commandLine) {
 
-        if (Settings.getInstance().getSetting("debug", false)) {
-            System.out.println("execute " + (commandLine != null ? commandLine : "<null>"));
-        }
+        SLog.log(SLog.Debug, "CommandProcessor", "execute " + (commandLine != null ? commandLine : "<null>"));
         if (commandLine != null && commandLine.length() > 0) {
             String[] words = StringSplitter.split(commandLine, " ");
             if (words.length >= 1) {
                 Settings settings = Settings.getInstance();
                 message = "";
-                if (
-                        !isInStringArray(words[0], authorizedCommands)
+                if (!StringSplitter.isInStringArray(words[0], authorizedCommands)
                         || settings.getSetting("loginTimeout", 30) == 0
-                        || authorizedSince + settings.getSetting("loginTimeout", 30) > new Date().getTime() / 1000
-                    ) {
+                        || authorizedSince + settings.getSetting("loginTimeout", 30) > new Date().getTime() / 1000) {
                     if (words[0].equals("login")) {
                         if ((words.length == 2)
                                 && (words[1].equals(settings.getSetting("secret", "1234567890")))) {
@@ -85,7 +71,7 @@ public class CommandProcessor {
                         message = message.concat("logged out");
                         return true;
                     } else {
-                        return perform(words[0], words, atThread);
+                        return perform(words[0], words);
                     }
                 } else {
                     message = message.concat("illegal command");
@@ -101,53 +87,43 @@ public class CommandProcessor {
         }
     }
 
-    private boolean perform(String command, String[] parameters, boolean atThread) {
+    private boolean perform(String command, String[] parameters) {
         Settings settings = Settings.getInstance();
         if (command.equalsIgnoreCase(gps)) {
             LocationManager locationManager = LocationManager.getInstance();
-            
+
             String human = locationManager.getLastHumanString();
             if (human != null) {
                 message = message.concat(human);
             } else {
                 message = message.concat("no location available");
             }
-            
+
             String[] fields = StringSplitter.split(
                     settings.getSetting("fields", "course,speed,altitude,distance,battery,trip"), ",");
             String json = locationManager.getlastJSONString(fields);
             if (json != null) {
                 SocketGPRSThread.getInstance().put(
-                    settings.getSetting("publish", "owntracks/gw/")
-                    + settings.getSetting("clientID", MicroManager.getInstance().getIMEI()),
-                    settings.getSetting("qos", 1),
-                    settings.getSetting("retain", true),
-                    json.getBytes());
+                        settings.getSetting("publish", "owntracks/gw/")
+                        + settings.getSetting("clientID", MicroManager.getInstance().getIMEI()),
+                        settings.getSetting("qos", 1),
+                        settings.getSetting("retain", true),
+                        json.getBytes());
                 return true;
             } else {
                 return false;
             }
 
         } else if (command.equalsIgnoreCase(reboot)) {
-            closeCommand(atThread);
-            if (atThread) {
-                BatteryManager.getInstance().reboot();
-            } else {
-                BatteryManager.getInstance().reboot();
-            }
+            BatteryManager.getInstance().reboot();
             message = message.concat("rebooting");
-            return true;
-
-        } else if (command.equalsIgnoreCase(close)) {
-            closeCommand(atThread);
-            message = message.concat("closing");
             return true;
 
         } else if (command.equalsIgnoreCase(destroy)) {
             try {
                 AppMain.getInstance().destroyApp(true);
             } catch (MIDletStateChangeException ex) {
-                System.err.println("MidletStateChangeException");
+                SLog.log(SLog.Error, "CommandProcessor", "MidletStateChangeException");
             }
             message = message.concat("destroying app");
             return true;
@@ -249,14 +225,14 @@ public class CommandProcessor {
 
     boolean logCommand(String[] parameters) {
         if (parameters.length == 1) {
-            message = Log.readCurrentLog().toString();
+            message = SLog.readCurrentLog().toString();
             return true;
         } else if (parameters.length == 2) {
             if (parameters[1].equalsIgnoreCase("old")) {
-                message = Log.readOldLog().toString();
+                message = SLog.readOldLog().toString();
                 return true;
             } else if (parameters[1].equalsIgnoreCase("del")) {
-                Log.deleteLog();
+                SLog.deleteLog();
                 message = "deleted";
                 return true;
             } else {
@@ -271,17 +247,14 @@ public class CommandProcessor {
 
     String replaceString(String originalString, String oldString, String newString) {
         String intermediateString = originalString;
-        //System.out.println("replaceString " + originalString + " " + oldString + " " + newString);
         int indexOldString;
 
         if (newString.indexOf(oldString) >= 0) {
-            System.out.println("replaceString recursion " + originalString + " " + oldString + " " + newString);
+            SLog.log(SLog.Error, "CommandProcessor", "replaceString recursion " + originalString + " " + oldString + " " + newString);
             return originalString;
         }
         do {
-            //System.out.println("intermediateString " + intermediateString);
             indexOldString = intermediateString.indexOf(oldString);
-            //System.out.println("indexOldString " + indexOldString);
             if (indexOldString >= 0) {
                 String workString;
                 if (indexOldString > 0) {
@@ -289,19 +262,16 @@ public class CommandProcessor {
                 } else {
                     workString = "";
                 }
-                //System.out.println("anfang " + workString);
                 workString = workString.concat(newString);
-                //System.out.println("mitte " + workString);
                 if (intermediateString.length() > indexOldString + oldString.length()) {
                     workString = workString.concat(intermediateString.substring(indexOldString + oldString.length()));
                 }
-                //System.out.println("abschluss " + workString);
                 intermediateString = workString;
             }
         } while (indexOldString >= 0);
         return intermediateString;
     }
-    
+
     boolean upgradeCommand(String[] parameters) {
         if (parameters.length == 1) {
             String clientID = Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI());
@@ -313,9 +283,9 @@ public class CommandProcessor {
             String apn = Settings.getInstance().getSetting("apn", "internet");
             String otapUser = Settings.getInstance().getSetting("otapUser", "");
             String otapPassword = Settings.getInstance().getSetting("otapPassword", "");
-            
-            String otap =
-                    "AT^SJOTAP=,"
+
+            String otap
+                    = "AT^SJOTAP=,"
                     + otapURI
                     + ",a:/app,"
                     + otapUser
@@ -327,9 +297,7 @@ public class CommandProcessor {
                     + notifyURI
                     + "\r";
 
-            if (Settings.getInstance().getSetting("debug", false)) {
-                System.out.println("upgrade " + otap);
-            }
+            SLog.log(SLog.Debug, "CommandProcessor", "upgrade " + otap);
 
             String response1 = ATManager.getInstance().executeCommandSynchron(otap);
             String response2 = ATManager.getInstance().executeCommandSynchron("AT^SJOTAP\r");
@@ -338,21 +306,6 @@ public class CommandProcessor {
         } else {
             message = "usage " + upgrade;
             return false;
-        }
-    }
-
-    void closeCommand(boolean atThread) {
-        if (atThread) {
-            try {
-                ATCommand atc = new ATCommand(true, false, false, false, false, false);
-                atc.breakConnection();
-            } catch (ATCommandFailedException atcfe) {
-                atcfe.printStackTrace();
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-            } catch (IllegalStateException ise) {
-                ise.printStackTrace();
-            }
         }
     }
 

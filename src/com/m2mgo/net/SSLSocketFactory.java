@@ -7,6 +7,7 @@ import javax.microedition.io.SecureConnection;
 import javax.microedition.io.SocketConnection;
 
 import com.m2mgo.util.GPRSConnectOptions;
+import general.SLog;
 
 public class SSLSocketFactory extends SocketFactory {
 
@@ -44,11 +45,11 @@ public class SSLSocketFactory extends SocketFactory {
                 + ";timeout="
                 + connOptions.getTimeout();
 
-        // System.out.println("Connector.open " + uri);
+        SLog.log(SLog.Debug, "SSLSocketFactory",  "Connector.open " + uri);
         try {
             secConn = (SecureConnection) Connector.open(uri);
         } catch (IOException ioe) {
-            System.err.println("IOException");
+            SLog.log(SLog.Error, "SSLSocketFactory", "IOException");
             throw ioe;
         }
         return secConn;

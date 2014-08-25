@@ -5,9 +5,10 @@
  */
 package general;
 
+import com.cinterion.misc.Watchdog;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-import com.cinterion.misc.Watchdog;
 
 /**
  *
@@ -33,21 +34,17 @@ public class UserwareWatchDogTask extends TimerTask {
         timer.scheduleAtFixedRate(this, 0, periodSec * 1000);
 
     }
-    
+
     public void stop() {
         timer.cancel();
         Watchdog.start(0);
     }
 
     public void run() {
-        if (Settings.getInstance().getSetting("timerDebug", false)) {
-            System.out.println("UserwareWatchDogTask " + System.currentTimeMillis()/1000);
-        }
+        SLog.log(SLog.Debug, "UserwareWatchDogTask", DateFormatter.isoString(new Date()));
 
         if (gpsRunning && GPRSRunning) {
-            if (Settings.getInstance().getSetting("timerDebug", false)) {
-                System.out.println("UserwareWatchDogTask will kick watchdog");
-            }
+            SLog.log(SLog.Debug, "UserwareWatchDogTask", "will kick watchdog");
 
             gpsRunning = false;
             GPRSRunning = false;
