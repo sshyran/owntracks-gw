@@ -1,0 +1,11 @@
+---
+title: Choral Greenwich, *OwnTracks Edition*
+author: Christoph Krey & Jan-Piet Mens 
+date: 2014-08-25
+header-includes:
+    - \usepackage{fancyhdr}
+    - \pagestyle{fancy}
+    - \fancyhead[CO,CE]{OwnTracks}
+    - \fancyfoot[CO,CE]{Choral OwnTracks}
+    - \fancyfoot[LE,RO]{\thepage}
+---
