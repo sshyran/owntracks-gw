@@ -99,9 +99,7 @@ public class CommandProcessor {
                 message = message.concat("no location available");
             }
 
-            String[] fields = StringSplitter.split(
-                    settings.getSetting("fields", "course,speed,altitude,distance,battery,trip"), ",");
-            String json = locationManager.getlastJSONString(fields);
+            String json = locationManager.getlastJSONString("m");
             if (json != null) {
                 SocketGPRSThread.getInstance().put(
                         settings.getSetting("publish", "owntracks/gw/")

@@ -84,7 +84,7 @@ public class SocketGPRSThread extends Thread {
         }
     }
 
-    private void startTimeoutTimer() {
+    private synchronized void startTimeoutTimer() {
         stopTimeoutTimer();
 
         GPRSTimeoutTimer = new Timer();
@@ -98,7 +98,7 @@ public class SocketGPRSThread extends Thread {
         SLog.log(SLog.Debug, "SocketGRPSThread", "start gprsTimeout  & mqttTimeout timer");
     }
 
-    private void stopTimeoutTimer() {
+    private synchronized void stopTimeoutTimer() {
         if (GPRSTimeoutTimer != null) {
             GPRSTimeoutTimer.cancel();
         }
@@ -109,7 +109,7 @@ public class SocketGPRSThread extends Thread {
         MQTTTimeout = false;
     }
 
-    public static SocketGPRSThread getInstance() {
+    public synchronized static SocketGPRSThread getInstance() {
         return SocketGPRSThreadHolder.INSTANCE;
     }
 

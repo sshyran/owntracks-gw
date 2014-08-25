@@ -14,7 +14,7 @@ public class LocationManager {
 
     private Timer timer = null;
     private TimerTask timerTask = null;
-    private boolean fix;
+    private boolean fix = false;
     private boolean timeout = false;
     final private UserLed userLed;
 
@@ -24,7 +24,6 @@ public class LocationManager {
     private Location lastLocation = null;
     private Location lastReportedLocation = null;
     private Location currentLocation = null;
-    private String reason = "";
 
     private double trip = 0.0;
 
@@ -111,7 +110,7 @@ public class LocationManager {
         return null;
     }
 
-    /**
+    /*
      * RMC - Recommended Minimum Navigation Information
      *
      * 12 1 2 3 4 5 6 7 8 9 10 11| | | | | | | | | | | | |
@@ -152,6 +151,7 @@ public class LocationManager {
                         fix = false;
                         setLED(false);
                         startTimer();
+                        sendLast("l");
                     }
 
                 } else {
@@ -209,20 +209,17 @@ public class LocationManager {
             } catch (NumberFormatException nfe) {
                 SLog.log(SLog.Error, "LocationManager", "RMC NumberFormatException");
                 rmc = null;
-                return;
             } catch (StringIndexOutOfBoundsException sioobe) {
                 SLog.log(SLog.Error, "LocationManager", "RMC StringIndexOutOfBoundsException");
                 rmc = null;
-                return;
             } catch (ArrayIndexOutOfBoundsException aioobe) {
                 SLog.log(SLog.Error, "LocationManager", "RMC ArrayIndexOutOfBoundsException");
                 rmc = null;
-                return;
             }
         }
     }
 
-    /**
+    /*
      * GGA - Global Positioning System Fix Data, Time, Position and fix related
      * data fora GPS receiver.
      *
@@ -324,47 +321,69 @@ public class LocationManager {
         lastLocation = currentLocation;
 
         if (lastReportedLocation != null) {
+            boolean transitionMoveToPark = false;
+            boolean transitionParkToMove = false;
             double distance = lastReportedLocation.distance(currentLocation);
-            boolean transitionFromMoveToPark = false;
-
             if (vel > minSpeed || distance > minDistance) {
+                if (stationary) {
+                    transitionParkToMove = true;
+                }
                 stationary = false;
             } else {
                 if (!stationary) {
-                    transitionFromMoveToPark = true;
+                    transitionMoveToPark = true;
                 }
                 stationary = true;
             }
 
             long timeSinceLast = currentLocation.date.getTime() / 1000 - lastReportedLocation.date.getTime() / 1000;
 
-            if ((stationary && timeSinceLast > minInterval)
-                    || (!stationary && timeSinceLast > maxInterval)
-                    || transitionFromMoveToPark) {
-                reason = (stationary ? transitionFromMoveToPark ? "k" : "T" : "t");
-                String[] fields = StringSplitter.split(Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,battery,trip"), ",");
-                SocketGPRSThread.getInstance().put(
-                        Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                        + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI()),
-                        Settings.getInstance().getSetting("qos", 1),
-                        Settings.getInstance().getSetting("retain", true),
-                        getJSONString(fields).getBytes()
-                );
+            if (stationary && timeSinceLast > minInterval) {
+                sendCurrent("T");
+            } else if (!stationary && timeSinceLast > maxInterval) {
+                sendCurrent("t");
+            } else if (transitionMoveToPark) {
+                sendCurrent("k");
+            } else if (transitionParkToMove) {
+                sendCurrent("v");
             }
         } else {
-            reason = "f";
-            String[] fields = StringSplitter.split(Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,battery"), ",");
+            if (AppMain.getInstance().wakeupMode.equals(AppMain.motionWakeup)) {
+                sendCurrent("s");
+            } else if (AppMain.getInstance().wakeupMode.equals(AppMain.alarmWakeup)) {
+                sendCurrent("a");                
+            } else {
+                sendCurrent("f");
+            }
+        }
+    }
+
+    private void sendCurrent(String reason) {
+        String json = getJSONString(reason);
+        send(json);
+    }
+    
+    public void sendLast(String reason) {
+        String json = getlastJSONString(reason);
+        send(json);
+    }
+    
+    private void send(String json) {
+        if (json != null) {
             SocketGPRSThread.getInstance().put(
                     Settings.getInstance().getSetting("publish", "owntracks/gw/")
                     + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI()),
                     Settings.getInstance().getSetting("qos", 1),
                     Settings.getInstance().getSetting("retain", true),
-                    getJSONString(fields).getBytes()
+                    json.getBytes()
             );
         }
     }
 
-    private String getJSONString(String[] fields) {
+    private String getJSONString(String reason) {
+        String[] fields = StringSplitter.split(
+                Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,battery,trip"), ",");
+
         if (currentLocation != null) {
             double distance = 0;
             if (lastReportedLocation != null) {
@@ -379,11 +398,14 @@ public class LocationManager {
         }
     }
 
-    public String getlastJSONString(String[] fields) {
+    public String getlastJSONString(String reason) {
+        String[] fields = StringSplitter.split(
+                Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,battery,trip"), ",");
+
         if (currentLocation != null) {
-            return JSONString(currentLocation, fields, "m", 0);
+            return JSONString(currentLocation, fields, reason, 0);
         } else {
-            return JSONString(lastReportedLocation, fields, "m", 0);
+            return JSONString(lastReportedLocation, fields, reason, 0);
         }
     }
 

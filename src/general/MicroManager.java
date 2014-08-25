@@ -131,8 +131,4 @@ public class MicroManager implements MovListener {
     public String getJavaRelease() {
         return javaRelease;
     }
-
-    public boolean hasMoved() {
-        return moved;
-    }
 }

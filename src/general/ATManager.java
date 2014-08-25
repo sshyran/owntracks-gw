@@ -70,11 +70,7 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
 
         SLog.log(SLog.Debug, "ATManager", "ATListenerEvents: (" + event.length() + ") " + event);
         
-        if (event.indexOf("^SYSSTART AIRPLANE MODE") >= 0) {
-            AppMain.getInstance().airplaneMode = true;
-        } else if (event.indexOf("+CALA:") >= 0) {
-            AppMain.getInstance().alarm = true;
-        } else if (event.indexOf("+CGREG") >= 0) {
+        if (event.indexOf("+CGREG") >= 0) {
             try {
                 SocketGPRSThread.getInstance().cgreg = Integer.parseInt(
                         event.substring((event.indexOf(": ")) + 2,
