@@ -9,6 +9,7 @@ SOURCES= header.yaml \
 	 settings-intro.md \
 	 _settings.md \
 	 GPIO.md \
+	 OTAP.md \
 	 notes.md \
 	 credits.md \
 
