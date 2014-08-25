@@ -9,15 +9,34 @@ The device can be configured in four distinct ways:
    
 
 	```
-	secret=1234567
-	keepAlive=60
-	port=1883
-	apn=internet
-	protocol=TCP
-	host=tcp://example.net
-	publish=owntracks/acme/
-	clientID=van17
-	tid=V7
+# file:///a:/file/OwnTracks.properties written: Mon Aug 25 13:44:04 UTC 2014
+battery=0
+sleep=3600
+fields=course,speed,altitude,distance,trip
+apn=datamobile
+fixTimeout=800
+host=ssl://mqtt.example.net
+minSpeed=10
+minDistance=100
+loginTimeout=3600
+otapURI=http://example.net/otap/otap.jad
+tid=V7
+mqttTimeout=600
+keepAlive=30
+publish=owntracks/acme/
+notifyURI=http://example.net/otap/otap.jad?id=@
+maxInterval=60
+dbgComp=none
+user=jjolie
+gprsTimeout=600
+sensitivity=1
+password=<password>
+closeMode=ResetHW
+port=8883
+minInterval=3600
+motion=63
+secret=1234567890
+# EOF
 	```
 
 2. Via SMS. The SIM card in the device has a mobile number. If your SIM card's
