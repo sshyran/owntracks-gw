@@ -11,7 +11,7 @@ A JSON message as published by Greenwich could look like this (the in-line comme
 ```json
 {
   "_type": "location",         // type
-  "t": "t",                    // trigger type
+  "t": "t",                    // trigger type (see table)
   "tst": "1408810440",         // UNIX epoch timestamp
   "tid": "V7",                 // tracker-ID (configurable)
   "lat": "48.858334",          // latitude
@@ -26,6 +26,36 @@ A JSON message as published by Greenwich could look like this (the in-line comme
 ```
 JSON elements marked with an asterisk `(*)` may or may not be present, depending on the
 configured `fields`.
+
+### Triggers
+
+In the JSON above, we mention the word _trigger_. This describes why a particular
+location publish was issued. The following is a list of triggers:
+
+--------- ---------------------------------------------------------
+ Trigger  Reason
+--------- ---------------------------------------------------------
+    f     First publish after reboot
+
+    k     When transitioning from _move_ to _stationary_ mode an additional publish is sent marked with trigger `k` (park)
+
+    L     Last recorded position upon graceful shutdown 
+
+    l     GPS signal lost. Even though GPS signal has gone (e.g. driven into tunnel)
+          we may still have a GPRS signal, so we can publish the `l`ast known position
+
+    m     For manually requested locations (e.g. by publishing to `/cmd`)
+
+    t     (time) for location published because device is movi
+
+    T     (Time) Vehicle is immobile and `maxInterval` has elapsed.
+
+    v     Move. One `v` trigger is sent on transition from park or `t` to move
+--------- ---------------------------------------------------------
+
+Table: Triggers emitted in location publishes
+
+
 
 In addition to location messages as shown above, the Greenwich will also publish additional
 messages as follows:
