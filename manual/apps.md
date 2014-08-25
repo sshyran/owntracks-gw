@@ -25,21 +25,29 @@ a map provided by the Open Street Map project.
 
 \newpage
 
+
 Our use of MQTT means adding new subscribers which act on data as it arrives at
 the MQTT broker is easy. As an example, we want to be alerted when our vehicles
-enter a particular area, say, a customer site or one of our warehouses. A small
-utility called [mqttwarn](http://github.com/jpmens/mqttwarn) can route MQTT
-payloads to a large number of services. The following example shows how an
-alert of a van entering a particular area would look like using the Pushover.net
-service:
+enter a particular area (geo-fence), say, a customer site or one of our warehouses.
+
+![Live-Map with geo-fence](art/livemap-v7-enter.png)
+
+A small utility called [mqttwarn](http://github.com/jpmens/mqttwarn) can route
+MQTT payloads to a large number of services. The following example shows how an
+alert of a van entering a particular area would look like using the
+Pushover.net service:
 
 ![Pushover alerts of an expected van entering customer site](art/v7-pushover.png)
+
+\newpage
 
 If you don't have access to one of the OwnTracks apps, you can query a particular
 vehicle's location by sending it an SMS; the vehicle responds with information
 on its location via SMS.
 
 ![OwnTracks queried via SMS](art/sms.png)
+
+\newpage
 
 OwnTracks' _m2s_ subscribes directly to your MQTT broker and stores all
 data it receives in a back-end database (e.g. MySQL or PostgreSQL) from
@@ -61,6 +69,7 @@ SELECT json FROM location WHERE id = 186480;
   "device": "van17", "lat": "46.59976", "alt": "794.9", "lon": "7.907099", "t": "t",
   "vel": "17.338424", "cog": "144.18", "tst": "1408954092"}
 ```
+
 
 _m2s_ stores historical data, and you can at any time query
 that data and process it. In addition to individual columns that are 
