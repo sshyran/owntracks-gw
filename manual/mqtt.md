@@ -36,6 +36,10 @@ location publish was issued. The following is a list of triggers:
  Trigger  Reason
 --------- ---------------------------------------------------------
     f     First publish after reboot
+    s     Device started by motions (s)ensor without ignition on - theft alarm. Send instead of f.
+          No need for external power.
+    a     Device started by (a)larm clock. Alive signal without ignition. Send instead of f.
+          No need for external power.
 
     k     When transitioning from _move_ to _stationary_ mode an additional publish is sent marked with trigger `k` (park)
 
