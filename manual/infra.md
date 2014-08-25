@@ -49,7 +49,7 @@ The requirements for operating one or more Greenwich devices are:
 * SIM card with data plan. If your vehicles intend to cross international borders,
   you must consider roaming charges or obtain a data plan which includes
   international roaming.
-* A "server" (even though that can be ver small) with sufficient storage
+* A "server" (even though that can be very small) with sufficient storage
 * An Internet connection
 * Maintenance
 

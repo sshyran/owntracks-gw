@@ -6,7 +6,7 @@ is set to `owntracks/acme` and the latter to `van17`, the _base topic_ becomes `
 retained, unless you configure `retain=0`.)
 
 
-A JSON message as published by Greenwich could look like this (the inline comments are not valid JSON; we've added them here as explanation):
+A JSON message as published by Greenwich could look like this (the in-line comments are not valid JSON; we've added them here as explanation):
 
 ```json
 {
