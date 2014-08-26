@@ -39,7 +39,7 @@
       values: 0..
       validity: reboot
       default: 21600
-      desc: sleep <sleep> seconds after device off before device is woken up by alarm (21600s ~ 6 hours)
+      desc: sleep <sleep> seconds after device off before device is woken up by clock (21600s ~ 6 hours)
   - motion:
       values: 0,1..255
       validity: reboot

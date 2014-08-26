@@ -45,34 +45,36 @@ location message was published. The following is a list of triggers:
 --------- ---------------------------------------------------------
  Trigger  Reason
 --------- ---------------------------------------------------------
-    f     First publish after reboot
+    f     First publish after reboot.
 
-    a     Device started by (a)larm clock (`AT^CALA`). Alive signal without
+    c     Device started by alarm (c)lock (`AT^CALA`). Alive signal without
           ignition. Sent instead of `f`.  This message is published
           periodically (even without external power) after `sleep` seconds.
 
-    s     The Movement Sensor or _accelerometer_ is activated when the software shuts down,
+    a     The Movement Sensor or _accelerometer_ is activated when the software shuts down,
           and is monitored even without external power supply (ignition off).
           Its sensitivity is controlled by the `motion` parameters. It wakes up
           the device when moved. Default for `motion` is 4, which is *very*
           sensitive. I set it to 63 of 255. When I shake it, it wakes up. This
-          triggers an `s` (sensor) publish which is published to `../alarm`.
+          triggers an `a` (alarm) publish which is published to `../alarm`.
 
     k     When transitioning from _move_ to _stationary_ mode an additional
-          publish is sent marked with trigger `k` (park)
+          publish is sent marked with trigger `k` (park).
 
-    L     Last recorded position upon graceful shutdown 
+    L     Last recorded position upon graceful shutdown .
 
-    l     GPS signal lost. Even though GPS signal has gone (e.g. driven into tunnel)
-          we may still have a GPRS signal, so we can publish the `l`ast known position
+    l     GPS signal lost (NMEA `A` transitions to `V`). Even though GPS signal
+          has gone (e.g. driven into tunnel) we may still have a GPRS signal, so we
+	  can publish the `l`ast known position.  It is likely that a `t` will
+          follow suit.
 
-    m     For manually requested locations (e.g. by publishing to `/cmd`)
+    m     For manually requested locations (e.g. by publishing to `/cmd`).
 
-    t     (time) for location published because device is movi
+    t     (time) for location published because device is moving.
 
     T     (Time) Vehicle is immobile and `maxInterval` has elapsed.
 
-    v     Move. One `v` trigger is sent on transition from park or `t` to move
+    v     Move. One `v` trigger is sent on transition from park or `t` to move.
 --------- ---------------------------------------------------------
 
 Table: Triggers emitted in location publishes
@@ -137,7 +139,7 @@ As described above, a location payload with a trigger type `a` is published to
 `../alarm`.
 
 ```
-FIXME
+owntracks/acme/van17/alarm {"_type": "location",  "t": "a", ...}
 ```
 
 \newpage

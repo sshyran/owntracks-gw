@@ -26,7 +26,7 @@ The device-related settings lay down how the device operates in general. Particu
 +-----------------+----------------+-----------------+--------------+---------------------------+
 | Setting         | Default        | Values          | Validity     | Meaning                        |
 +=================+================+=================+==============+===========================+
-| `sleep`         | 21600          | 0..             | reboot       | sleep <sleep> seconds after device off before device is woken up by alarm (21600s ~ 6 hours) |
+| `sleep`         | 21600          | 0..             | reboot       | sleep <sleep> seconds after device off before device is woken up by clock (21600s ~ 6 hours) |
 +-----------------+----------------+-----------------+--------------+---------------------------+
 | `motion`        | 4              | 0,1..255        | reboot       | Sensitivity for motion sensor. 0=off, 1=highest sensitivity |
 +-----------------+----------------+-----------------+--------------+---------------------------+
