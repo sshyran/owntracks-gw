@@ -65,7 +65,7 @@ location message was published. The following is a list of triggers:
 
     l     GPS signal lost (NMEA `A` transitions to `V`). Even though GPS signal
           has gone (e.g. driven into tunnel) we may still have a GPRS signal, so we
-	  can publish the `l`ast known position.  It is likely that a `t` will
+          can publish the `l`ast known position.  It is likely that a `t` will
           follow suit.
 
     m     For manually requested locations (e.g. by publishing to `/cmd`).
@@ -84,62 +84,38 @@ Table: Triggers emitted in location publishes
 In addition to location messages as shown above, the Greenwich will also publish additional
 messages as follows:
 
-### Hardware information
+------------------ ------------------------------------------------------------
+Topic              Content
+------------------ ------------------------------------------------------------
+`../hw`               Hardware/chip revision (`Cinterion,EGS5-X,REVISION 02.004`)
 
-Upon startup, the device publishes the hardware model of the chip and the IMEI. Example:
+`../hw/imei`          IMEI number of the modem (`012345678901234`)
 
-```
-owntracks/acme/van17/hw Cinterion,EGS5-X,REVISION 02.004
-owntracks/acme/van17/hw/imei 012345678901234
-```
+`../voltage/batt`     Built-in battery voltage is published when voltage
+                                changes "significantly", as configured with `dBattVoltage`.
+                                (`4.4`)
 
-### Software versions
+`../voltage/ext`      External power supply voltage is published when voltage
+                                changes "significantly", as configured with `dExtVoltage`.
+                                (`12.2`)
 
-Upon startup, the device publishes the Greenwich version as well as the application version:
+`../gpio/`_n_         Status of the three [GPIO](#gpio) pins (`1`, `3`, `7`) is published as `0` or `1`.
 
-```
-owntracks/acme/van17/sw/gw 02.16B,02.01,02.16
-owntracks/acme/van17/sw/midlet 0.5.43
-```
+`../sw/gw`            Greenwich version (`02.16B,02.01,02.16`)
 
-### Voltages
+`../sw/midlet`        Midlet (OwnTracks Edition) version (`0.5.43`)
 
-Built-in battery (`batt`) and external (`ext`) voltages are published to `../voltage/` when voltage changes "significantly", as configured with `dExtVoltage` and `dBattVoltage`:
+`../cmd/out`          Output of commands sent to the device (e.g. `login`, `set`):
 
-```
-owntracks/acme/van17/voltage/batt 4.4
-owntracks/acme/van17/voltage/ext 12.2
-```
+`../alarm`            A location payload with a trigger type `a` is published
+                                when a switched-off device is moved.
+                                `{"_type": "location",  "t": "a", ...}`
+
+------------------ ------------------------------------------------------------
+
+Table: Topics published to
 
 
-### GPIO
 
-The *inverted* status of the GPIO pins are published under the `gpio/` subtopic, as documented in the _GPIO_ section.
-
-```
-owntracks/acme/van17/gpio/1 0
-owntracks/acme/van17/gpio/3 1
-owntracks/acme/van17/gpio/7 0
-```
-
-### Command output
-
-Output of commands sent to the device (e.g. `login`, `set`, etc.) is published to the `../cmd/out` topic.
-
-```
-owntracks/acme/van17/cmd login xxx
-owntracks/acme/van17/cmd/out NACK: incorrect login
-owntracks/acme/van17/cmd login 1234567890
-owntracks/acme/van17/cmd/out login accepted
-```
-
-### Alarms
-
-As described above, a location payload with a trigger type `a` is published to
-`../alarm`.
-
-```
-owntracks/acme/van17/alarm {"_type": "location",  "t": "a", ...}
-```
 
 \newpage
