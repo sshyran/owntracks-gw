@@ -172,7 +172,7 @@
   - subscriptionQos:
       values: "0..2"
       validity: reboot
-      default: "1"
+      default: "2"
       desc: QoS for `subscription`
   - tid:
       values: "alnum"
