@@ -1,4 +1,4 @@
-# OTAP
+# OTAP {#otap}
 
 Over the Air Provisioning is supported by the OwnTracks Edition, and it can be
 triggered by an MQTT publish, via SMS, or via the console with an `upgrade`

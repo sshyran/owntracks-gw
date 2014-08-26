@@ -1,4 +1,4 @@
-# OwnTracks Apps
+# OwnTracks Apps {#applications}
 
 Greenwich OwnTracks integrates with the OwnTracks iOS and Android apps because the
 MQTT payloads it publishes are compatible with the JSON payloads understood by the apps.

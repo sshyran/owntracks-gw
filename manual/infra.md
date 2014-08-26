@@ -1,4 +1,4 @@
-# MQTT
+# MQTT {#mqttintro}
 
 MQTT is an open _publish/subscribe_ protocol for M2M communication, in which
 telemetry data is sent as messages with a very low overhead. MQTT is ideal for

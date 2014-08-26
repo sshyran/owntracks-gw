@@ -1,4 +1,4 @@
-# GPIO
+# GPIO {#gpio}
 
 Greenwich devices have up to five user-programmable [GPIO](http://en.wikipedia.org/wiki/General-purpose_input/output) pins, depending on the model, but at least three are available on the entry-level "Java" version:
 

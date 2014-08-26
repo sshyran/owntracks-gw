@@ -1,5 +1,5 @@
 
-## Features
+## Features {#hardware}
 
 Choral has Greenwich models which sport the following hardware features:
 

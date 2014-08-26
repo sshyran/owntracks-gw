@@ -1,4 +1,4 @@
-# Configuration and settings
+# Configuration and settings {#allsettings}
 
 The device can be configured in four distinct ways:
 

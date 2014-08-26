@@ -1,4 +1,4 @@
-# MQTT payloads
+# MQTT payloads {#json}
 
 Greenwich publishes messages containing _payloads_ to particular topics. The topic branch
 is user-configurable by setting the `publish` and `clientID` settings. Assuming the former

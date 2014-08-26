@@ -27,6 +27,7 @@ asked yourself one or more of these questions.
 * A customer has called to ask when the service technician will arrive; where is he?
   Your credibility rises if you can give your customer an honest and reliable answer.
 * How far away is vehicle number 17 (in other words, when can I expect it back?)
+* Has a particular vehicle arrived at the customer site? (Geo-fences)
 * What is the weather like at the vehicle's location?
 * Even if you're simply an avid traveler and wish to have an exact record of your trips,
   Greenwich _OwnTracks Edition_ is just what you need.
@@ -36,17 +37,6 @@ The data collected on a per-vehicle basis may include location (latitude, longit
 velocity, course over ground, battery levels (both internal Greenwich battery and external
 power supply), and distance traveled. In addition the state of two user-programmable GPIO pins
 is reported; these can be used, for example, to determine the state of a door (open/closed).
-
-Additionally, we support _park alarm_, Over the Air (OTA) configuration via SMS and MQTT, OTA software upgrades, and other status information such as IMEI number, etc.
-
-Connecting a Greenwich to your vehicle is easy. The device requires power, which can be
-taken from the vehicle's battery (or via a cigarette lighter), and it requires
-a GPS and GSM antenna, both of which are available as a combination-antenna. If the device
-is connected to the vehicle's _ignition_, then it can shutdown cleanly and report
-vehicle movement (e.g. theft) even when in this low-power consumption mode.
-
-
-\newpage
 
 [owntracks]: http://owntracks.org
 [choral]: http://choral.it
