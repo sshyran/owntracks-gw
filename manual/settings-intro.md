@@ -47,8 +47,7 @@ secret=1234567890
 
 4. Via a serial console attached to the RS-232C interface of the Greenwich, as long
    as the application is running. This is indicated on the console by a prompt (`> `).
-   From here, commands can be entered. In the console, all commands begin with a
-   `$` character (e.g. `$login`, `$set`, etc.)
+   From here, commands can be entered. In the console.
 
 The following commands are available. Those marked with a `+` symbol require
 prior authentication to the device:

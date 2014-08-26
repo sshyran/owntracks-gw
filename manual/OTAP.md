@@ -41,9 +41,9 @@ Internally, the following AT command is sent to the device to configure OTAP:
 AT^SJOTAP=,<otapURI>,a:/app,<otapUser>,<otapPassword>,gprs,<apn>,,,8.8.8.8,<notifyURI>
 ```
 
-The actual upgrade is launched with an `$upgrade` command which may also be submitted to the device over MQTT.
+The actual upgrade is launched with an `upgrade` command which may also be submitted to the device over MQTT.
 
-Upon receiving the `$upgrade`, the device issues `AT^SJOTAP` to perform the actual HTTP GET request for the _jad_ file. This text file contains the URI to the _jar_ file:
+Upon receiving the `upgrade`, the device issues `AT^SJOTAP` to perform the actual HTTP GET request for the _jad_ file. This text file contains the URI to the _jar_ file:
 
 ```
 ...
