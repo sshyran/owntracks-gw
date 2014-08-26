@@ -49,7 +49,8 @@ public class SSLSocketFactory extends SocketFactory {
         try {
             secConn = (SecureConnection) Connector.open(uri);
         } catch (IOException ioe) {
-            SLog.log(SLog.Error, "SSLSocketFactory", "IOException");
+            SLog.log(SLog.Warning, "SSLSocketFactory",
+                    "IOException " + (ioe.getMessage() != null ? ioe.getMessage() : "null") + " " + uri);
             throw ioe;
         }
         return secConn;

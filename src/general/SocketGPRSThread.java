@@ -151,6 +151,7 @@ public class SocketGPRSThread extends Thread {
             } catch (InterruptedException ie) {
                 //
             }
+            ATManager.getInstance().executeCommandSynchron("at+cgatt=0\r");
             cgatt = ATManager.getInstance().executeCommandSynchron("at+cgatt=1\r");
         } while (cgatt.indexOf("ERROR") >= 0);
 
@@ -172,7 +173,7 @@ public class SocketGPRSThread extends Thread {
                     Settings.getInstance().getSetting("subscription",
                             Settings.getInstance().getSetting("publish", "owntracks/gw/")
                             + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI()) + "/cmd"),
-                    Settings.getInstance().getSetting("subscriptionQos", 1)
+                    Settings.getInstance().getSetting("subscriptionQos", 2)
             );
             MQTTHandler.getInstance().connectToBroker();
         }
@@ -261,5 +262,4 @@ public class SocketGPRSThread extends Thread {
             }
         }
     }
-
 }

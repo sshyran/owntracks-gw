@@ -88,7 +88,7 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
                 SocketGPRSThread.getInstance().creg = -1;
             }
         } else if (event.indexOf("^SCPOL: ") >= 0) {
-            GPIOInputManager.getInstance().eventGPIOValueChanged(event);
+            GPIOManager.getInstance().eventGPIOValueChanged(event);
         } else if (event.indexOf("+CMTI: ") >= 0) {
             ProcessSMSThread.eventSMSArrived(event);
         } else if (event.indexOf("^SBC: Undervoltage") >= 0) {

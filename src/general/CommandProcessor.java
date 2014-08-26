@@ -18,6 +18,7 @@ public class CommandProcessor {
     private final String gps = "gps";
     private final String state = "state";
     private final String set = "set";
+    private final String out = "out";
     private final String reboot = "reboot";
     private final String upgrade = "upgrade";
     private final String reconnect = "reconnect";
@@ -26,7 +27,18 @@ public class CommandProcessor {
     private final String log = "log";
     private final String dump = "dump";
 
-    private final String[] authorizedCommands = {set, reboot, reconnect, dump, log, logout, destroy, exec, upgrade};
+    private final String[] authorizedCommands = {
+        set,
+        out,
+        reboot,
+        reconnect,
+        dump,
+        log,
+        logout,
+        destroy,
+        exec,
+        upgrade
+    };
 
     private final String CRLF = "\r\n";
 
@@ -135,6 +147,9 @@ public class CommandProcessor {
         } else if (command.equalsIgnoreCase(set)) {
             return setCommand(parameters);
 
+        } else if (command.equalsIgnoreCase(out)) {
+            return outCommand(parameters);
+
         } else if (command.equalsIgnoreCase(upgrade)) {
             return upgradeCommand(parameters);
 
@@ -197,6 +212,51 @@ public class CommandProcessor {
             message = message.concat("usage " + set + " [<key>[=[<value>]]]");
             return false;
         }
+    }
+
+    boolean outCommand(String[] parameters) {
+        if (parameters.length == 3) {
+            int num;
+            boolean on = false;
+            
+            try {
+                int numInt = Integer.parseInt(parameters[1]);
+                switch (numInt) {
+                    case 1:
+                        num = 8;
+                        break;
+                    case 2:
+                        num = 9;
+                        break;
+                    default:
+                        num = -1;
+                        break;
+                }
+                
+                int onInt = Integer.parseInt(parameters[2]);
+                switch (onInt) {
+                    case 0:
+                        on = false;
+                        break;
+                    case 1:
+                        on = true;
+                        break;
+                    default:
+                        num = -1;
+                        break;
+                }
+            } catch (NumberFormatException nfe) {
+                num = -1;
+            }
+
+            if (num != -1) {
+                GPIOManager.getInstance().setGPIO(num, on);
+                message = message.concat("ok");
+                return true;
+            }
+        }
+        message = message.concat("usage " + out + " 1/2 0/1");
+        return false;
     }
 
     boolean stateCommand(String[] parameters) {

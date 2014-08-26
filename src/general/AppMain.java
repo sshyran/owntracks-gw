@@ -9,6 +9,7 @@ import choral.io.CheckUpgrade;
 import com.cinterion.io.BearerControl;
 import com.m2mgo.util.GPRSConnectOptions;
 import java.util.Date;
+import java.util.Enumeration;
 import javax.microedition.midlet.*;
 
 /**
@@ -22,14 +23,11 @@ import javax.microedition.midlet.*;
 public class AppMain extends MIDlet {
 
     public boolean invalidSIM = false;
-    public boolean airplaneMode = false;
-    public boolean alarm = false;
 
-    final public String ignitionWakeup = "IgnitionWakeup";
-    final public String motionWakeup = "MotionWakeup";
-    final public String alarmWakeup = "AlarmWakeup";
-    final public String batteryWakeup = "BatteryWakeup";
-    public String wakeupMode = motionWakeup;
+    final public static String ignitionWakeup = "IgnitionWakeup";
+    final public static String accelerometerWakeup = "AccelerometerWakeup";
+    final public static String alarmClockWakeup = "AlarmClockWakeup";
+    public String wakeupMode = accelerometerWakeup;
 
     /**
      * Application execution status
@@ -87,6 +85,10 @@ public class AppMain extends MIDlet {
         ProcessSMSThread.setup();
 
         SLog.log(SLog.Informational, "AppMain", "Running " + getAppProperty("MIDlet-Version") + " " + DateFormatter.isoString(new Date()));
+        for (Enumeration e = settings.keys(); e.hasMoreElements();) {
+            String key = (String) e.nextElement();
+            SLog.log(SLog.Informational, "AppMain", key + "=" + settings.getSetting(key, ""));
+        }
 
         SocketGPRSThread.getInstance().put(
                 settings.getSetting("publish", "owntracks/gw/")
@@ -141,8 +143,8 @@ public class AppMain extends MIDlet {
                 ATManager.getInstance().executeCommandSynchron("at+cpin=" + pin + "\r");
             }
 
-            ATManager.getInstance().executeCommandSynchron("at^spio=1\r");
-
+            GPIOManager.getInstance();
+            
             SLog.log(SLog.Debug, "AppMain", "watchdogs starting");
 
             userwareWatchDogTask = new UserwareWatchDogTask();
@@ -179,47 +181,48 @@ public class AppMain extends MIDlet {
             ATManager.getInstance().executeCommandSynchron("AT^SCKS=1\r");
 
             BatteryManager.getInstance();
-            GPIOInputManager.getInstance();
+            GPIOManager.getInstance();
 
-            if (Settings.getInstance().getSetting("battery", false)) {
-                wakeupMode = batteryWakeup;
-            } else {
-                if (GPIOInputManager.getInstance().gpio7 == 0) {
-                    wakeupMode = ignitionWakeup;
-                } else if (alarm) {
-                    wakeupMode = alarmWakeup;
+            if (GPIOManager.getInstance().gpio7 == 0) {
+                wakeupMode = ignitionWakeup;
+            }
+            
+            String airplane = ATManager.getInstance().executeCommandSynchron("at^scfg=MEopMode/Airplane\r");
+            SLog.log(SLog.Debug, "AppMain", airplane);
+            if (airplane.indexOf("^SCFG: \"MEopMode/Airplane\",\"on\"") >= 0) {
+                if (wakeupMode.equals(accelerometerWakeup)) {
+                    wakeupMode = alarmClockWakeup;
                 }
+                ATManager.getInstance().executeCommandSynchron("AT^SCFG=\"MEopMode/Airplane\",\"off\"\r");
+            } else {
+                // default accelerometerWakeup
             }
 
-            SLog.log(SLog.Debug, "AppMain", "wakeupMode is " + wakeupMode);
-            SLog.log(SLog.Debug, "AppMain", "airplaneMode is " + airplaneMode);
-            SLog.log(SLog.Debug, "AppMain", "moved is " + MicroManager.getInstance().hasMoved());
-            SLog.log(SLog.Debug, "AppMain", "alarm is " + alarm);
+            SLog.log(SLog.Informational, "AppMain", "wakeupMode is " + wakeupMode);
 
             ATManager.getInstance().executeCommandSynchron("at+crc=1\r");
 
-            if (!airplaneMode) {
-                SLog.log(SLog.Debug, "AppMain", "SWITCH ON RADIO PART of the module...");
+            SLog.log(SLog.Debug, "AppMain", "SWITCH ON RADIO PART of the module...");
 
-                ATManager.getInstance().executeCommandSynchron("AT+CREG=1\r");
-                ATManager.getInstance().executeCommandSynchron("AT+CGREG=1\r");
+            ATManager.getInstance().executeCommandSynchron("AT+CREG=1\r");
+            ATManager.getInstance().executeCommandSynchron("AT+CGREG=1\r");
 
-                CommGPSThread.getInstance().start();
-                CommASC0Thread.getInstance().start();
-                SocketGPRSThread.getInstance().start();
+            CommGPSThread.getInstance().start();
+            CommASC0Thread.getInstance().start();
+            SocketGPRSThread.getInstance().start();
 
-                while (!loop()) {
-                    Thread.sleep(1000);
-                }
-
-                cleanup();
-
-                CommGPSThread.getInstance().terminate = true;
-                CommGPSThread.getInstance().join();
-
-                SocketGPRSThread.getInstance().terminate = true;
-                SocketGPRSThread.getInstance().join();
+            while (!loop()) {
+                Thread.sleep(1000);
             }
+
+            cleanup();
+
+            CommGPSThread.getInstance().terminate = true;
+            CommGPSThread.getInstance().join();
+
+            SocketGPRSThread.getInstance().terminate = true;
+            SocketGPRSThread.getInstance().join();
+
             shutdown();
         } catch (InterruptedException ie) {
             //
@@ -245,6 +248,10 @@ public class AppMain extends MIDlet {
     protected void cleanup() {
         SLog.log(SLog.Debug, "AppMain", "cleanup");
 
+        String json = LocationManager.getInstance().getlastJSONString("L");
+        LocationManager.getInstance().send(json);
+        Settings.getInstance().setSetting("lastFix", json);
+
         SLog.log(SLog.Debug, "AppMain", "sending remaining messages");
         while (SocketGPRSThread.getInstance().qSize() > 0) {
             SLog.log(SLog.Debug, "AppMain", "waiting qSize= " + SocketGPRSThread.getInstance().qSize());
@@ -265,7 +272,7 @@ public class AppMain extends MIDlet {
         SLog.log(SLog.Debug, "AppMain", "powerDown from " + executionState);
         Date date = LocationManager.getInstance().dateLastFix();
         if (date != null) {
-            SLog.log(SLog.Debug, "AppMain", "powerDown @ last fix time " + DateFormatter.isoString(date));
+            SLog.log(SLog.Debug, "AppMain", "powerDown last fix time " + DateFormatter.isoString(date));
             String rtc = "at+cclk=\""
                     + DateFormatter.atString(date)
                     + "\"\r";
@@ -275,20 +282,11 @@ public class AppMain extends MIDlet {
             date = new Date();
         }
 
-        SLog.log(SLog.Informational, "AppMain", "powerDown @ " + DateFormatter.isoString(date));
+        SLog.log(SLog.Informational, "AppMain", "powerDown");
         if (BatteryManager.getInstance().isBatteryVoltageLow()) {
             SLog.log(SLog.Debug, "AppMain", "powerDown on low battery, no wakeup call");
-
-        } else if (airplaneMode) {
-            SLog.log(SLog.Debug, "AppMain", "powerDown on airplaneMode");
-            ATManager.getInstance().executeCommandSynchron("AT^SCFG=\"MEopMode/Airplane\",\"off\"\r");
-
         } else {
-            if (wakeupMode.equals(batteryWakeup)) {
-                date.setTime(date.getTime() + 1 * 1000L);
-            } else {
-                date.setTime(date.getTime() + Settings.getInstance().getSetting("sleep", 6 * 3600) * 1000L);
-            }
+            date.setTime(date.getTime() + Settings.getInstance().getSetting("sleep", 6 * 3600) * 1000L);
             SLog.log(SLog.Informational, "AppMain", "powerDown setting wakeup call for " + DateFormatter.isoString(date));
 
             String rtc = "at+cala=\""
@@ -318,19 +316,15 @@ public class AppMain extends MIDlet {
             Settings.getInstance().setSetting("closeMode", closeAppPostReset);
         }
 
-        if (airplaneMode) {
-            Settings.getInstance().setSetting("closeMode", closeAIR);
-        }
-
         if (BatteryManager.getInstance().isBatteryVoltageLow()) {
             Settings.getInstance().setSetting("closeMode", closeAppBatteriaScarica);
         }
 
         SLog.log(SLog.Informational, "AppMain", "powerDown closeMode is " + Settings.getInstance().getSetting("closeMode", closeAppNormaleOK));
 
-        ATManager.getInstance().executeCommandSynchron("AT^SPIO=0\r");
-
         gpio6WatchDogTask.stop();
+        GPIOManager.getInstance().close();
+
         userwareWatchDogTask.stop();
 
         SLog.log(SLog.Debug, "AppMain", "watchdogs stopped");
@@ -347,22 +341,7 @@ public class AppMain extends MIDlet {
             return true;
         }
 
-        if (LocationManager.getInstance().isTimeout()) {
-            SLog.log(SLog.Debug, "AppMain", "fixTimeout");
-            return true;
-        }
-
-        if (SocketGPRSThread.getInstance().isGPRSTimeout()) {
-            SLog.log(SLog.Debug, "AppMain", "gprsTimeout");
-            return true;
-        }
-
-        if (SocketGPRSThread.getInstance().isMQTTTimeout()) {
-            SLog.log(SLog.Debug, "AppMain", "mqttTimeout");
-            return true;
-        }
-
-        if ((wakeupMode.equals(motionWakeup) || wakeupMode.equals(alarmWakeup))
+        if ((wakeupMode.equals(accelerometerWakeup) || wakeupMode.equals(alarmClockWakeup))
                 && LocationManager.getInstance().dateLastFix() != null
                 && SocketGPRSThread.getInstance().qSize() == 0) {
             SLog.log(SLog.Debug, "AppMain", wakeupMode + " && dateLastFix && qSize");
@@ -370,7 +349,8 @@ public class AppMain extends MIDlet {
         }
 
         if (wakeupMode.equals(ignitionWakeup)
-                && GPIOInputManager.getInstance().gpio7 == 1
+                && !Settings.getInstance().getSetting("battery", false)
+                && GPIOManager.getInstance().gpio7 == 1
                 && SocketGPRSThread.getInstance().qSize() == 0) {
 
             SLog.log(SLog.Debug, "AppMain", wakeupMode + " && gpio7 && qSize");
@@ -383,6 +363,18 @@ public class AppMain extends MIDlet {
             return true;
         }
 
+        //if (LocationManager.getInstance().isTimeout()) {
+        //    SLog.log(SLog.Debug, "AppMain", "fixTimeout");
+        //    return true;
+        //}
+        //if (SocketGPRSThread.getInstance().isGPRSTimeout()) {
+        //    SLog.log(SLog.Debug, "AppMain", "gprsTimeout");
+        //    return true;
+        //}
+        //if (SocketGPRSThread.getInstance().isMQTTTimeout()) {
+        //    SLog.log(SLog.Debug, "AppMain", "mqttTimeout");
+        //    return true;
+        //}
         return false;
     }
 

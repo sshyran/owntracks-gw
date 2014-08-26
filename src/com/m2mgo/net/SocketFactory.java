@@ -11,7 +11,7 @@ public class SocketFactory extends Object {
 
 	private static SocketFactory sf = null;
 	protected SocketConnection sc = null;
-	private GPRSConnectOptions connOptions = GPRSConnectOptions
+	private final GPRSConnectOptions connOptions = GPRSConnectOptions
 			.getConnectOptions();
 
 	private static SocketFactory getSocketFactory() {

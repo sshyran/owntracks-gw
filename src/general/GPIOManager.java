@@ -1,48 +1,67 @@
 package general;
 
-public class GPIOInputManager {
+public class GPIOManager {
 
     public int gpio1;
     public int gpio3;
     public int gpio7;
 
-    public GPIOInputManager() {
-        /*
-         * Activate
-         */
+    public GPIOManager() {
+        open();
+    }
+
+    public void open() {
+        close();
+
+        ATManager.getInstance().executeCommandSynchron("at^spio=1\r");
+
         ATManager.getInstance().executeCommandSynchron("at^scpin=1,0,0\r");
         ATManager.getInstance().executeCommandSynchron("at^scpin=1,2,0\r");
         ATManager.getInstance().executeCommandSynchron("at^scpin=1,6,0\r");
 
-        /*
-         * Activate polling
-         */
+        processSGIO(ATManager.getInstance().executeCommandSynchron("at^sgio=0\r"));
+        processSGIO(ATManager.getInstance().executeCommandSynchron("at^sgio=2\r"));
+        processSGIO(ATManager.getInstance().executeCommandSynchron("at^sgio=6\r"));
+
         ATManager.getInstance().executeCommandSynchron("at^scpol=1,0\r");
         ATManager.getInstance().executeCommandSynchron("at^scpol=1,2\r");
         ATManager.getInstance().executeCommandSynchron("at^scpol=1,6\r");
 
-        /*
-         * Check initial values
-         */
-        processSGIO(ATManager.getInstance().executeCommandSynchron("at^sgio=0\r"));
-        processSGIO(ATManager.getInstance().executeCommandSynchron("at^sgio=2\r"));
-        processSGIO(ATManager.getInstance().executeCommandSynchron("at^sgio=6\r"));
+        ATManager.getInstance().executeCommandSynchron("at^scpin=1,5,1,0\r");
+        ATManager.getInstance().executeCommandSynchron("at^scpin=1,8,1,0\r");
+        ATManager.getInstance().executeCommandSynchron("at^scpin=1,9,1,0\r");
     }
 
-    public static GPIOInputManager getInstance() {
-        return GPIOInputManagerHolder.INSTANCE;
+    public void close() {
+        ATManager.getInstance().executeCommandSynchron("at^scpol=0,0\r");
+        ATManager.getInstance().executeCommandSynchron("at^scpol=0,2\r");
+        ATManager.getInstance().executeCommandSynchron("at^scpol=0,6\r");
+
+        ATManager.getInstance().executeCommandSynchron("at^scpin=0,0\r");
+        ATManager.getInstance().executeCommandSynchron("at^scpin=0,2\r");
+        ATManager.getInstance().executeCommandSynchron("at^scpin=0,6\r");
+
+        ATManager.getInstance().executeCommandSynchron("at^scpin=0,5\r");
+        ATManager.getInstance().executeCommandSynchron("at^scpin=0,8\r");
+        ATManager.getInstance().executeCommandSynchron("at^scpin=0,9\r");
+
+        ATManager.getInstance().executeCommandSynchron("at^spio=0\r");
     }
 
-    private static class GPIOInputManagerHolder {
+    public static GPIOManager getInstance() {
+        return GPIOManagerHolder.INSTANCE;
+    }
 
-        private static final GPIOInputManager INSTANCE = new GPIOInputManager();
+    private static class GPIOManagerHolder {
+
+        private static final GPIOManager INSTANCE = new GPIOManager();
     }
 
     public void eventGPIOValueChanged(String message) {
-        SLog.log(SLog.Debug, "GPIOInputManager", "Received SCPOL: " + message);
+        SLog.log(SLog.Debug, "GPIOManager", "Received SCPOL: " + message);
 
         String[] lines = StringSplitter.split(message, "\r\n");
-        SLog.log(SLog.Debug, "GPIOInputManager", "lines.length: " + lines.length);
+        SLog.log(SLog.Debug, "GPIOManager", "lines.length: " + lines.length);
 
         if (lines.length < 1) {
             return;
@@ -76,10 +95,10 @@ public class GPIOInputManager {
     }
 
     private void processSGIO(String message) {
-        SLog.log(SLog.Debug, "GPIOInputManager", "Received SGIO: " + message);
+        SLog.log(SLog.Debug, "GPIOManager", "Received SGIO: " + message);
 
         String[] lines = StringSplitter.split(message, "\r\n");
-        SLog.log(SLog.Debug, "GPIOInputManager", "lines.length: " + lines.length);
+        SLog.log(SLog.Debug, "GPIOManager", "lines.length: " + lines.length);
 
         if (lines.length < 2) {
             return;
@@ -98,7 +117,7 @@ public class GPIOInputManager {
                 try {
                     value = Integer.parseInt(valueString);
                 } catch (NumberFormatException nfe) {
-                    SLog.log(SLog.Error, "GPIOInputManager", "SGIO value NumberFormatException");
+                    SLog.log(SLog.Error, "GPIOManager", "SGIO value NumberFormatException");
                     value = -1;
                 }
             } else {
@@ -111,7 +130,7 @@ public class GPIOInputManager {
                 try {
                     ioID = Integer.parseInt(lines[0].substring(pos + 1, lines[0].length() - 1));
                 } catch (NumberFormatException nfe) {
-                    SLog.log(SLog.Error, "GPIOInputManager", "SGIO index NumberFormatException");
+                    SLog.log(SLog.Error, "GPIOManager", "SGIO index NumberFormatException");
                     ioID = -1;
                 }
             } else {
@@ -159,5 +178,10 @@ public class GPIOInputManager {
             default:
                 break;
         }
+    }
+
+    public void setGPIO(int num, boolean on) {
+        SLog.log(SLog.Debug, "GPIOManager", "setting gpio" + num + "=" + (on ? 1 : 0));
+        ATManager.getInstance().executeCommandSynchron("at^ssio=" + num + "," + (on ? 1 : 0) + "\r");
     }
 }

@@ -19,6 +19,7 @@ import javax.microedition.io.CommConnection;
 import javax.microedition.io.Connector;
 
 public class CommASC0Thread extends Thread {
+
     OutputStream serialOut;
     InputStream serialIn;
 
@@ -34,7 +35,6 @@ public class CommASC0Thread extends Thread {
         private static final CommASC0Thread INSTANCE = new CommASC0Thread();
     }
 
-
     public void run() {
         try {
             CommConnection connASC0 = (CommConnection) Connector.open("comm:com0;baudrate=115200;bitsperchar=8;blocking=on");
@@ -45,17 +45,17 @@ public class CommASC0Thread extends Thread {
         }
 
         while (true) {
-            String comando = "";
+            String command = "";
             try {
                 Thread.sleep(200);
             } catch (InterruptedException e) {
             }
-            
-            try {
-            serialOut.write('>');
 
-            int rx = 0;
-            do {
+            try {
+                serialOut.write('>');
+
+                int rx = 0;
+                do {
                     rx = serialIn.read();
                     if (rx != '\n') {
                         if (rx >= 0) {
@@ -64,27 +64,25 @@ public class CommASC0Thread extends Thread {
                         // update read string
                         if ((byte) rx != '\r') {
                             //serialOut.write((byte)rx);
-                            comando = comando + (char) rx;
+                            command = command + (char) rx;
                         } else {
                             serialOut.write("\r\n".getBytes());
                         }
                     }
-            } while ((char) rx != '\r');
+                } while ((char) rx != '\r');
             } catch (IOException ie) {
-               //
+                //
             }
 
-            if (comando.startsWith("$")) {
-                CommandProcessor commandProcessor = CommandProcessor.getInstance();
-                try {
-                    if (commandProcessor.execute(comando.substring(1))) {
-                        serialOut.write((commandProcessor.message + "\r\n").getBytes());
-                    } else {
-                        serialOut.write(("NACK:" + commandProcessor.message + "\r\n").getBytes());
-                    }
-                } catch (IOException ioe) {
-                    SLog.log(SLog.Error, "CommASC0Thread", "IOException");
+            CommandProcessor commandProcessor = CommandProcessor.getInstance();
+            try {
+                if (commandProcessor.execute(command)) {
+                    serialOut.write((commandProcessor.message + "\r\n").getBytes());
+                } else {
+                    serialOut.write(("NACK:" + commandProcessor.message + "\r\n").getBytes());
                 }
+            } catch (IOException ioe) {
+                SLog.log(SLog.Error, "CommASC0Thread", "IOException");
             }
         }
     }

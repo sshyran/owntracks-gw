@@ -40,7 +40,7 @@ public class SLog {
     
     public static void log(String priority, String component, String error) {
         if (priority.equals(Debug)) {
-            String[] fields = StringSplitter.split(Settings.getInstance().getSetting("debugComponents", "none"), ",");
+            String[] fields = StringSplitter.split(Settings.getInstance().getSetting("dbgComp", "none"), ",");
             if (!StringSplitter.isInStringArray("all", fields)) {
                 if (!StringSplitter.isInStringArray(component, fields)) {
                     return;

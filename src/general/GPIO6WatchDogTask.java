@@ -5,6 +5,7 @@
  */
 package general;
 
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -28,7 +29,6 @@ public class GPIO6WatchDogTask extends TimerTask {
     }
 
     final public void start() {
-        ATManager.getInstance().executeCommandSynchron("at^scpin=1,5,1,0\r");
         timer = new Timer();
         timer.scheduleAtFixedRate(this, 0, periodSec * 1000);
     }
@@ -38,7 +38,7 @@ public class GPIO6WatchDogTask extends TimerTask {
     }
 
     public void run() {
-        SLog.log(SLog.Debug, "GPIO6WatchDogTask", "run " + System.currentTimeMillis() / 1000);
+        SLog.log(SLog.Debug, "GPIO6WatchDogTask", DateFormatter.isoString(new Date()));
 
         if (gpsRunning && GPRSRunning) {
             SLog.log(SLog.Debug, "GPIO6WatchDogTask", "all threads are running");
@@ -46,11 +46,8 @@ public class GPIO6WatchDogTask extends TimerTask {
             gpsRunning = false;
             GPRSRunning = false;
 
-            if (gpio6On) {
-                ATManager.getInstance().executeCommandSynchron("at^ssio=5,0\r");
-            } else {
-                ATManager.getInstance().executeCommandSynchron("at^ssio=5,1\r");
-            }
+            GPIOManager.getInstance().setGPIO(5, gpio6On);
+            
             gpio6On = !gpio6On;
 
             SLog.log(SLog.Debug, "GPIO6WatchDogTask", "gpio6 " + gpio6On);

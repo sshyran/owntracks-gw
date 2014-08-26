@@ -151,7 +151,8 @@ public class LocationManager {
                         fix = false;
                         setLED(false);
                         startTimer();
-                        sendLast("l");
+                        String json = getlastJSONString("l");
+                        send(json);
                     }
 
                 } else {
@@ -339,40 +340,63 @@ public class LocationManager {
             long timeSinceLast = currentLocation.date.getTime() / 1000 - lastReportedLocation.date.getTime() / 1000;
 
             if (stationary && timeSinceLast > minInterval) {
-                sendCurrent("T");
+                String json = getJSONString("T");
+                send(json);
             } else if (!stationary && timeSinceLast > maxInterval) {
-                sendCurrent("t");
+                String json = getJSONString("t");
+                send(json);
             } else if (transitionMoveToPark) {
-                sendCurrent("k");
+                String json = getJSONString("k");
+                send(json);
             } else if (transitionParkToMove) {
-                sendCurrent("v");
+                String json = getJSONString("v");
+                send(json);
             }
         } else {
-            if (AppMain.getInstance().wakeupMode.equals(AppMain.motionWakeup)) {
-                sendCurrent("s");
-            } else if (AppMain.getInstance().wakeupMode.equals(AppMain.alarmWakeup)) {
-                sendCurrent("a");                
+            if (AppMain.getInstance().wakeupMode.equals(AppMain.accelerometerWakeup)) {
+                String json = getJSONString("a");
+                send(json);
+                sendAlarm(json);
+            } else if (AppMain.getInstance().wakeupMode.equals(AppMain.alarmClockWakeup)) {
+                String json = getJSONString("c");
+                send(json);
             } else {
-                sendCurrent("f");
+                Date fixDate = currentLocation.date;
+                SLog.log(SLog.Debug, "SocketGPRSThread", "set RTC w/ first fix " + DateFormatter.isoString(date));
+                String rtc = "at+cclk=\""
+                        + DateFormatter.atString(date)
+                        + "\"\r";
+                ATManager.getInstance().executeCommandSynchron(rtc);
+
+                String json = getJSONString("f");
+                send(json);
             }
         }
     }
 
-    private void sendCurrent(String reason) {
-        String json = getJSONString(reason);
-        send(json);
+    public void send(String json) {
+        sendAnywhere(json, "");
     }
-    
-    public void sendLast(String reason) {
-        String json = getlastJSONString(reason);
-        send(json);
-    }
-    
-    private void send(String json) {
+
+    public void sendAlarm(String json) {
         if (json != null) {
             SocketGPRSThread.getInstance().put(
                     Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI()),
+                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                    + "/alarm",
+                    Settings.getInstance().getSetting("qos", 1),
+                    false,
+                    json.getBytes()
+            );
+        }
+    }
+
+    private synchronized void sendAnywhere(String json, String subTopic) {
+        if (json != null) {
+            SocketGPRSThread.getInstance().put(
+                    Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                    + subTopic,
                     Settings.getInstance().getSetting("qos", 1),
                     Settings.getInstance().getSetting("retain", true),
                     json.getBytes()
@@ -380,7 +404,7 @@ public class LocationManager {
         }
     }
 
-    private String getJSONString(String reason) {
+    private synchronized String getJSONString(String reason) {
         String[] fields = StringSplitter.split(
                 Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,battery,trip"), ",");
 
