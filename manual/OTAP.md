@@ -2,7 +2,12 @@
 
 Over the Air Provisioning is supported by the OwnTracks Edition, and it can be
 triggered by an MQTT publish, via SMS, or via the console with an `upgrade`
-command. While the command to upgrade can be initiated via these mechanisms, the
+command.
+
+![OTA upgrade](art/greenwich-ota.png)
+
+
+While the command to upgrade can be initiated via these mechanisms, the
 upgrade itself is obtained via HTTP from a Web server your devices can access via
 the Internet connection provided by the on-board modem. Note that upgrades, while
 they're not terribly large (somewhere in the order of 300KB), will incurr additional

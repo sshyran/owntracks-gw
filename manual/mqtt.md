@@ -82,7 +82,8 @@ Table: Triggers emitted in location publishes
 
 
 In addition to location messages as shown above, the Greenwich will also publish additional
-messages as follows:
+messages. Recall that the _base topic_ is constructed from the `publish` setting with
+`clientID` appended to it, for example `owntracks/acme/van17`.
 
 ------------------ ------------------------------------------------------------
 Topic              Content
