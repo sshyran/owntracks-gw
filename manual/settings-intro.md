@@ -62,6 +62,7 @@ prior authentication to the device:
 * `-` `destroy` (switches back to non-Java AT-mode)
 * `+` `upgrade` (perform an [OTA upgrade](OTAP.md)
 * `-` `exec` _at-command_ (pass command to modem)
+* `+` `out` switch [GPIO](#gpio) outputs
 
 
 When configuring the device via SMS or MQTT, the operator must authenticate to

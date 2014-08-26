@@ -44,4 +44,15 @@ void loop() {
     delay(5000);
 }
 ```
+
+## Outputs
+
+To switch a GPIO output, send a command with a payload consisting of the verb (`out`)
+followed by a space and the GPIO output number (`1` or `2`), followed by the desired
+state (`0` or `1`). `1` means collector open, so load is switched on.
+
+```
+mosquitto_pub -t owntracks/acme/van17/cmd -m "out 1 0"
+```
+
 \newpage
