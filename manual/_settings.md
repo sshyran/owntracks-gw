@@ -86,7 +86,7 @@ MQTT topics are used as follows: `publish` specifies a top-level topic branch to
 +-----------------+----------------+-----------------+--------------+---------------------------+
 | `subscription`  | ../cmd         |                 | reboot       | Device listens for commands at this topic |
 +-----------------+----------------+-----------------+--------------+---------------------------+
-| `subscriptionQos` | 1              | 0..2            | reboot       | QoS for `subscription`         |
+| `subscriptionQos` | 2              | 0..2            | reboot       | QoS for `subscription`         |
 +-----------------+----------------+-----------------+--------------+---------------------------+
 | `tid`           | <xx>           | alnum           | next pub     | Short tracker-ID, typically two letters, which defaults to last two characters of `clientID` |
 +-----------------+----------------+-----------------+--------------+---------------------------+
