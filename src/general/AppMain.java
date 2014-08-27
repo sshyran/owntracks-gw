@@ -28,37 +28,6 @@ public class AppMain extends MIDlet {
     final public static String accelerometerWakeup = "AccelerometerWakeup";
     final public static String alarmClockWakeup = "AlarmClockWakeup";
     public String wakeupMode = accelerometerWakeup;
-
-    /**
-     * Application execution status
-     */
-    public static final String execFIRST = "FirstExecution";
-    public static final String execNORMALE = "NormalExecution";
-    public static final String execCHIAVEattivata = "KeyOnExecution";
-    public static final String execTrack = "Tracking";
-    public static final String execCHIAVEdisattivata = "KeyOffExecution";
-    public static final String execMOVIMENTO = "MoveExecution";
-    public static final String execPOSTRESET = "PostResetExecution";
-    public static final String execBATTSCARICA = "BatteriaScaricaExecution";
-    public static final String execSMStrack = "TrackingFromSMSExecution";
-    private String executionState;
-
-    /**
-     * Application closure modes
-     */
-    public static final String closeAppFactory = "Factory";
-    public static final String closeAppDisattivChiaveOK = "DisattivChiaveOK";
-    public static final String closeAppDisattivChiaveTimeout = "DisattivChiaveTimeout";
-    public static final String closeAppDisattivChiaveFIRST = "DisattivChiaveFIRST";
-    public static final String closeAppNormaleOK = "NormaleOK";
-    public static final String closeAppNormaleTimeout = "NormaleTimeout";
-    public static final String closeAppMovimentoOK = "SensMovOK";
-    public static final String closeAppResetHW = "ResetHW";
-    public static final String closeAppBatteriaScarica = "BatteriaScarica";
-    public static final String closeAppPostReset = "DisattivChiavePostReset";
-    public static final String closeAppOTAP = "OTAP";
-    public static final String closeAIR = "closeAIR";
-
     UserwareWatchDogTask userwareWatchDogTask;
     GPIO6WatchDogTask gpio6WatchDogTask;
 
@@ -101,41 +70,6 @@ public class AppMain extends MIDlet {
 
         BearerControl.addListener(Bearer.getInstance());
         try {
-            SLog.log(SLog.Debug, "AppMain", "Recover system settings in progress...");
-            String closeMode = Settings.getInstance().getSetting("closeMode", closeAppResetHW);
-            SLog.log(SLog.Informational, "AppMain", "Last closing of application: " + closeMode);
-            Settings.getInstance().setSetting("closeMode", closeAppResetHW);
-
-            if (closeMode.equalsIgnoreCase(closeAppFactory)) {
-                executionState = execFIRST;
-            } else if (closeMode.equalsIgnoreCase(closeAIR)) {
-                executionState = execNORMALE;
-            } else if (closeMode.equalsIgnoreCase(closeAppNormaleOK)) {
-                executionState = execNORMALE;
-            } else if (closeMode.equalsIgnoreCase(closeAppNormaleTimeout)) {
-                executionState = execNORMALE;
-            } else if (closeMode.equalsIgnoreCase(closeAppDisattivChiaveFIRST)) {
-                executionState = execNORMALE;
-            } else if (closeMode.equalsIgnoreCase(closeAppDisattivChiaveOK)) {
-                executionState = execNORMALE;
-            } else if (closeMode.equalsIgnoreCase(closeAppDisattivChiaveTimeout)) {
-                executionState = execNORMALE;
-            } else if (closeMode.equalsIgnoreCase(closeAppMovimentoOK)) {
-                executionState = execNORMALE;
-            } else if (closeMode.equalsIgnoreCase(closeAppPostReset)) {
-                executionState = execNORMALE;
-            } else if (closeMode.equalsIgnoreCase(closeAppBatteriaScarica)) {
-                executionState = execNORMALE;
-            } else if (closeMode.equalsIgnoreCase(closeAppResetHW)) {
-                executionState = execPOSTRESET;
-            } else if (closeMode.equalsIgnoreCase(closeAppBatteriaScarica)) {
-                executionState = execPOSTRESET;
-            } else {
-                SLog.log(SLog.Notice, "AppMain", "I can not determine the status of execution of the application!");
-            }
-
-            SLog.log(SLog.Informational, "AppMain", "excecutionState is " + executionState);
-
             ATManager.getInstance().executeCommandSynchron("AT\r");
 
             String pin = Settings.getInstance().getSetting("pin", "");
@@ -144,28 +78,21 @@ public class AppMain extends MIDlet {
             }
 
             GPIOManager.getInstance();
-            
+
             SLog.log(SLog.Debug, "AppMain", "watchdogs starting");
 
             userwareWatchDogTask = new UserwareWatchDogTask();
             gpio6WatchDogTask = new GPIO6WatchDogTask();
 
-            if (executionState.equalsIgnoreCase(execFIRST)
-                    || executionState.equalsIgnoreCase(execPOSTRESET)) {
-
-                SLog.log(SLog.Debug, "AppMain", "Set AUTOSTART...");
-                ATManager.getInstance().executeCommandSynchron("at^scfg=\"Userware/Autostart/AppName\",\"\",\"a:/app/"
-                        + AppMain.getInstance().getAppProperty("MIDlet-Name") + ".jar\"\r");
-                ATManager.getInstance().executeCommandSynchron("at^scfg=\"Userware/Autostart/Delay\",\"\",10\r");
-                ATManager.getInstance().executeCommandSynchron("at^scfg=\"Userware/Autostart\",\"\",\"1\"\r");
-                if (Settings.getInstance().getSetting("usbDebug", false)) {
-                    ATManager.getInstance().executeCommandSynchron("at^scfg=\"Userware/StdOut\",USB\r");
-                } else {
-                    ATManager.getInstance().executeCommandSynchron("at^scfg=\"Userware/StdOut\",ASC0\r");
-                }
-
-                executionState = execNORMALE;
-
+            SLog.log(SLog.Debug, "AppMain", "Set AUTOSTART...");
+            ATManager.getInstance().executeCommandSynchron("at^scfg=\"Userware/Autostart/AppName\",\"\",\"a:/app/"
+                    + AppMain.getInstance().getAppProperty("MIDlet-Name") + ".jar\"\r");
+            ATManager.getInstance().executeCommandSynchron("at^scfg=\"Userware/Autostart/Delay\",\"\",10\r");
+            ATManager.getInstance().executeCommandSynchron("at^scfg=\"Userware/Autostart\",\"\",\"1\"\r");
+            if (Settings.getInstance().getSetting("usbDebug", false)) {
+                ATManager.getInstance().executeCommandSynchron("at^scfg=\"Userware/StdOut\",USB\r");
+            } else {
+                ATManager.getInstance().executeCommandSynchron("at^scfg=\"Userware/StdOut\",ASC0\r");
             }
 
             ATManager.getInstance().executeCommandSynchron("AT^SBC=5000\r");
@@ -186,7 +113,7 @@ public class AppMain extends MIDlet {
             if (GPIOManager.getInstance().gpio7 == 0) {
                 wakeupMode = ignitionWakeup;
             }
-            
+
             String airplane = ATManager.getInstance().executeCommandSynchron("at^scfg=MEopMode/Airplane\r");
             SLog.log(SLog.Debug, "AppMain", airplane);
             if (airplane.indexOf("^SCFG: \"MEopMode/Airplane\",\"on\"") >= 0) {
@@ -269,7 +196,6 @@ public class AppMain extends MIDlet {
 
     protected void shutdown() {
         SLog.log(SLog.Debug, "AppMain", "shutdown");
-        SLog.log(SLog.Debug, "AppMain", "powerDown from " + executionState);
         Date date = LocationManager.getInstance().dateLastFix();
         if (date != null) {
             SLog.log(SLog.Debug, "AppMain", "powerDown last fix time " + DateFormatter.isoString(date));
@@ -295,32 +221,6 @@ public class AppMain extends MIDlet {
 
             ATManager.getInstance().executeCommandSynchron(rtc);
         }
-
-        if (executionState.equalsIgnoreCase(execFIRST)) {
-            Settings.getInstance().setSetting("closeMode", closeAppDisattivChiaveFIRST);
-        } else if (executionState.equalsIgnoreCase(execNORMALE)) {
-            if (LocationManager.getInstance().isFix()) {
-                Settings.getInstance().setSetting("closeMode", closeAppNormaleOK);
-            } else {
-                Settings.getInstance().setSetting("closeMode", closeAppNormaleTimeout);
-            }
-        } else if (executionState.equalsIgnoreCase(execCHIAVEdisattivata)) {
-            if (LocationManager.getInstance().isFix()) {
-                Settings.getInstance().setSetting("closeMode", closeAppDisattivChiaveOK);
-            } else {
-                Settings.getInstance().setSetting("closeMode", closeAppDisattivChiaveTimeout);
-            }
-        } else if (executionState.equalsIgnoreCase(execMOVIMENTO)) {
-            Settings.getInstance().setSetting("closeMode", closeAppMovimentoOK);
-        } else if (executionState.equalsIgnoreCase(execPOSTRESET)) {
-            Settings.getInstance().setSetting("closeMode", closeAppPostReset);
-        }
-
-        if (BatteryManager.getInstance().isBatteryVoltageLow()) {
-            Settings.getInstance().setSetting("closeMode", closeAppBatteriaScarica);
-        }
-
-        SLog.log(SLog.Informational, "AppMain", "powerDown closeMode is " + Settings.getInstance().getSetting("closeMode", closeAppNormaleOK));
 
         gpio6WatchDogTask.stop();
         GPIOManager.getInstance().close();

@@ -19,20 +19,20 @@ public class CommandProcessor {
     private final String state = "state";
     private final String set = "set";
     private final String out = "out";
+    private final String zero = "zero";
     private final String reboot = "reboot";
     private final String upgrade = "upgrade";
     private final String reconnect = "reconnect";
     private final String exec = "exec";
     private final String destroy = "destroy";
     private final String log = "log";
-    private final String dump = "dump";
 
     private final String[] authorizedCommands = {
         set,
         out,
+        zero,
         reboot,
         reconnect,
-        dump,
         log,
         logout,
         destroy,
@@ -129,6 +129,11 @@ public class CommandProcessor {
             message = message.concat("rebooting");
             return true;
 
+        } else if (command.equalsIgnoreCase(zero)) {
+            LocationManager.getInstance().zero();
+            message = message.concat("zeroed");
+            return true;
+
         } else if (command.equalsIgnoreCase(destroy)) {
             try {
                 AppMain.getInstance().destroyApp(true);
@@ -155,17 +160,6 @@ public class CommandProcessor {
 
         } else if (command.equalsIgnoreCase(exec)) {
             return execCommand(parameters);
-
-        } else if (command.equalsIgnoreCase(dump)) {
-            String combined;
-
-            stateCommand(parameters);
-            combined = message;
-            setCommand(parameters);
-            combined = combined.concat(message);
-
-            message = combined;
-            return true;
 
         } else if (command.equalsIgnoreCase(state)) {
             return stateCommand(parameters);

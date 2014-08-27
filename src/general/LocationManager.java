@@ -100,6 +100,10 @@ public class LocationManager {
     public boolean isTimeout() {
         return timeout;
     }
+    
+    public void zero() {
+        trip = 0.0;
+    }
 
     public Date dateLastFix() {
         if (currentLocation != null) {
@@ -457,13 +461,13 @@ public class LocationManager {
             json = json.concat(",\"lat\":\"" + location.latitude + "\"");
 
             if (StringSplitter.isInStringArray("course", fields)) {
-                json = json.concat(",\"cog\":\"" + location.course + "\"");
+                json = json.concat(",\"cog\":\"" + (long) location.course + "\"");
             }
             if (StringSplitter.isInStringArray("speed", fields)) {
-                json = json.concat(",\"vel\":\"" + location.speed + "\"");
+                json = json.concat(",\"vel\":\"" + (long) location.speed + "\"");
             }
             if (StringSplitter.isInStringArray("altitude", fields)) {
-                json = json.concat(",\"alt\":\"" + location.altitude + "\"");
+                json = json.concat(",\"alt\":\"" + (long) location.altitude + "\"");
             }
             if (StringSplitter.isInStringArray("distance", fields)) {
                 json = json.concat(",\"dist\":\"" + (long) distance + "\"");
