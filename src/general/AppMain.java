@@ -242,9 +242,9 @@ public class AppMain extends MIDlet {
         }
 
         if ((wakeupMode.equals(accelerometerWakeup) || wakeupMode.equals(alarmClockWakeup))
-                && LocationManager.getInstance().dateLastFix() != null
+                && LocationManager.getInstance().isOnce()
                 && SocketGPRSThread.getInstance().qSize() == 0) {
-            SLog.log(SLog.Debug, "AppMain", wakeupMode + " && dateLastFix && qSize");
+            SLog.log(SLog.Debug, "AppMain", wakeupMode + " && once && qSize");
             return true;
         }
 

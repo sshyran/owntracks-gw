@@ -19,6 +19,7 @@ public class LocationManager {
     final private UserLed userLed;
 
     private boolean stationary = false;
+    private boolean once = false;
 
     private Location firstLocation = null;
     private Location lastLocation = null;
@@ -100,7 +101,7 @@ public class LocationManager {
     public boolean isTimeout() {
         return timeout;
     }
-    
+
     public void zero() {
         trip = 0.0;
     }
@@ -112,6 +113,10 @@ public class LocationManager {
             return lastReportedLocation.date;
         }
         return null;
+    }
+
+    public boolean isOnce() {
+        return once;
     }
 
     /*
@@ -295,85 +300,102 @@ public class LocationManager {
     }
 
     private void rollLocation(Date date, double lon, double lat, double cog, double vel, double alt) {
+        Location secretLocation;
 
-        int sensitivity = Settings.getInstance().getSetting("sensitivity", 1);
-        int minDistance = Settings.getInstance().getSetting("minDistance", 100);
-        int minSpeed = Settings.getInstance().getSetting("minSpeed", 5);
-        int maxInterval = Settings.getInstance().getSetting("maxInterval", 60);
-        int minInterval = Settings.getInstance().getSetting("minInterval", 1800);
+        secretLocation = new Location();
+        secretLocation.date = date;
+        secretLocation.longitude = lon;
+        secretLocation.latitude = lat;
+        secretLocation.course = cog;
+        secretLocation.speed = vel;
+        secretLocation.altitude = alt;
 
-        currentLocation = new Location();
-        currentLocation.date = date;
-        currentLocation.longitude = lon;
-        currentLocation.latitude = lat;
-        currentLocation.course = cog;
-        currentLocation.speed = vel;
-        currentLocation.altitude = alt;
+        Date offUntil = new Date(Settings.getInstance().getSetting("offUntil", 0L) * 1000);
+        SLog.log(SLog.Debug, "LocationManager",
+                "offUntil " + DateFormatter.isoString(offUntil)
+                + " date " + DateFormatter.isoString(date));
+        if (offUntil.getTime() < date.getTime()) {
+            int sensitivity = Settings.getInstance().getSetting("sensitivity", 1);
+            int minDistance = Settings.getInstance().getSetting("minDistance", 100);
+            int minSpeed = Settings.getInstance().getSetting("minSpeed", 5);
+            int maxInterval = Settings.getInstance().getSetting("maxInterval", 60);
+            int minInterval = Settings.getInstance().getSetting("minInterval", 1800);
 
-        if (firstLocation == null) {
-            firstLocation = currentLocation;
-            trip = 0.0;
-        }
+            currentLocation = secretLocation;
 
-        if (lastLocation != null) {
-            double distance = lastLocation.distance(currentLocation);
-            SLog.log(SLog.Debug, "LocationManager",
-                    "move: " + distance + " speed: " + currentLocation.speed);
-            if (distance > sensitivity) {
-                trip += distance;
+            if (firstLocation == null) {
+                firstLocation = currentLocation;
+                trip = 0.0;
             }
-        }
-        lastLocation = currentLocation;
 
-        if (lastReportedLocation != null) {
-            boolean transitionMoveToPark = false;
-            boolean transitionParkToMove = false;
-            double distance = lastReportedLocation.distance(currentLocation);
-            if (vel > minSpeed || distance > minDistance) {
-                if (stationary) {
-                    transitionParkToMove = true;
+            if (lastLocation != null) {
+                double distance = lastLocation.distance(currentLocation);
+                SLog.log(SLog.Debug, "LocationManager",
+                        "move: " + distance + " speed: " + currentLocation.speed);
+                if (distance > sensitivity) {
+                    trip += distance;
                 }
-                stationary = false;
-            } else {
-                if (!stationary) {
-                    transitionMoveToPark = true;
+            }
+            lastLocation = currentLocation;
+
+            if (lastReportedLocation != null) {
+                boolean transitionMoveToPark = false;
+                boolean transitionParkToMove = false;
+                double distance = lastReportedLocation.distance(currentLocation);
+                if (vel > minSpeed || distance > minDistance) {
+                    if (stationary) {
+                        transitionParkToMove = true;
+                    }
+                    stationary = false;
+                } else {
+                    if (!stationary) {
+                        transitionMoveToPark = true;
+                    }
+                    stationary = true;
                 }
-                stationary = true;
-            }
 
-            long timeSinceLast = currentLocation.date.getTime() / 1000 - lastReportedLocation.date.getTime() / 1000;
+                long timeSinceLast = currentLocation.date.getTime() / 1000 - lastReportedLocation.date.getTime() / 1000;
 
-            if (stationary && timeSinceLast > minInterval) {
-                String json = getJSONString("T");
-                send(json);
-            } else if (!stationary && timeSinceLast > maxInterval) {
-                String json = getJSONString("t");
-                send(json);
-            } else if (transitionMoveToPark) {
-                String json = getJSONString("k");
-                send(json);
-            } else if (transitionParkToMove) {
-                String json = getJSONString("v");
-                send(json);
-            }
-        } else {
-            if (AppMain.getInstance().wakeupMode.equals(AppMain.accelerometerWakeup)) {
-                String json = getJSONString("a");
-                send(json);
-                sendAlarm(json);
-            } else if (AppMain.getInstance().wakeupMode.equals(AppMain.alarmClockWakeup)) {
-                String json = getJSONString("c");
-                send(json);
+                if (stationary && timeSinceLast > minInterval) {
+                    String json = getJSONString("T");
+                    send(json);
+                } else if (!stationary && timeSinceLast > maxInterval) {
+                    String json = getJSONString("t");
+                    send(json);
+                } else if (transitionMoveToPark) {
+                    String json = getJSONString("k");
+                    send(json);
+                } else if (transitionParkToMove) {
+                    String json = getJSONString("v");
+                    send(json);
+                }
             } else {
                 Date fixDate = currentLocation.date;
-                SLog.log(SLog.Debug, "SocketGPRSThread", "set RTC w/ first fix " + DateFormatter.isoString(date));
+                SLog.log(SLog.Debug, "LocationManager", "set RTC w/ first fix " + DateFormatter.isoString(date));
                 String rtc = "at+cclk=\""
                         + DateFormatter.atString(date)
                         + "\"\r";
                 ATManager.getInstance().executeCommandSynchron(rtc);
-
                 String json = getJSONString("f");
                 send(json);
+                if (vel > minSpeed) {
+                    stationary = false;
+                } else {
+                    stationary = true;
+                }
+            }
+        } else {
+            if (!once) {
+                if (AppMain.getInstance().wakeupMode.equals(AppMain.accelerometerWakeup) && !once) {
+                    String json = JSONString(secretLocation, "a", 0);
+                    send(json);
+                    sendAlarm(json);
+                    once = true;
+                } else if (AppMain.getInstance().wakeupMode.equals(AppMain.alarmClockWakeup)) {
+                    String json = getJSONString("c");
+                    send(json);
+                    once = true;
+                }
             }
         }
     }
@@ -409,9 +431,6 @@ public class LocationManager {
     }
 
     private synchronized String getJSONString(String reason) {
-        String[] fields = StringSplitter.split(
-                Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,battery,trip"), ",");
-
         if (currentLocation != null) {
             double distance = 0;
             if (lastReportedLocation != null) {
@@ -420,25 +439,25 @@ public class LocationManager {
             }
             lastReportedLocation = currentLocation;
             currentLocation = null;
-            return JSONString(lastReportedLocation, fields, reason, distance);
+            return JSONString(lastReportedLocation, reason, distance);
         } else {
             return null;
         }
     }
 
     public String getlastJSONString(String reason) {
-        String[] fields = StringSplitter.split(
-                Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,battery,trip"), ",");
-
         if (currentLocation != null) {
-            return JSONString(currentLocation, fields, reason, 0);
+            return JSONString(currentLocation, reason, 0);
         } else {
-            return JSONString(lastReportedLocation, fields, reason, 0);
+            return JSONString(lastReportedLocation, reason, 0);
         }
     }
 
-    private String JSONString(Location location, String[] fields, String reason, double distance) {
+    private String JSONString(Location location, String reason, double distance) {
         if (location != null) {
+            String[] fields = StringSplitter.split(
+                    Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,battery,trip"), ",");
+
             String json;
             json = "{\"_type\":\"location\"";
             json = json.concat(",\"t\":\"" + reason + "\"");

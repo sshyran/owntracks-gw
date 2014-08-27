@@ -73,6 +73,19 @@ public class Settings {
         return value;
     }
 
+    public synchronized long getSetting(String key, long defaultValue) {
+        String string = getSetting(key, Long.toString(defaultValue));
+
+        long value;
+        try {
+            value = Long.parseLong(string);
+        } catch (NumberFormatException nfe) {
+            value = 0L;
+        }
+
+        return value;
+    }
+
     public synchronized int getSetting(String key, int defaultValue) {
         String string = getSetting(key, Integer.toString(defaultValue));
 

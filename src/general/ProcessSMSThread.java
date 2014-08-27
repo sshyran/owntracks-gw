@@ -161,11 +161,13 @@ public class ProcessSMSThread extends Thread {
 
                 SLog.log(SLog.Debug, "ProcessSMSThread", "response (" + response.length() + "): " + response);
 
-                // max length SMS 140/160 
-                if (response.length() > 140) {
-                    response = response.substring(0, 140);
+                if (response.length() > 0) {
+                    // max length SMS 140/160 
+                    if (response.length() > 140) {
+                        response = response.substring(0, 140);
+                    }
+                    ATManager.getInstance().executeCommandSynchron("AT+CMGS=" + telephoneNo + "\r", response);
                 }
-                ATManager.getInstance().executeCommandSynchron("AT+CMGS=" + telephoneNo + "\r", response);
             }
         }
     }

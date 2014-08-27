@@ -19,6 +19,7 @@ public class CommandProcessor {
     private final String state = "state";
     private final String set = "set";
     private final String out = "out";
+    private final String off = "off";
     private final String zero = "zero";
     private final String reboot = "reboot";
     private final String upgrade = "upgrade";
@@ -30,6 +31,7 @@ public class CommandProcessor {
     private final String[] authorizedCommands = {
         set,
         out,
+        off,
         zero,
         reboot,
         reconnect,
@@ -72,7 +74,6 @@ public class CommandProcessor {
                         if ((words.length == 2)
                                 && (words[1].equals(settings.getSetting("secret", "1234567890")))) {
                             authorizedSince = new Date().getTime() / 1000;
-                            message = message.concat("login accepted");
                             return true;
                         } else {
                             message = message.concat("incorrect login");
@@ -80,7 +81,6 @@ public class CommandProcessor {
                         }
                     } else if (words[0].equals("logout")) {
                         authorizedSince = 0;
-                        message = message.concat("logged out");
                         return true;
                     } else {
                         return perform(words[0], words);
@@ -90,11 +90,9 @@ public class CommandProcessor {
                     return false;
                 }
             } else {
-                message = "no cmd given";
                 return false;
             }
         } else {
-            message = "no commandLine given";
             return false;
         }
     }
@@ -126,12 +124,10 @@ public class CommandProcessor {
 
         } else if (command.equalsIgnoreCase(reboot)) {
             BatteryManager.getInstance().reboot();
-            message = message.concat("rebooting");
             return true;
 
         } else if (command.equalsIgnoreCase(zero)) {
             LocationManager.getInstance().zero();
-            message = message.concat("zeroed");
             return true;
 
         } else if (command.equalsIgnoreCase(destroy)) {
@@ -154,6 +150,9 @@ public class CommandProcessor {
 
         } else if (command.equalsIgnoreCase(out)) {
             return outCommand(parameters);
+
+        } else if (command.equalsIgnoreCase(off)) {
+            return offCommand(parameters);
 
         } else if (command.equalsIgnoreCase(upgrade)) {
             return upgradeCommand(parameters);
@@ -197,7 +196,6 @@ public class CommandProcessor {
                 if (value != null) {
                     settings.setSetting(key, value);
                 }
-                message = message.concat(key + "=" + settings.getSetting(key, ""));
                 return true;
             } else {
                 return false;
@@ -245,11 +243,35 @@ public class CommandProcessor {
 
             if (num != -1) {
                 GPIOManager.getInstance().setGPIO(num, on);
-                message = message.concat("ok");
                 return true;
             }
         }
         message = message.concat("usage " + out + " 1/2 0/1");
+        return false;
+    }
+
+    boolean offCommand(String[] parameters) {
+        if (parameters.length == 2) {
+            int min;
+
+            try {
+                min = Integer.parseInt(parameters[1]);
+            } catch (NumberFormatException nfe) {
+                min = -1;
+            }
+
+            if (min >= 0) {
+                if (min == 0) {
+                    Settings.getInstance().setSetting("offUntil", null);
+                } else {
+                    Date now = new Date();
+                    Date until = new Date(now.getTime() + min * 60L * 1000L);
+                    Settings.getInstance().setSetting("offUntil", Long.toString(until.getTime() / 1000));
+                }
+                return true;
+            }
+        }
+        message = message.concat("usage " + off + " 0|1..");
         return false;
     }
 
@@ -285,7 +307,6 @@ public class CommandProcessor {
                 return true;
             } else if (parameters[1].equalsIgnoreCase("del")) {
                 SLog.deleteLog();
-                message = "deleted";
                 return true;
             } else {
                 message = "usage " + log + "[old|del]";
