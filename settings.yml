@@ -128,7 +128,7 @@
       values: 1-..
       validity: next loop
       default: 600
-      desc: time in seconds after which device no longer expects establishing an MQTT connection. System will reboot.
+      desc: time in seconds after which device no longer expects establishing an MQTT connection.
   - port:
       values: 1-..
       validity: reboot
@@ -234,6 +234,13 @@
              It would allow for speed monitoring.
            
            Settings for pedestrians, runners, bicycle riders, race cars would be different.
+
+	   Controlled by the setting "offUntil", given as a Unix epoch timestamp in seconds,
+	   the GW will suspend processing of GPS positions until after the given timestamp.
+	   No first, move, park, transition, lost or any other triggers will be active. Trip
+           calculation is suspended too. The setting is persistent: Even after reboot or restart
+	   by alarm clock, the suspension remains active.  The only exception is the wakeup by
+	   accerelometer (alarm), which will publish a location.
                  
   - sensitivity:
       values: "0-..."
@@ -264,7 +271,12 @@
       values: "1-..."
       validity: immediate
       default: "600"
-      desc: Time in seconds after which the device no longer expects a GPS fix. Device will reboot.
+      desc: Time in seconds after which the device no longer expects a GPS fix.
+  - offUntil:
+      values: "0,1-..."
+      validity: immediate
+      default: "0"
+      desc: timestamp in unix epoch (seconds since 1970-01-01 00:00) until location publishes are suspended
 
 - Debugging and Logging:
   - block: |

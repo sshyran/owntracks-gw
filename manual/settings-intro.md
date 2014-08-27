@@ -64,6 +64,7 @@ prior authentication to the device:
 * `+` `upgrade` (perform an [OTA upgrade](OTAP.md)
 * `+` `exec` _at-command_ (pass command to modem)
 * `+` `out` switch [GPIO](#gpio) outputs
+* `+` `off` suspend location publishes
 * `+` `zero` reset trip conter
 
 
