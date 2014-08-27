@@ -88,6 +88,11 @@ messages. Recall that the _base topic_ is constructed from the `publish` setting
 ------------------ ------------------------------------------------------------
 Topic              Content
 ------------------ ------------------------------------------------------------
+`../status`        Connection status of the Greenwich
+				`1` Greenwich sets this status immediately after connect
+				`0` MQTT broker sets this status when it looses the connection to the Greenwich client using the "LWT" mechanism
+				`-1` Greenwich disconnects intentionally (on user request, ignition-off, etc.)
+
 `../hw`               Hardware/chip revision (`Cinterion,EGS5-X,REVISION 02.004`)
 
 `../hw/imei`          IMEI number of the modem (`012345678901234`)

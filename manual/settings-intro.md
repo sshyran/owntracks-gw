@@ -56,13 +56,15 @@ prior authentication to the device:
 * `+` `logout`
 * `+` `set` `[<key>[=[<value>]]]`
 * `+` `reboot`
+* `+` `reconnect` disconnects from and re-connects to the MQTT broker
 * `-` `gps` (requests location update which is also published over MQTT)
 * `-` `state` (shows state)
 * `+` `log` `[old/delete]` (shows or resets log files)
-* `-` `destroy` (switches back to non-Java AT-mode)
+* `+` `destroy` (switches back to non-Java AT-mode)
 * `+` `upgrade` (perform an [OTA upgrade](OTAP.md)
-* `-` `exec` _at-command_ (pass command to modem)
+* `+` `exec` _at-command_ (pass command to modem)
 * `+` `out` switch [GPIO](#gpio) outputs
+* `+` `zero` reset trip conter
 
 
 When configuring the device via SMS or MQTT, the operator must authenticate to
