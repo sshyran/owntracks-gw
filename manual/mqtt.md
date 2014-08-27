@@ -114,7 +114,7 @@ messages. Recall that the _base topic_ is constructed from the `publish` setting
 +------------------+-------------------------------------------------------------------------------+
 |`../cmd/out`      |   Output of commands sent to the device (e.g. `login`, `set`):
 +------------------+-------------------------------------------------------------------------------+
-|`../alarm`        |   A location payload with a trigger type `a` is published
+|`../alarm`        |   A location payload with a trigger type `a` is published (non-retained)
 |                                when a switched-off device is moved.
 |                                `{"_type": "location",  "t": "a", ...}`
 +------------------+-------------------------------------------------------------------------------+
