@@ -85,41 +85,41 @@ In addition to location messages as shown above, the Greenwich will also publish
 messages. Recall that the _base topic_ is constructed from the `publish` setting with
 `clientID` appended to it, for example `owntracks/acme/van17`.
 
------------------- ------------------------------------------------------------
-Topic              Content
------------------- ------------------------------------------------------------
-`../status`        Connection status of the Greenwich
-				`1` Greenwich sets this status immediately after connect
-				`0` MQTT broker sets this status when it looses the connection to the Greenwich client using the "LWT" mechanism
-				`-1` Greenwich disconnects intentionally (on user request, ignition-off, etc.)
++------------------+-------------------------------------------------------------------------------+
+|Topic             |Content                                                                        |
++------------------+-------------------------------------------------------------------------------+
+|`../status`       |Connection status of the Greenwich
++------------------+-------------------------------------------------------------------------------+
+|                  |* `1` Greenwich sets this status immediately after connect
+|                  |* `0` MQTT broker sets this status when it looses the connection to the Greenwich client using the _LWT_ mechanism
+|                  |* `-1` Greenwich disconnects intentionally (on user request, ignition-off, etc.)
++------------------+-------------------------------------------------------------------------------+
+|`../hw`           |   Hardware/chip revision (`Cinterion,EGS5-X,REVISION 02.004`)
++------------------+-------------------------------------------------------------------------------+
+|`../hw/imei`      |   IMEI number of the modem (`012345678901234`)
++------------------+-------------------------------------------------------------------------------+
+|`../voltage/batt` |   Built-in battery voltage is published when voltage
+|                                changes "significantly", as configured with `dBattVoltage`.
+|                                (`4.4`)
++------------------+-------------------------------------------------------------------------------+
+|`../voltage/ext`  |   External power supply voltage is published when voltage
+|                                changes "significantly", as configured with `dExtVoltage`.
+|                                (`12.2`)
++------------------+-------------------------------------------------------------------------------+
+|`../gpio/`_n_     |   Status of the three [GPIO](#gpio) pins (`1`, `3`, `7`) is published as `0` or `1`.
++------------------+-------------------------------------------------------------------------------+
+|`../sw/gw`        |   Greenwich version (`02.16B,02.01,02.16`)
++------------------+-------------------------------------------------------------------------------+
+|`../sw/midlet`    |   Midlet (OwnTracks Edition) version (`0.5.43`)
++------------------+-------------------------------------------------------------------------------+
+|`../cmd/out`      |   Output of commands sent to the device (e.g. `login`, `set`):
++------------------+-------------------------------------------------------------------------------+
+|`../alarm`        |   A location payload with a trigger type `a` is published
+|                                when a switched-off device is moved.
+|                                `{"_type": "location",  "t": "a", ...}`
++------------------+-------------------------------------------------------------------------------+
 
-`../hw`               Hardware/chip revision (`Cinterion,EGS5-X,REVISION 02.004`)
-
-`../hw/imei`          IMEI number of the modem (`012345678901234`)
-
-`../voltage/batt`     Built-in battery voltage is published when voltage
-                                changes "significantly", as configured with `dBattVoltage`.
-                                (`4.4`)
-
-`../voltage/ext`      External power supply voltage is published when voltage
-                                changes "significantly", as configured with `dExtVoltage`.
-                                (`12.2`)
-
-`../gpio/`_n_         Status of the three [GPIO](#gpio) pins (`1`, `3`, `7`) is published as `0` or `1`.
-
-`../sw/gw`            Greenwich version (`02.16B,02.01,02.16`)
-
-`../sw/midlet`        Midlet (OwnTracks Edition) version (`0.5.43`)
-
-`../cmd/out`          Output of commands sent to the device (e.g. `login`, `set`):
-
-`../alarm`            A location payload with a trigger type `a` is published
-                                when a switched-off device is moved.
-                                `{"_type": "location",  "t": "a", ...}`
-
------------------- ------------------------------------------------------------
-
-Table: Topics published to
+: Topics published to
 
 
 
