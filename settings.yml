@@ -235,12 +235,13 @@
            
            Settings for pedestrians, runners, bicycle riders, race cars would be different.
 
-	   Controlled by the setting "offUntil", given as a Unix epoch timestamp in seconds,
-	   the GW will suspend processing of GPS positions until after the given timestamp.
-	   No first, move, park, transition, lost or any other triggers will be active. Trip
-           calculation is suspended too. The setting is persistent: Even after reboot or restart
-	   by alarm clock, the suspension remains active.  The only exception is the wakeup by
-	   accerelometer (alarm), which will publish a location.
+           Controlled by the setting `offUntil`, given as a Unix epoch timestamp in seconds,
+           the GW will suspend publishing GPS positions until after the given timestamp.
+           None of _first_, _move_, _park_, _transition_, _lost_ or any other
+           triggers will be active. Trip calculation is suspended too. The
+           setting is persistent: Even after reboot or restart by alarm clock,
+           the suspension remains active.  The only exception is the wakeup by
+           accerelometer (alarm), which will publish a location.
                  
   - sensitivity:
       values: "0-..."
