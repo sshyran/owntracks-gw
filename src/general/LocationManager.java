@@ -384,18 +384,17 @@ public class LocationManager {
                     stationary = true;
                 }
             }
-        } else {
-            if (!once) {
-                if (AppMain.getInstance().wakeupMode.equals(AppMain.accelerometerWakeup) && !once) {
-                    String json = JSONString(secretLocation, "a", 0);
-                    send(json);
-                    sendAlarm(json);
-                    once = true;
-                } else if (AppMain.getInstance().wakeupMode.equals(AppMain.alarmClockWakeup)) {
-                    String json = getJSONString("c");
-                    send(json);
-                    once = true;
-                }
+        }
+        if (!once) {
+            if (AppMain.getInstance().wakeupMode.equals(AppMain.accelerometerWakeup)) {
+                String json = JSONString(secretLocation, "a", 0);
+                send(json);
+                sendAlarm(json);
+                once = true;
+            } else if (AppMain.getInstance().wakeupMode.equals(AppMain.alarmClockWakeup)) {
+                String json = getJSONString("c");
+                send(json);
+                once = true;
             }
         }
     }

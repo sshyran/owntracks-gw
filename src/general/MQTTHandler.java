@@ -207,10 +207,15 @@ public class MQTTHandler implements MqttCallback {
                 + " r" + (message.isRetained() ? "1" : "0")
                 + "\r\n" + new String(message.getPayload()));
         CommandProcessor commandProcessor = CommandProcessor.getInstance();
+        String response;
         if (commandProcessor.execute(message.toString())) {
-            SocketGPRSThread.getInstance().put(topic.getName() + "/out", 0, false, (commandProcessor.message).getBytes());
+            response = commandProcessor.message;
         } else {
-            SocketGPRSThread.getInstance().put(topic.getName() + "/out", 0, false, ("NACK: " + commandProcessor.message).getBytes());
+            response = "NACK: " + commandProcessor.message;
+        }
+        
+        if (response.length() > 0) {
+            SocketGPRSThread.getInstance().put(topic.getName() + "/out", 0, false, response.getBytes());
         }
     }
 

@@ -1,8 +1,5 @@
 package general;
 
-import com.cinterion.io.ATCommand;
-import com.cinterion.io.ATCommandFailedException;
-import java.io.IOException;
 import java.util.Date;
 import java.util.Enumeration;
 import javax.microedition.midlet.MIDletStateChangeException;
@@ -17,6 +14,7 @@ public class CommandProcessor {
     private final String logout = "logout";
     private final String gps = "gps";
     private final String state = "state";
+    private final String device = "device";
     private final String set = "set";
     private final String out = "out";
     private final String off = "off";
@@ -30,6 +28,7 @@ public class CommandProcessor {
 
     private final String[] authorizedCommands = {
         set,
+        device,
         out,
         off,
         zero,
@@ -60,13 +59,12 @@ public class CommandProcessor {
     }
 
     public synchronized boolean execute(String commandLine) {
-
+        message = "";
         SLog.log(SLog.Debug, "CommandProcessor", "execute " + (commandLine != null ? commandLine : "<null>"));
         if (commandLine != null && commandLine.length() > 0) {
             String[] words = StringSplitter.split(commandLine, " ");
             if (words.length >= 1) {
                 Settings settings = Settings.getInstance();
-                message = "";
                 if (!StringSplitter.isInStringArray(words[0], authorizedCommands)
                         || settings.getSetting("loginTimeout", 30) == 0
                         || authorizedSince + settings.getSetting("loginTimeout", 30) > new Date().getTime() / 1000) {
@@ -90,14 +88,15 @@ public class CommandProcessor {
                     return false;
                 }
             } else {
-                return false;
+                return true;
             }
         } else {
-            return false;
+            return true;
         }
     }
 
     private boolean perform(String command, String[] parameters) {
+        message = "";
         Settings settings = Settings.getInstance();
         if (command.equalsIgnoreCase(gps)) {
             LocationManager locationManager = LocationManager.getInstance();
@@ -162,6 +161,10 @@ public class CommandProcessor {
 
         } else if (command.equalsIgnoreCase(state)) {
             return stateCommand(parameters);
+            
+        } else if (command.equalsIgnoreCase(device)) {
+            return deviceCommand(parameters);
+            
         } else if (command.equalsIgnoreCase(log)) {
             return logCommand(parameters);
         } else {
@@ -171,6 +174,7 @@ public class CommandProcessor {
     }
 
     boolean setCommand(String[] parameters) {
+        message = "";
         Settings settings = Settings.getInstance();
         if (parameters.length == 1) {
             for (Enumeration e = settings.keys(); e.hasMoreElements();) {
@@ -181,6 +185,7 @@ public class CommandProcessor {
         } else if (parameters.length == 2) {
             String key = null;
             String value = null;
+            
             int equal = parameters[1].indexOf('=');
             if (equal != -1) {
                 value = parameters[1].substring(equal + 1);
@@ -193,20 +198,20 @@ public class CommandProcessor {
                 }
             }
             if (key != null) {
-                if (value != null) {
+                if (equal != -1) {
                     settings.setSetting(key, value);
+                } else {
+                    message = message.concat(key + "=" + settings.getSetting(key, "<null>"));
                 }
                 return true;
-            } else {
-                return false;
             }
-        } else {
-            message = message.concat("usage " + set + " [<key>[=[<value>]]]");
-            return false;
         }
+        message = message.concat("usage " + set + " [<key>[=[<value>]]]");
+        return false;
     }
 
     boolean outCommand(String[] parameters) {
+        message = "";
         if (parameters.length == 3) {
             int num;
             boolean on = false;
@@ -251,6 +256,7 @@ public class CommandProcessor {
     }
 
     boolean offCommand(String[] parameters) {
+        message = "";
         if (parameters.length == 2) {
             int min;
 
@@ -276,24 +282,29 @@ public class CommandProcessor {
     }
 
     boolean stateCommand(String[] parameters) {
-        message = "NUMSAT:" + LocationManager.getInstance().getNumSat();
-        message = message.concat(";BEARER:" + Bearer.getInstance().getBearerState());
-        message = message.concat(";CREG:" + SocketGPRSThread.getInstance().creg);
-        message = message.concat(";CGREG:" + SocketGPRSThread.getInstance().cgreg);
-        message = message.concat(";BATT:" + BatteryManager.getInstance().getBatteryVoltageString());
-        message = message.concat(";EXTV:" + BatteryManager.getInstance().getExternalVoltageString());
-        message = message.concat(";Q:" + SocketGPRSThread.getInstance().qSize());
-        message = message.concat(";CONN:" + (SocketGPRSThread.getInstance().isConnected() ? 1 : 0));
-        message = message.concat(";NETW:" + (SocketGPRSThread.getInstance().isNetwork() ? 1 : 0));
-        message = message.concat(";OPER:" + SocketGPRSThread.getInstance().getOperator());
-        message = message.concat(";WAKEUP:" + AppMain.getInstance().wakeupMode);
-        message = message.concat(";uFW:" + MicroManager.getInstance().getRelease()
+        message = "NUMSAT=" + LocationManager.getInstance().getNumSat() + CRLF;
+        message = message.concat("BEARER=" + Bearer.getInstance().getBearerState() + CRLF);
+        message = message.concat("GPRS=" + (Bearer.getInstance().isGprsOn()? 1 : 0) + CRLF);
+        message = message.concat("CREG=" + SocketGPRSThread.getInstance().creg + CRLF);
+        message = message.concat("CGREG=" + SocketGPRSThread.getInstance().cgreg + CRLF);
+        message = message.concat("BATT=" + BatteryManager.getInstance().getBatteryVoltageString() + CRLF);
+        message = message.concat("EXTV=" + BatteryManager.getInstance().getExternalVoltageString() + CRLF);
+        message = message.concat("Q=" + SocketGPRSThread.getInstance().qSize() + CRLF);
+        message = message.concat("CONN=" + (SocketGPRSThread.getInstance().isConnected() ? 1 : 0) + CRLF);
+        message = message.concat("NETW=" + (SocketGPRSThread.getInstance().isNetwork() ? 1 : 0) + CRLF);
+        message = message.concat("OPER=" + SocketGPRSThread.getInstance().getOperator() + CRLF);
+        message = message.concat("WAKEUP=" + AppMain.getInstance().wakeupMode + CRLF);
+        message = message.concat("DATE=" + DateFormatter.isoString(new Date()) + CRLF);
+        return true;
+    }
+    
+    boolean deviceCommand(String[] parameters) {
+        message = "uFW=" + MicroManager.getInstance().getRelease()
                 + "," + MicroManager.getInstance().getBootRelease()
-                + "," + MicroManager.getInstance().getJavaRelease());
-        message = message.concat(";SW:" + AppMain.getInstance().getAppProperty("MIDlet-Version"));
-        message = message.concat(";EG5:" + MicroManager.getInstance().getInfo());
-        message = message.concat(";IMEI:" + MicroManager.getInstance().getIMEI());
-        message = message.concat(";DATE:" + DateFormatter.isoString(new Date()));
+                + "," + MicroManager.getInstance().getJavaRelease() + CRLF;
+        message = message.concat("SW=" + AppMain.getInstance().getAppProperty("MIDlet-Version") + CRLF);
+        message = message.concat("EG5=" + MicroManager.getInstance().getInfo() + CRLF);
+        message = message.concat("IMEI=" + MicroManager.getInstance().getIMEI() + CRLF);
         return true;
     }
 

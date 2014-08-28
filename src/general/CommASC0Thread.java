@@ -76,10 +76,16 @@ public class CommASC0Thread extends Thread {
 
             CommandProcessor commandProcessor = CommandProcessor.getInstance();
             try {
+                String response;
                 if (commandProcessor.execute(command)) {
-                    serialOut.write((commandProcessor.message + "\r\n").getBytes());
+                    response = commandProcessor.message;
                 } else {
-                    serialOut.write(("NACK:" + commandProcessor.message + "\r\n").getBytes());
+                    response = "NACK: " + commandProcessor.message;
+                }
+
+                if (response.length() > 0) {
+
+                    serialOut.write((response + "\r\n").getBytes());
                 }
             } catch (IOException ioe) {
                 SLog.log(SLog.Error, "CommASC0Thread", "IOException");

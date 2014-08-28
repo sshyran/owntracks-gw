@@ -54,10 +54,6 @@ public class AppMain extends MIDlet {
         ProcessSMSThread.setup();
 
         SLog.log(SLog.Informational, "AppMain", "Running " + getAppProperty("MIDlet-Version") + " " + DateFormatter.isoString(new Date()));
-        for (Enumeration e = settings.keys(); e.hasMoreElements();) {
-            String key = (String) e.nextElement();
-            SLog.log(SLog.Informational, "AppMain", key + "=" + settings.getSetting(key, ""));
-        }
 
         SocketGPRSThread.getInstance().put(
                 settings.getSetting("publish", "owntracks/gw/")
@@ -237,14 +233,14 @@ public class AppMain extends MIDlet {
 
     private boolean loop() {
         if (invalidSIM) {
-            SLog.log(SLog.Debug, "AppMain", "invalidSim");
+            SLog.log(SLog.Error, "AppMain", "invalidSim");
             return true;
         }
 
         if ((wakeupMode.equals(accelerometerWakeup) || wakeupMode.equals(alarmClockWakeup))
                 && LocationManager.getInstance().isOnce()
                 && SocketGPRSThread.getInstance().qSize() == 0) {
-            SLog.log(SLog.Debug, "AppMain", wakeupMode + " && once && qSize");
+            SLog.log(SLog.Informational, "AppMain", wakeupMode + " && once && qSize");
             return true;
         }
 
@@ -253,13 +249,13 @@ public class AppMain extends MIDlet {
                 && GPIOManager.getInstance().gpio7 == 1
                 && SocketGPRSThread.getInstance().qSize() == 0) {
 
-            SLog.log(SLog.Debug, "AppMain", wakeupMode + " && gpio7 && qSize");
+            SLog.log(SLog.Informational, "AppMain", wakeupMode + " && gpio7 && qSize");
             return true;
         }
 
         if (BatteryManager.getInstance()
                 .isBatteryVoltageLow()) {
-            SLog.log(SLog.Debug, "AppMain", "lowBattery");
+            SLog.log(SLog.Warning, "AppMain", "lowBattery");
             return true;
         }
 
