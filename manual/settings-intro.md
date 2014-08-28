@@ -67,6 +67,15 @@ prior authentication to the device:
 * `+` `off` suspend location publishes
 * `+` `zero` reset trip conter
 
+`gps` sends the current or - if temporarily not available - last known
+location. If switched `off`, no new GPS messages are processed. In this case
+`gps` will report back the last known location
+before the `off` command.
+
+The same applies to the `"t":"L"` last-known location publish sent when the Greenwich shuts
+down intentionally.  If the Greenwich was (re-)started while in `off` mode,
+there is no last known location. `"t":"L"` will not be sent and `gps` will
+return "no location available".
 
 When configuring the device via SMS or MQTT, the operator must authenticate to
 the device using its configured `secret`. Only then will the device allow settings
