@@ -141,8 +141,9 @@ the GW will suspend publishing GPS positions until after the given timestamp.
 None of _first_, _move_, _park_, _transition_, _lost_ or any other
 triggers will be active. Trip calculation is suspended too. The
 setting is persistent: Even after reboot or restart by alarm clock,
-the suspension remains active.  The only exception is the wakeup by
-accerelometer (alarm), which will publish a location.
+the suspension remains active.  The only exceptions are the wakeup by
+accerelometer (alarm), which will publish a location, and the `gps` command
+which will report the last-known (and thus non-secret) location.
       
 
 +-----------------+----------------+-----------------+--------------+---------------------------+
@@ -160,7 +161,7 @@ accerelometer (alarm), which will publish a location.
 +-----------------+----------------+-----------------+--------------+---------------------------+
 | `fixTimeout`    | 600            | 1-...           | immediate    | Time in seconds after which the device no longer expects a GPS fix. |
 +-----------------+----------------+-----------------+--------------+---------------------------+
-| `offUntil`      | 0              | 0,1-...         | immediate    | timestamp in unix epoch (seconds since 1970-01-01 00:00) until location publishes are suspended |
+| `offUntil`      | 0              | 0,1-...         | immediate    | timestamp in UNIX epoch (seconds since 1970-01-01 00:00) until location publishes are suspended |
 +-----------------+----------------+-----------------+--------------+---------------------------+
 
 \newpage

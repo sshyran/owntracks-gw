@@ -240,8 +240,9 @@
            None of _first_, _move_, _park_, _transition_, _lost_ or any other
            triggers will be active. Trip calculation is suspended too. The
            setting is persistent: Even after reboot or restart by alarm clock,
-           the suspension remains active.  The only exception is the wakeup by
-           accerelometer (alarm), which will publish a location.
+           the suspension remains active.  The only exceptions are the wakeup by
+           accerelometer (alarm), which will publish a location, and the `gps` command
+           which will report the last-known (and thus non-secret) location.
                  
   - sensitivity:
       values: "0-..."
@@ -277,7 +278,7 @@
       values: "0,1-..."
       validity: immediate
       default: "0"
-      desc: timestamp in unix epoch (seconds since 1970-01-01 00:00) until location publishes are suspended
+      desc: timestamp in UNIX epoch (seconds since 1970-01-01 00:00) until location publishes are suspended
 
 - Debugging and Logging:
   - block: |
