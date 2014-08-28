@@ -1,0 +1,87 @@
+---
+- login:
+    params: "_secret_"
+    auth: true
+    desc: |
+        A successful login expires after `loginTimeout` seconds, and _secret_
+        is checked from settings, initially provisioned via a properties file
+
+- logout:
+    params: ""
+    auth: false
+    desc: |
+        Logout from a logged-in session.
+
+- set:
+    params: "[_key_[=[_value_]]]"
+    auth: true
+    desc: |
+        Set a value ...
+
+- state:
+    params: ""
+    auth: false
+    desc: |
+        Shows information.
+
+- reconnect:
+    params: ""
+    auth: true
+    desc: |
+        Disconnects from and re-connects to the MQTT broker
+
+- device:
+    params: ""
+    auth: true
+    desc: |
+        Shows device software and hardware characteristics
+
+- log:
+    params: "_type_"
+    auth: true
+    desc: |
+        Shows or resets log files in persistent memory. `log` shows the current
+        log file, `log old` the previous, and `log delete` resets the log file.
+
+- destroy:
+    params: ""
+    auth: true
+    desc: |
+        Switches back to non-Java AT-mode. (Used only during provisioning.)
+
+- upgrade:
+    params: ""
+    auth: true
+    desc: |
+        Performs an [OTA](#otap) upgrade.
+
+- exec:
+    params: "_at-command_"
+    auth: true
+    desc: |
+        Passes a command to the modem. (Used only during development.)
+
+- out:
+    params: "_switch_"
+    auth: true
+    desc: |
+        Swtich [GPIO](#gpio) outputs.
+
+- off:
+    params: "_minutes_"
+    auth: true
+    desc: |
+        Suspends location publishes for _minutes_ or re-enables if _minutes_ is `0`.
+
+- gps:
+    params: ""
+    auth: false
+    desc: |
+        Requests location update which is also published over MQTT with trigger `m`.
+
+- zero:
+    params: ""
+    auth: true
+    desc: |
+        Resets trip counter to 0.
+
