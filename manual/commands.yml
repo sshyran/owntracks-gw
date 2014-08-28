@@ -16,7 +16,10 @@
     params: "[_key_[=[_value_]]]"
     auth: true
     desc: |
-        Set a value ...
+        Show, set or delete a configuration parameter. The command `set` shows
+        all _key_`=`_value_ pairs configured. To show just a single setting
+        use `set key`. Configure (i.e. overwrite) a setting with `set key=value`,
+        and you can delete a setting with `set key=` (empty _value_).
 
 - state:
     params: ""
@@ -67,7 +70,7 @@
     desc: |
         Swtich [GPIO](#gpio) outputs.
 
-- off:
+- "off":
     params: "_minutes_"
     auth: true
     desc: |

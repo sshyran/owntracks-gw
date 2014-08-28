@@ -7,7 +7,7 @@
 | `logout`        |                   | N        | Logout from a logged-in session. |
 |                 |                   |          |                           |
 +-----------------+-------------------+----------+---------------------------+
-| `set`           | [_key_[=[_value_]]] | Y        | Set a value ...                |
+| `set`           | [_key_[=[_value_]]] | Y        | Show, set or delete a configuration parameter. The command `set` shows all _key_`=`_value_ pairs configured. To show just a single setting use `set key`. Configure (i.e. overwrite) a setting with `set key=value`, and you can delete a setting with `set key=` (empty _value_). |
 |                 |                   |          |                           |
 +-----------------+-------------------+----------+---------------------------+
 | `state`         |                   | N        | Shows information.             |
@@ -34,7 +34,7 @@
 | `out`           | _switch_          | Y        | Swtich [GPIO](#gpio) outputs.  |
 |                 |                   |          |                           |
 +-----------------+-------------------+----------+---------------------------+
-| `False`         | _minutes_         | Y        | Suspends location publishes for _minutes_ or re-enables if _minutes_ is `0`. |
+| `off`           | _minutes_         | Y        | Suspends location publishes for _minutes_ or re-enables if _minutes_ is `0`. |
 |                 |                   |          |                           |
 +-----------------+-------------------+----------+---------------------------+
 | `gps`           |                   | N        | Requests location update which is also published over MQTT with trigger `m`. |
