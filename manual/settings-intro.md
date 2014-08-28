@@ -58,13 +58,18 @@ prior authentication to the device:
 * `+` `reboot`
 * `+` `reconnect` disconnects from and re-connects to the MQTT broker
 * `-` `gps` (requests location update which is also published over MQTT)
-* `-` `state` (shows state)
+* `-` `state` (shows state information)
+* `+` `device` (shows device sw and hw characteristics)
 * `+` `log` `[old/delete]` (shows or resets log files)
 * `+` `destroy` (switches back to non-Java AT-mode)
 * `+` `upgrade` (perform an [OTA upgrade](OTAP.md)
 * `+` `exec` _at-command_ (pass command to modem)
 * `+` `out` switch [GPIO](#gpio) outputs
+<<<<<<< HEAD
+* `+` `off` _minutes_ suspend location publishes for _minutes_ or disable suspend if _minutes_ = 0
+=======
 * `+` `off` _minutes_ suspend location publishes for _minutes_ time
+>>>>>>> FETCH_HEAD
 * `+` `zero` reset trip conter
 
 `gps` sends the current or - if temporarily not available - last known
@@ -98,6 +103,44 @@ mosquitto_sub -u $user -P $pass -v -t owntracks/acme/van17/cmd/out
 owntracks/acme/van17/cmd/out ACK: login accepted
 owntracks/acme/van17/cmd/out ACK: raw=0
 ```
+
+Sample output for `state` command
+```
+NUMSAT=10
+BEARER=3
+GPRS=1
+CREG=5
+CGREG=5
+BATT=4.4
+EXTV=12.2
+Q=0
+CONN=1
+NETW=1
+OPER="Provider"
+WAKEUP=IgnitionWakeup
+DATE=2014-08-28 15:02:40
+```
+
+Sample out for `device` command
+```
+uFW=02.18,02.01,02.16
+SW=0.7.32
+EG5=Cinterion,EGS5-X,REVISION 02.004
+IMEI=123456789012345
+```
+
+Sample out for `gps` command
+```
+2014-08-28 15:02:51
+Latitude xx.195715
+Longitude x.688207
+Altitude 57m
+Speed 0kph
+Course 0
+Trip 0m
+
+```
+
 
 The following tables list all configurable settings for the device. Note that
 most of these have rather sensible values and do not necessarily have to be
