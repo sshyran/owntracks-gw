@@ -318,18 +318,18 @@
 
        * AppMain
        * ATManager
-           * BatteryManager
-           * CommASCThread
-           * CommGPSThread
+       * BatteryManager
+       * CommASC0Thread
+       * CommGPSThread
        * CommandProcessor
-           * DateFormatter
-           * GPIO6WatchDogTask
-           * GPIOInputManager
+       * DateFormatter
+       * GPIO6WatchDogTask
+       * GPIOManager
        * LocationManager
        * MQTTHandler
-           * MicroManager
-           * ProcessSMSThread
-           * Settings
+       * MicroManager
+       * ProcessSMSThread
+       * Settings
        * SocketGPRSThread
        * SSLSocketFactory
        * UserwareWatchDogTask
