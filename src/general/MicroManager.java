@@ -49,31 +49,6 @@ public class MicroManager implements MovListener {
             //
         }
 
-        SocketGPRSThread.getInstance().put(
-                Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                + Settings.getInstance().getSetting("clientID", imei)
-                + "/hw",
-                Settings.getInstance().getSetting("qos", 1),
-                Settings.getInstance().getSetting("retain", true),
-                ati.getBytes()
-        );
-        SocketGPRSThread.getInstance().put(
-                Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                + Settings.getInstance().getSetting("clientID", imei)
-                + "/hw/imei",
-                Settings.getInstance().getSetting("qos", 1),
-                Settings.getInstance().getSetting("retain", true),
-                imei.getBytes()
-        );
-        SocketGPRSThread.getInstance().put(
-                Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                + Settings.getInstance().getSetting("clientID", imei)
-                + "/sw/gw",
-                Settings.getInstance().getSetting("qos", 1),
-                Settings.getInstance().getSetting("retain", true),
-                (release + "," + bootRelease + "," + javaRelease).getBytes()
-        );
-
         movSens = new MovSens();
         movSens.addMovListener(this);
 

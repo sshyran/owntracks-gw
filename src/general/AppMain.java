@@ -45,7 +45,6 @@ public class AppMain extends MIDlet {
         CheckUpgrade fw = new CheckUpgrade("");
 
         Settings settings = Settings.getInstance();
-        settings.setfileURL("file:///a:/file/OwnTracks.properties");
 
         ATManager.getInstance();
         CommASC0Thread.getInstance();
@@ -53,15 +52,20 @@ public class AppMain extends MIDlet {
         CommGPSThread.getInstance();
         ProcessSMSThread.setup();
 
-        SLog.log(SLog.Informational, "AppMain", "Running " + getAppProperty("MIDlet-Version") + " " + DateFormatter.isoString(new Date()));
+        SLog.log(SLog.Informational, "AppMain", "Running "
+                + MicroManager.getInstance().getIMEI()
+                + " " + getAppProperty("MIDlet-Version")
+                + " " + DateFormatter.isoString(new Date()));
 
         SocketGPRSThread.getInstance().put(
                 settings.getSetting("publish", "owntracks/gw/")
                 + settings.getSetting("clientID", MicroManager.getInstance().getIMEI())
-                + "/sw/midlet",
+                + "/start",
                 settings.getSetting("qos", 1),
                 settings.getSetting("retain", true),
-                getAppProperty("MIDlet-Version").getBytes()
+                (MicroManager.getInstance().getIMEI()
+                + " " + getAppProperty("MIDlet-Version")
+                + " " + DateFormatter.isoString(new Date())).getBytes()
         );
 
         BearerControl.addListener(Bearer.getInstance());

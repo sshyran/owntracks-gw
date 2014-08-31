@@ -144,26 +144,31 @@ public class GPIOManager {
         switch (ioID) {
             case 0:
                 gpio1 = value;
-                SocketGPRSThread.getInstance().put(
-                        Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                        + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
-                        + "/gpio/1",
-                        Settings.getInstance().getSetting("qos", 1),
-                        Settings.getInstance().getSetting("retain", true),
-                        ("" + value).getBytes()
-                );
+                if (Settings.getInstance().getSetting("useGPIO1", false)) {
+                    SocketGPRSThread.getInstance().put(
+                            Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                            + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                            + "/gpio/1",
+                            Settings.getInstance().getSetting("qos", 1),
+                            Settings.getInstance().getSetting("retain", true),
+                            ("" + value).getBytes()
+                    );
+                }
                 break;
             case 2:
                 gpio3 = value;
-                SocketGPRSThread.getInstance().put(
-                        Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                        + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
-                        + "/gpio/3",
-                        Settings.getInstance().getSetting("qos", 1),
-                        Settings.getInstance().getSetting("retain", true),
-                        ("" + value).getBytes()
-                );
+                if (Settings.getInstance().getSetting("useGPIO3", false)) {
+                    SocketGPRSThread.getInstance().put(
+                            Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                            + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                            + "/gpio/3",
+                            Settings.getInstance().getSetting("qos", 1),
+                            Settings.getInstance().getSetting("retain", true),
+                            ("" + value).getBytes()
+                    );
+                }
                 break;
+
             case 6:
                 gpio7 = value;
                 SocketGPRSThread.getInstance().put(

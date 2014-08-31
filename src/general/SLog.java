@@ -148,7 +148,7 @@ public class SLog {
         getLogSemaphore();
 
         try {
-            FileConnection fconn1 = (FileConnection) Connector.open("file:///a:/log/log.txt");
+            FileConnection fconn1 = (FileConnection) Connector.open(url + fileLog);
             if (fconn1.exists()) {
                 fconn1.delete();
             }

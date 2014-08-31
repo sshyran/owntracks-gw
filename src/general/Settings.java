@@ -14,13 +14,13 @@ import com.cinterion.io.file.FileConnection;
  *
  * @author christoph krey
  */
-
 public class Settings {
 
-    private String fileURL = "file:///a:/file/settings.properties";
+    final private static String filePath = "file:///a:/file/";
+    final private static String fileName = "OwnTracks.properties";
     private Hashtable hashTable;
     private Vector vector;
-    
+
     private Settings() {
     }
 
@@ -33,10 +33,6 @@ public class Settings {
         private static final Settings INSTANCE = new Settings();
     }
 
-    public synchronized void setfileURL(String url) {
-        fileURL = url;
-    }
-    
     private synchronized void set(String key, String value, boolean write) {
         if (hashTable == null) {
             loadSettings();
@@ -45,12 +41,12 @@ public class Settings {
             hashTable.remove(key);
         } else {
             hashTable.put(key, value);
-        }        
+        }
         if (write) {
-            writeSettings();            
+            writeSettings();
         }
     }
-    
+
     public void setSettingNoWrite(String key, String value) {
         set(key, value, false);
     }
@@ -109,11 +105,7 @@ public class Settings {
             value = 0;
         }
 
-        if (value != 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return (value != 0);
     }
 
     public synchronized void loadSettings() {
@@ -122,15 +114,23 @@ public class Settings {
         }
 
         try {
-            FileConnection fconn = (FileConnection) Connector.open(fileURL);
+            FileConnection fconn = (FileConnection) Connector.open(filePath + fileName);
             if (!fconn.exists()) {
-                fconn.create();
-                fconn.setReadable(true);
-                fconn.setWritable(true);
+                if (!fconn.exists()) {
+                    SLog.log(SLog.Warning, "Settings", "no file");
+                }
+                fconn.close();
+                fconn = (FileConnection) Connector.open(filePath + fileName + ".old");
+                if (!fconn.exists()) {
+                    SLog.log(SLog.Warning, "Settings", "no .old");
+                    fconn.rename(fileName);
+                    fconn.close();
+                    return;
+                }
             }
 
             InputStream is = fconn.openInputStream();
-            
+
             String line = null;
 
             do {
@@ -172,9 +172,9 @@ public class Settings {
             is.close();
 
             fconn.close();
-        
+
         } catch (IOException ioe) {
-            SLog.log(SLog.Error, "Settings", "load IOException"); 
+            SLog.log(SLog.Error, "Settings", "load IOException");
         }
     }
 
@@ -183,36 +183,76 @@ public class Settings {
             loadSettings();
         }
 
+        FileConnection file;
+
+        // rename file to .old
         try {
-            FileConnection fconn = (FileConnection) Connector.open(fileURL);
-            if (!fconn.exists()) {
-                fconn.create();
-                fconn.setReadable(true);
-                fconn.setWritable(true);
-            } else {
-                fconn.truncate(0);
+            file = (FileConnection) Connector.open(filePath + fileName);
+            if (file.exists()) {
+                SLog.log(SLog.Debug, "Settings", "renaming to .old ");
+                file.rename(fileName + ".old");
             }
-        
-            try {
-                OutputStream os = fconn.openOutputStream();
-
-                os.write(("# " + fileURL + " written: " + new Date() + "\n").getBytes("UTF-8"));
-                
-                for (Enumeration e = hashTable.keys(); e.hasMoreElements();) {
-                    String key = (String) e.nextElement();
-                    os.write((key + "=" + hashTable.get(key) + "\n").getBytes("UTF-8"));
-                }
-
-                os.write(("# EOF\n").getBytes("UTF-8"));
-
-                os.flush();
-                os.close();
-            } catch (IOException ioe) {
-                SLog.log(SLog.Debug, "Settings", "write IOException");
-            }
-            fconn.close();
+            file.close();
         } catch (IOException ioe) {
-            SLog.log(SLog.Debug, "Settings", "write open IOException");
+            SLog.log(SLog.Error, "Settings", "rename to .old IOException");
+            return;
+        }
+
+        try {
+            file = (FileConnection) Connector.open(filePath + fileName + ".new");
+            if (!file.exists()) {
+                SLog.log(SLog.Debug, "Settings", "creating .new ");
+                file.create();
+                file.setReadable(true);
+                file.setWritable(true);
+            } else {
+                SLog.log(SLog.Debug, "Settings", "truncating .new ");
+                file.truncate(0);
+            }
+        } catch (IOException ioe) {
+            SLog.log(SLog.Error, "Settings", "write open IOException");
+            return;
+        }
+
+        try {
+            OutputStream os = file.openOutputStream();
+
+            os.write(("# " + filePath + fileName + " written: " + new Date() + "\n").getBytes("UTF-8"));
+
+            for (Enumeration e = hashTable.keys(); e.hasMoreElements();) {
+                String key = (String) e.nextElement();
+                os.write((key + "=" + hashTable.get(key) + "\n").getBytes("UTF-8"));
+            }
+
+            os.write(("# EOF\n").getBytes("UTF-8"));
+
+            os.flush();
+            os.close();
+        } catch (IOException ioe) {
+            SLog.log(SLog.Error, "Settings", "write IOException");
+        }
+
+        try {
+            // rename .new file to file
+            SLog.log(SLog.Debug, "Settings", "renaming .new");
+            file.rename(fileName);
+            file.close();
+
+        } catch (IOException ioe) {
+            SLog.log(SLog.Error, "Settings", "rename .new IOException");
+            return;
+        }
+
+        // delete .old file after .new file has been renamed
+        try {
+            SLog.log(SLog.Debug, "Settings", "deleting .old");
+            FileConnection oldFile = (FileConnection) Connector.open(filePath + fileName + ".old");
+            if (oldFile.exists()) {
+                oldFile.delete();
+            }
+            oldFile.close();
+        } catch (IOException ioe) {
+            SLog.log(SLog.Error, "Settings", "delete .old IOException");
         }
     }
 
@@ -222,20 +262,19 @@ public class Settings {
         } else {
             vector.removeAllElements();
         }
-        
+
         Enumeration enumeration = hashTable.keys();
         while (enumeration.hasMoreElements()) {
-            String key = (String)enumeration.nextElement();
+            String key = (String) enumeration.nextElement();
             int i;
             for (i = 0; i < vector.size(); i++) {
-                String vectorKey = (String)vector.elementAt(i);
+                String vectorKey = (String) vector.elementAt(i);
                 if (key.compareTo(vectorKey) < 0) {
                     break;
                 }
             }
             vector.insertElementAt(key, i);
         }
-        
         return vector.elements();
     }
 }
