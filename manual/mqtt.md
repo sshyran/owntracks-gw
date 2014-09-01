@@ -94,9 +94,8 @@ messages. Recall that the _base topic_ is constructed from the `publish` setting
 |                  |* `0` MQTT broker sets this status when it looses the connection to the Greenwich client using the _LWT_ mechanism
 |                  |* `-1` Greenwich disconnects intentionally (on user request, ignition-off, etc.)
 +------------------+-------------------------------------------------------------------------------+
-|`../hw`           |   Hardware/chip revision (`Cinterion,EGS5-X,REVISION 02.004`)
-+------------------+-------------------------------------------------------------------------------+
-|`../hw/imei`      |   IMEI number of the modem (`012345678901234`)
+|`../start`        |  _IMEI_ _midlet-version_ _date/time_
+|                  |  `123456789012345 0.7.38 2014-09-01 08:37:04`
 +------------------+-------------------------------------------------------------------------------+
 |`../voltage/batt` |   Built-in battery voltage is published when voltage
 |                                changes "significantly", as configured with `dBattVoltage`.
@@ -107,10 +106,6 @@ messages. Recall that the _base topic_ is constructed from the `publish` setting
 |                                (`12.2`)
 +------------------+-------------------------------------------------------------------------------+
 |`../gpio/`_n_     |   Status of the three [GPIO](#gpio) pins (`1`, `3`, `7`) is published as `0` or `1`.
-+------------------+-------------------------------------------------------------------------------+
-|`../sw/gw`        |   Greenwich version (`02.16B,02.01,02.16`)
-+------------------+-------------------------------------------------------------------------------+
-|`../sw/midlet`    |   Midlet (OwnTracks Edition) version (`0.5.43`)
 +------------------+-------------------------------------------------------------------------------+
 |`../cmd/out`      |   Output of commands sent to the device (e.g. `login`, `set`):
 +------------------+-------------------------------------------------------------------------------+
