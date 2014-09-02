@@ -25,6 +25,7 @@ public class CommandProcessor {
     private final String exec = "exec";
     private final String destroy = "destroy";
     private final String log = "log";
+    private final String bootstrap = "bootstrap";
 
     private final String[] authorizedCommands = {
         set,
@@ -150,6 +151,9 @@ public class CommandProcessor {
         } else if (command.equalsIgnoreCase(out)) {
             return outCommand(parameters);
 
+        } else if (command.equalsIgnoreCase(bootstrap)) {
+            return bootstrapCommand(parameters);
+
         } else if (command.equalsIgnoreCase(off)) {
             return offCommand(parameters);
 
@@ -161,10 +165,10 @@ public class CommandProcessor {
 
         } else if (command.equalsIgnoreCase(state)) {
             return stateCommand(parameters);
-            
+
         } else if (command.equalsIgnoreCase(device)) {
             return deviceCommand(parameters);
-            
+
         } else if (command.equalsIgnoreCase(log)) {
             return logCommand(parameters);
         } else {
@@ -185,7 +189,7 @@ public class CommandProcessor {
         } else if (parameters.length == 2) {
             String key = null;
             String value = null;
-            
+
             int equal = parameters[1].indexOf('=');
             if (equal != -1) {
                 value = parameters[1].substring(equal + 1);
@@ -215,7 +219,7 @@ public class CommandProcessor {
         if (parameters.length == 3) {
             int num;
             boolean on = false;
-            
+
             try {
                 int numInt = Integer.parseInt(parameters[1]);
                 switch (numInt) {
@@ -229,7 +233,7 @@ public class CommandProcessor {
                         num = -1;
                         break;
                 }
-                
+
                 int onInt = Integer.parseInt(parameters[2]);
                 switch (onInt) {
                     case 0:
@@ -252,6 +256,30 @@ public class CommandProcessor {
             }
         }
         message = message.concat("usage " + out + " 1/2 0/1");
+        return false;
+    }
+
+    boolean bootstrapCommand(String[] parameters) {
+        message = "";
+        Settings settings = Settings.getInstance();
+
+        if (parameters.length == 3) {
+            if (parameters[1].equals(settings.getSetting("secret", "1234567890"))) {
+                String[] components = StringSplitter.split(parameters[2], ",");
+                if (components.length == 7) {
+                    settings.setSettingNoWrite("apn", components[0]);
+                    settings.setSettingNoWrite("apnUser", components[1]);
+                    settings.setSettingNoWrite("apnPassword", components[2]);
+                    settings.setSettingNoWrite("host", components[3]);
+                    settings.setSettingNoWrite("port", components[4]);
+                    settings.setSettingNoWrite("user", components[5]);
+                    settings.setSetting("password", components[6]);
+                    BatteryManager.getInstance().reboot();
+                    return true;                    
+                }
+            }
+        }
+        message = message.concat("usage " + bootstrap + "<secret> <apn>,<apnUser>,<apnPassword>,<host>,<port>,<user>,<password>");
         return false;
     }
 
@@ -284,7 +312,7 @@ public class CommandProcessor {
     boolean stateCommand(String[] parameters) {
         message = "NUMSAT=" + LocationManager.getInstance().getNumSat() + CRLF;
         message = message.concat("BEARER=" + Bearer.getInstance().getBearerState() + CRLF);
-        message = message.concat("GPRS=" + (Bearer.getInstance().isGprsOn()? 1 : 0) + CRLF);
+        message = message.concat("GPRS=" + (Bearer.getInstance().isGprsOn() ? 1 : 0) + CRLF);
         message = message.concat("CREG=" + SocketGPRSThread.getInstance().creg + CRLF);
         message = message.concat("CGREG=" + SocketGPRSThread.getInstance().cgreg + CRLF);
         message = message.concat("BATT=" + BatteryManager.getInstance().getBatteryVoltageString() + CRLF);
@@ -297,7 +325,7 @@ public class CommandProcessor {
         message = message.concat("DATE=" + DateFormatter.isoString(new Date()) + CRLF);
         return true;
     }
-    
+
     boolean deviceCommand(String[] parameters) {
         message = "uFW=" + MicroManager.getInstance().getRelease()
                 + "," + MicroManager.getInstance().getBootRelease()

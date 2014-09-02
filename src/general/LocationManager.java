@@ -520,7 +520,7 @@ public class LocationManager {
              * 0123456789012345678901234567
              * 0         1         2
              */
-            human = DateFormatter.isoString(location.date) + "\r\n";
+            human = DateFormatter.isoDate(location.date) + " " + DateFormatter.isoTime(location.date) + " UTC\r\n";
             human = human.concat("Latitude " + location.latitude + "\r\n");
             human = human.concat("Longitude " + location.longitude + "\r\n");
             human = human.concat("Altitude " + (long) location.altitude + "m\r\n");

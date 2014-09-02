@@ -98,12 +98,35 @@ public class DateFormatter {
         int year = cal.get(Calendar.YEAR);
         String s = ((year < 0) ? "-" : "") 
                 + leadingZeroes(Math.abs(cal.get(Calendar.YEAR)), 4)
-                + "-" + leadingZeroes(cal.get(Calendar.MONTH) + 1, 2)
-                + "-" + leadingZeroes(cal.get(Calendar.DAY_OF_MONTH), 2)
-                + " "
+                + leadingZeroes(cal.get(Calendar.MONTH) + 1, 2)
+                + leadingZeroes(cal.get(Calendar.DAY_OF_MONTH), 2)
+                + "T"
                 + leadingZeroes(cal.get(Calendar.HOUR) + (cal.get(Calendar.AM_PM) == Calendar.PM ? 12 : 0), 2)
+                + leadingZeroes(cal.get(Calendar.MINUTE), 2)
+                + leadingZeroes(cal.get(Calendar.SECOND), 2)
+                + "Z";
+        return s;
+    }
+
+    public static String isoTime(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+
+        String s = leadingZeroes(cal.get(Calendar.HOUR) + (cal.get(Calendar.AM_PM) == Calendar.PM ? 12 : 0), 2)
                 + ":" + leadingZeroes(cal.get(Calendar.MINUTE), 2)
                 + ":" + leadingZeroes(cal.get(Calendar.SECOND), 2);
+        return s;
+    }
+
+    public static String isoDate(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+
+        int year = cal.get(Calendar.YEAR);
+        String s = ((year < 0) ? "-" : "") 
+                + leadingZeroes(Math.abs(cal.get(Calendar.YEAR)), 4)
+                + "-" + leadingZeroes(cal.get(Calendar.MONTH) + 1, 2)
+                + "-" + leadingZeroes(cal.get(Calendar.DAY_OF_MONTH), 2);
         return s;
     }
 
