@@ -21,6 +21,14 @@
         use `set key`. Configure (i.e. overwrite) a setting with `set key=value`,
         and you can delete a setting with `set key=` (empty _value_).
 
+- bootstrap:
+    params: "<secret> <apn>,<apnUser>,<apnPassword>,<host>,<port>,<user>,<password>"
+    auth: false (see description)
+    desc: |
+        If secret validation is positive, bootstrap sets the 7 parameters and
+        reboots the device. <secret> is the same password as used for login. 
+        Parameters <apn>,...,<password> can be empty, but must not be omitted.
+
 - state:
     params: ""
     auth: false
