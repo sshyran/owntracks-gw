@@ -16,7 +16,6 @@ Choral has Greenwich models which sport the following hardware features:
 * Battery: Li-Ion, 3.7 V, with internal charger
 * Operating temperature: -20 +60°C
 * Dimensions: 125x80x35 mm (LxWxH)
-* Weight ???
 * Homologations: CE, 96/56/EC, R116
 
 ## Credits

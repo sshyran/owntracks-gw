@@ -15,7 +15,7 @@ number of factors:
 
 * _LocationManager_ settings which define how often location data will be
   published
-* OTA updates (at approx 300kb per unit)
+* OTA updates (at approx 300kb per update)
 
 Under the assumption that the device moves for a total of 8 hours per day,
 6 of which it is actually activly moving, 5 days per week and 20 days

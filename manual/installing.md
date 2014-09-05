@@ -1,7 +1,7 @@
 # Installing `OwnTracks.jar`
 
 If your Greenwich does not yet come with _OwnTracks Edition_ already installed, you have
-to install the software yourself. For this you need the MES package (or the FIXME java thing which maybe runs on some other platform....)
+to install the software yourself. For this you need the MES package.
 
 1. Connect your Greenwich device to a serial port on your PC/Mac via an
    appropriate D-SUB9 cable. Use Putty (Windows), Minicom (Linux) or Screen

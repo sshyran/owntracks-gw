@@ -5,8 +5,12 @@ the Internet or only SMS for communication. We chose MQTT, a TCP/IP-based protoc
 for the _Internet of Things_, to power communications between Greenwich devices on
 vehicles and your MQTT server, because of its flexibility as a _publish/subscribe_
 system, the low protocol overhead it requires, and its resilience to bad networks.
-(See the [section on MQTT](#mqttintro).) Even so, you can remotely configure and
-query a Greenwich via SMS if you need to.
+(See the [section on MQTT](#mqttintro).) (Even so, you can remotely configure and
+query a Greenwich via SMS if you need to.)
+
+A very important aspect of Greenwich OwnTracks is our use of secure TLS
+(formerly SSL) for ensuring encrypted connections between the devices and your
+private infrastructure.
 
 Greenwich devices thus utilize MQTT for communications with your infrastructure.
 This communication is bi-directional: Greenwich devices talk to your server, and

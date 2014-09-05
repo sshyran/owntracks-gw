@@ -2,7 +2,7 @@
 
 The device can be configured in four distinct ways:
 
-1. With an `owntracks.properties` file which is provisioned to the device. This is
+1. With an `owntracks.properties` file which is provisioned to the device via MES. This is
    a text file (newline or CR-NL line endings) which looks like an INI-type file.
    Lines which begin with a hash symbol (`#`) are comments, all other lines
    *must* be of type _key_`=`_value_, and where keys are case sensitive.

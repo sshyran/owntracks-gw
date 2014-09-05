@@ -14,12 +14,13 @@ you can see where your vehicles are at at a glance.
 
 ![OwnTracks Live-Table](art/livetable.png)
 
-In addition to the smartphone apps, we also provide a Web-based map which,
+We also provide a Web-based map which,
 like the apps, updates in real-time. This is made possible by utilizing
 Websockets which "talk" to a Websocket-enabled MQTT broker in effect subscribing
 to the MQTT topics your devices publish to, extracting the relevant data from
 the JSON payloads and using JavaScript to update your vehicles' locations on
 a map provided by the Open Street Map project.
+
 
 ![OwnTracks Live-Map](art/livemap.png)
 
@@ -49,6 +50,9 @@ on its location via SMS.
 
 \newpage
 
+Data received by the Greenwich devices is stored in a database from which you
+can, at any time, query historical data.
+
 OwnTracks' _m2s_ subscribes directly to your MQTT broker and stores all
 data it receives in a back-end database (e.g. MySQL or PostgreSQL) from
 which you can, at any time, reconstruct where your vehicles have been.
@@ -74,7 +78,8 @@ SELECT json FROM location WHERE id = 186480;
 _m2s_ stores historical data, and you can at any time query
 that data and process it. In addition to individual columns that are 
 populated, you also have access to the raw JSON that was published by your
-devices. Important to remember: it is _your_ data and you own it!
+devices. Important to remember: it is _your_ data and you own it; the
+data is on your premises!
 
 ![OwnTracks GPX export](art/ey-belgium.png)
 

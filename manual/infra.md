@@ -1,9 +1,10 @@
 # MQTT {#mqttintro}
 
-MQTT is an open _publish/subscribe_ protocol for M2M communication, in which
-telemetry data is sent as messages with a very low overhead. MQTT is ideal for
-"difficult" networks (such as mobile networks), which is why we chose this
-protocol for OwnTracks. The MQTT protocol has been standardized since 2013.
+MQTT is an open _publish/subscribe_ protocol for M2M (Machine to Machine)
+communication, in which telemetry data is sent as messages with a very low
+overhead. MQTT is ideal for "difficult" networks (such as mobile networks),
+which is why we chose this protocol for OwnTracks. The MQTT protocol has been
+standardized since 2013.
 
 The MQTT protocol provides one-to-may message distribution over TCP/IP with a
 small transport overhead, and a method to notify parties of abnormal
@@ -40,7 +41,8 @@ of course the OwnTracks iOS and Android apps.
 
 The infrastructure requirements for running a modest number of Greenwich devices
 are minimal. A computer as small as a Rasperry Pi or a Beagle Bone Black is
-capable of handling the workload for several dozen Greenwich devices. You can of
+capable of handling the workload for several dozen Greenwich devices. The best
+thing is that you can of
 course host the required infrastructure within your existing data center.
 
 The requirements for operating one or more Greenwich devices are:

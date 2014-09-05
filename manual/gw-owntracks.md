@@ -7,7 +7,7 @@ anti-theft purposes. The *OwnTracks Edition* of the software,
 created by [owntracks.org][owntracks], uses standardized open protocols
 (MQTT) to transmit data over a secured (TLS/SSL) connection with authentication
 to a server of your chosing. The data you collect is stored in your
-infrastructure^[Unless you explicitly want to use our hosted platform],
+own private infrastructure^[Unless you explicitly want to use our hosted platform],
 and the device integrates with the iOS and Android apps developed by OwnTracks.
 
 
@@ -31,9 +31,8 @@ asked yourself one or more of these questions.
 * What is the weather like at the vehicle's location?
 * Even if you're simply an avid traveler and wish to have an exact record of your trips,
   Greenwich _OwnTracks Edition_ is just what you need.
-* CAN BUS integration is possible
 
-The data collected on a per-vehicle basis may include location (latitude, longitude), altitude,
+The data collected on a per-asset/per-vehicle basis currently includes location (latitude, longitude), altitude,
 velocity, course over ground, battery levels (both internal Greenwich battery and external
 power supply), and distance traveled. In addition the state of two user-programmable GPIO pins
 is reported; these can be used, for example, to determine the state of a door (open/closed).
