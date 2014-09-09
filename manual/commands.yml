@@ -25,7 +25,9 @@
     params: "_see text_"
     auth: false
     desc: |
-        The format and order of _params_ is `secret`, `apn`, `apnUser`,
+        This command takes two parameters: a `secret` for authenticating
+        the command followed by a comma-delimited list of seven settings which
+        must be `apn`, `apnUser`,
         `apnPassword`, `host`, `port`, `user`, `password`.  If validation of
         the _secret_ is positive, `bootstrap` sets the 7 parameters and
         reboots the device. _secret_ is the same password as used for `login`.
