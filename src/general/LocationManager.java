@@ -388,12 +388,12 @@ public class LocationManager {
         if (!once) {
             if (AppMain.getInstance().wakeupMode.equals(AppMain.accelerometerWakeup)) {
                 String json = JSONString(secretLocation, "a", 0);
-                send(json);
+                //send(json);
                 sendAlarm(json);
                 once = true;
             } else if (AppMain.getInstance().wakeupMode.equals(AppMain.alarmClockWakeup)) {
-                String json = getJSONString("c");
-                send(json);
+                //String json = getlastJSONString("c");
+                //send(json);
                 once = true;
             }
         }

@@ -169,7 +169,7 @@ public class SocketGPRSThread extends Thread {
                     Settings.getInstance().getSetting("willQos", 1),
                     Settings.getInstance().getSetting("willRetain", true),
                     Settings.getInstance().getSetting("keepAlive", 60),
-                    Settings.getInstance().getSetting("cleanSession", true),
+                    Settings.getInstance().getSetting("cleanSession", false),
                     Settings.getInstance().getSetting("subscription",
                             Settings.getInstance().getSetting("publish", "owntracks/gw/")
                             + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI()) + "/cmd"),
