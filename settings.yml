@@ -102,7 +102,7 @@
   - cleanSession:
       values: 0/1
       validity: reboot
-      default: "1"
+      default: "0"
       desc: Whether or not to set the MQTT _cleanSession_ flag.
   - clientID:
       values: string
