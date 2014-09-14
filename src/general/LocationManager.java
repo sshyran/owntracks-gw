@@ -479,22 +479,22 @@ public class LocationManager {
             json = json.concat(",\"lat\":\"" + location.latitude + "\"");
 
             if (StringSplitter.isInStringArray("course", fields)) {
-                json = json.concat(",\"cog\":\"" + (long) location.course + "\"");
+                json = json.concat(",\"cog\":" + (long) location.course);
             }
             if (StringSplitter.isInStringArray("speed", fields)) {
-                json = json.concat(",\"vel\":\"" + (long) location.speed + "\"");
+                json = json.concat(",\"vel\":" + (long) location.speed);
             }
             if (StringSplitter.isInStringArray("altitude", fields)) {
-                json = json.concat(",\"alt\":\"" + (long) location.altitude + "\"");
+                json = json.concat(",\"alt\":" + (long) location.altitude);
             }
             if (StringSplitter.isInStringArray("distance", fields)) {
-                json = json.concat(",\"dist\":\"" + (long) distance + "\"");
+                json = json.concat(",\"dist\":" + (long) distance);
             }
             if (StringSplitter.isInStringArray("trip", fields)) {
-                json = json.concat(",\"trip\":\"" + (long) trip + "\"");
+                json = json.concat(",\"trip\":" + (long) trip);
             }
             if (StringSplitter.isInStringArray("battery", fields)) {
-                json = json.concat(",\"batt\":\"" + BatteryManager.getInstance().getExternalVoltageString() + "\"");
+                json = json.concat(",\"batt\":" + BatteryManager.getInstance().getExternalVoltageString() + "\"");
             }
 
             json = json.concat("}");
