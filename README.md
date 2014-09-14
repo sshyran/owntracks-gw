@@ -10,13 +10,13 @@ The [Choral Greenwich](http://www.choral.it/greenwich) is a Java based GPS- and 
 ```json
 {
     "_type": "location",
-    "alt": "160.0",
-    "batt": "12.2V",
-    "cog": "0.0",
-    "dist": "18903",
+    "alt": 160,
+    "batt": 12.2,
+    "cog": 130,
+    "dist": 18903,
     "lat": "xx.xxxxxx",
     "lon": "y.yyyyyy",
-    "vel": "0.12038",
+    "vel": 82,
     "t": "t",
     "tst": "1406803894"
 }
