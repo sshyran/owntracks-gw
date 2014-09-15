@@ -63,10 +63,10 @@ public class CommandProcessor {
         message = "";
         SLog.log(SLog.Debug, "CommandProcessor", "execute " + (commandLine != null ? commandLine : "<null>"));
         if (commandLine != null && commandLine.length() > 0) {
-            String[] words = StringSplitter.split(commandLine, " ");
+            String[] words = StringFunc.split(commandLine, " ");
             if (words.length >= 1) {
                 Settings settings = Settings.getInstance();
-                if (!StringSplitter.isInStringArray(words[0], authorizedCommands)
+                if (!StringFunc.isInStringArray(words[0], authorizedCommands)
                         || settings.getSetting("loginTimeout", 30) == 0
                         || authorizedSince + settings.getSetting("loginTimeout", 30) > new Date().getTime() / 1000) {
                     if (words[0].equals("login")) {
@@ -265,7 +265,7 @@ public class CommandProcessor {
 
         if (parameters.length == 3) {
             if (parameters[1].equals(settings.getSetting("secret", "1234567890"))) {
-                String[] components = StringSplitter.split(parameters[2], ",");
+                String[] components = StringFunc.split(parameters[2], ",");
                 if (components.length == 7) {
                     settings.setSettingNoWrite("apn", components[0]);
                     settings.setSettingNoWrite("apnUser", components[1]);
@@ -357,40 +357,13 @@ public class CommandProcessor {
         }
     }
 
-    String replaceString(String originalString, String oldString, String newString) {
-        String intermediateString = originalString;
-        int indexOldString;
-
-        if (newString.indexOf(oldString) >= 0) {
-            SLog.log(SLog.Error, "CommandProcessor", "replaceString recursion " + originalString + " " + oldString + " " + newString);
-            return originalString;
-        }
-        do {
-            indexOldString = intermediateString.indexOf(oldString);
-            if (indexOldString >= 0) {
-                String workString;
-                if (indexOldString > 0) {
-                    workString = intermediateString.substring(0, indexOldString);
-                } else {
-                    workString = "";
-                }
-                workString = workString.concat(newString);
-                if (intermediateString.length() > indexOldString + oldString.length()) {
-                    workString = workString.concat(intermediateString.substring(indexOldString + oldString.length()));
-                }
-                intermediateString = workString;
-            }
-        } while (indexOldString >= 0);
-        return intermediateString;
-    }
-
     boolean upgradeCommand(String[] parameters) {
         if (parameters.length == 1) {
             String clientID = Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI());
             String otapURI = Settings.getInstance().getSetting("otapURI", "");
             String notifyURI = Settings.getInstance().getSetting("notifyURI", "");
-            otapURI = replaceString(otapURI, "@", clientID);
-            notifyURI = replaceString(notifyURI, "@", clientID);
+            otapURI = StringFunc.replaceString(otapURI, "@", clientID);
+            notifyURI = StringFunc.replaceString(notifyURI, "@", clientID);
 
             String apn = Settings.getInstance().getSetting("apn", "internet");
             String otapUser = Settings.getInstance().getSetting("otapUser", "");

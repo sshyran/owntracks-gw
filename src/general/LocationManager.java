@@ -150,7 +150,7 @@ public class LocationManager {
             );
         }
 
-        String[] components = StringSplitter.split(rmc, ",");
+        String[] components = StringFunc.split(rmc, ",");
         if (components.length == 13) {
             try {
                 tempDate = DateFormatter.parse(components[9], components[1].substring(0, 6));
@@ -268,7 +268,7 @@ public class LocationManager {
             );
         }
 
-        String[] components = StringSplitter.split(gga, ",");
+        String[] components = StringFunc.split(gga, ",");
         if (components.length == 15) {
             try {
                 if (components[7].length() > 0) {
@@ -454,8 +454,7 @@ public class LocationManager {
 
     private String JSONString(Location location, String reason, double distance) {
         if (location != null) {
-            String[] fields = StringSplitter.split(
-                    Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,battery,trip"), ",");
+            String[] fields = StringFunc.split(Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,battery,trip"), ",");
 
             String json;
             json = "{\"_type\":\"location\"";
@@ -478,22 +477,22 @@ public class LocationManager {
             json = json.concat(",\"lon\":\"" + location.longitude + "\"");
             json = json.concat(",\"lat\":\"" + location.latitude + "\"");
 
-            if (StringSplitter.isInStringArray("course", fields)) {
+            if (StringFunc.isInStringArray("course", fields)) {
                 json = json.concat(",\"cog\":" + (long) location.course);
             }
-            if (StringSplitter.isInStringArray("speed", fields)) {
+            if (StringFunc.isInStringArray("speed", fields)) {
                 json = json.concat(",\"vel\":" + (long) location.speed);
             }
-            if (StringSplitter.isInStringArray("altitude", fields)) {
+            if (StringFunc.isInStringArray("altitude", fields)) {
                 json = json.concat(",\"alt\":" + (long) location.altitude);
             }
-            if (StringSplitter.isInStringArray("distance", fields)) {
+            if (StringFunc.isInStringArray("distance", fields)) {
                 json = json.concat(",\"dist\":" + (long) distance);
             }
-            if (StringSplitter.isInStringArray("trip", fields)) {
+            if (StringFunc.isInStringArray("trip", fields)) {
                 json = json.concat(",\"trip\":" + (long) trip);
             }
-            if (StringSplitter.isInStringArray("battery", fields)) {
+            if (StringFunc.isInStringArray("battery", fields)) {
                 json = json.concat(",\"batt\":" + BatteryManager.getInstance().getExternalVoltageString() + "\"");
             }
 

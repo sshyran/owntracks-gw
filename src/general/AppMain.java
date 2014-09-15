@@ -28,6 +28,7 @@ public class AppMain extends MIDlet {
     final public static String accelerometerWakeup = "AccelerometerWakeup";
     final public static String alarmClockWakeup = "AlarmClockWakeup";
     public String wakeupMode = accelerometerWakeup;
+    
     UserwareWatchDogTask userwareWatchDogTask;
     GPIO6WatchDogTask gpio6WatchDogTask;
 
@@ -110,22 +111,7 @@ public class AppMain extends MIDlet {
             BatteryManager.getInstance();
             GPIOManager.getInstance();
 
-            if (GPIOManager.getInstance().gpio7 == 0) {
-                wakeupMode = ignitionWakeup;
-            }
-
-            String airplane = ATManager.getInstance().executeCommandSynchron("at^scfg=MEopMode/Airplane\r");
-            SLog.log(SLog.Debug, "AppMain", airplane);
-            if (airplane.indexOf("^SCFG: \"MEopMode/Airplane\",\"on\"") >= 0) {
-                if (wakeupMode.equals(accelerometerWakeup)) {
-                    wakeupMode = alarmClockWakeup;
-                }
-                ATManager.getInstance().executeCommandSynchron("AT^SCFG=\"MEopMode/Airplane\",\"off\"\r");
-            } else {
-                // default accelerometerWakeup
-            }
-
-            SLog.log(SLog.Informational, "AppMain", "wakeupMode is " + wakeupMode);
+            setWakeupMode();
 
             ATManager.getInstance().executeCommandSynchron("at+crc=1\r");
 
@@ -151,11 +137,41 @@ public class AppMain extends MIDlet {
             SocketGPRSThread.getInstance().join();
 
             shutdown();
+
+            while (true) {
+                Thread.sleep(1000);
+            }
+
         } catch (InterruptedException ie) {
             //
         } catch (NumberFormatException nfe) {
             SLog.log(SLog.Error, "AppMain", "NumberFormatException");
         }
+    }
+
+    void setWakeupMode() {
+        wakeupMode = accelerometerWakeup;
+        if (GPIOManager.getInstance().gpio7 == 0) {
+            wakeupMode = ignitionWakeup;
+        } else {
+            String airplane = ATManager.getInstance().executeCommandSynchron("at^scfg=MEopMode/Airplane\r");
+            if (airplane.indexOf("^SCFG: \"MEopMode/Airplane\",\"on\"") >= 0) {
+                wakeupMode = alarmClockWakeup;
+                ATManager.getInstance().executeCommandSynchron("AT^SCFG=\"MEopMode/Airplane\",\"off\"\r");
+            } else {
+                Date wakeupTime = new Date(Settings.getInstance().getSetting("wakeupTime", 0) * 1000L);
+                Date now = new Date();
+                SLog.log(SLog.Debug, "AppMain",
+                        "wakeupTime " + DateFormatter.isoString(wakeupTime)
+                        + " now " + DateFormatter.isoString(now)
+                );
+
+                if (wakeupTime.getTime() < now.getTime()) {
+                    wakeupMode = alarmClockWakeup;
+                }
+            }
+        }
+        SLog.log(SLog.Informational, "AppMain", "wakeupMode is " + wakeupMode);
     }
 
     protected void pauseApp() {
@@ -220,6 +236,7 @@ public class AppMain extends MIDlet {
                     + "\"\r";
 
             ATManager.getInstance().executeCommandSynchron(rtc);
+            Settings.getInstance().setSetting("wakeupTime", Long.toString(date.getTime() / 1000));
         }
 
         gpio6WatchDogTask.stop();

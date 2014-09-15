@@ -40,9 +40,9 @@ public class SLog {
     
     public static void log(String priority, String component, String error) {
         if (priority.equals(Debug)) {
-            String[] fields = StringSplitter.split(Settings.getInstance().getSetting("dbgComp", "none"), ",");
-            if (!StringSplitter.isInStringArray("all", fields)) {
-                if (!StringSplitter.isInStringArray(component, fields)) {
+            String[] fields = StringFunc.split(Settings.getInstance().getSetting("dbgComp", "none"), ",");
+            if (!StringFunc.isInStringArray("all", fields)) {
+                if (!StringFunc.isInStringArray(component, fields)) {
                     return;
                 }
             }
@@ -55,6 +55,7 @@ public class SLog {
                     + " " + component
                     + " " + error
             );
+            System.err.flush();
         }
         
         String fileLogLevel = Settings.getInstance().getSetting("fileLogLevel", "E");

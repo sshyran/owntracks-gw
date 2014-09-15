@@ -30,14 +30,14 @@ public class MicroManager implements MovListener {
         String lines[];
         response = ATManager.getInstance().executeCommandSynchron("ATI\r");
 
-        lines = StringSplitter.split(response, "\r\n");
+        lines = StringFunc.split(response, "\r\n");
         ati = lines[1];
         for (int i = 2; i < lines.length - 3; i++) {
             ati = ati + "," + lines[i];
         }
 
         response = ATManager.getInstance().executeCommandSynchron("AT+CGSN\r");
-        lines = StringSplitter.split(response, "\r\n");
+        lines = StringFunc.split(response, "\r\n");
         imei = lines[1];
 
         InfoMicro infoMicro = new InfoMicro();

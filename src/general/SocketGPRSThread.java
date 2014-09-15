@@ -229,12 +229,12 @@ public class SocketGPRSThread extends Thread {
 
         public void run() {
             String response = ATManager.getInstance().executeCommandSynchron("AT+COPS?\r");
-            String[] lines = StringSplitter.split(response, "\r\n");
+            String[] lines = StringFunc.split(response, "\r\n");
             if (lines.length >= 2) {
                 final String COPS = "+COPS: ";
                 if (lines[1].startsWith(COPS)
                         && lines[1].length() > COPS.length()) {
-                    String[] values = StringSplitter.split(lines[1].substring(COPS.length()), ",");
+                    String[] values = StringFunc.split(lines[1].substring(COPS.length()), ",");
                     if (values.length == 3) {
                         stopTimeoutTimer();
                         network = true;

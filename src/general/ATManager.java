@@ -46,11 +46,18 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
         String response = "";
         try {
             if (listener == null) {
+                String logCommand = command;
+                logCommand = StringFunc.replaceString(logCommand, "\n", "\\n");
+                logCommand = StringFunc.replaceString(logCommand, "\r", "\\r");
+                SLog.log(SLog.Debug, "ATManager", "command: " + logCommand);
                 response = atCommand.send(command);
-                SLog.log(SLog.Debug, "ATManager", "commandResponse: " + response);
                 if (text != null) {
                     response = response + atCommand.send(text + "\032");
                 }
+                String logResponse = response;
+                logResponse = StringFunc.replaceString(logResponse, "\n", "\\n");
+                logResponse = StringFunc.replaceString(logResponse, "\r", "\\r");
+                SLog.log(SLog.Debug, "ATManager", "commandResponse: " + logResponse);
             } else {
                 atCommand.send(command, listener);
             }
@@ -58,7 +65,10 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
             SLog.log(SLog.Alert, "ATManager", "ATCommandFailedException send " + command);
         }
         if (response.indexOf("ERROR") >= 0) {
-            SLog.log(SLog.Warning, "ATManager", response);
+            String logResponse = response;
+            logResponse = StringFunc.replaceString(logResponse, "\n", "\\n");
+            logResponse = StringFunc.replaceString(logResponse, "\r", "\\r");
+            SLog.log(SLog.Warning, "ATManager", logResponse);
         }
         return response;
     }
@@ -68,7 +78,11 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
             return;
         }
 
-        SLog.log(SLog.Debug, "ATManager", "ATListenerEvents: (" + event.length() + ") " + event);
+        String logEvent = event;
+        logEvent = StringFunc.replaceString(logEvent, "\n", "\\n");
+        logEvent = StringFunc.replaceString(logEvent, "\r", "\\r");
+
+        SLog.log(SLog.Debug, "ATManager", "ATListenerEvents: " + logEvent);
         
         if (event.indexOf("+CGREG") >= 0) {
             try {
@@ -116,7 +130,11 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
     }
 
     public void ATResponse(String response) {
-        SLog.log(SLog.Debug, "ATManager", "commandResponse: " + response);
+        String logResponse = response;
+        logResponse = StringFunc.replaceString(logResponse, "\n", "\\n");
+        logResponse = StringFunc.replaceString(logResponse, "\r", "\\r");
+
+        SLog.log(SLog.Debug, "ATManager", "commandResponse: " + logResponse);
         if (response.indexOf("ERROR") >= 0) {
             SLog.log(SLog.Error, "ATManager", response);
         }

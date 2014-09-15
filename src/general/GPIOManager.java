@@ -60,7 +60,7 @@ public class GPIOManager {
     public void eventGPIOValueChanged(String message) {
         SLog.log(SLog.Debug, "GPIOManager", "Received SCPOL: " + message);
 
-        String[] lines = StringSplitter.split(message, "\r\n");
+        String[] lines = StringFunc.split(message, "\r\n");
         SLog.log(SLog.Debug, "GPIOManager", "lines.length: " + lines.length);
 
         if (lines.length < 1) {
@@ -72,7 +72,7 @@ public class GPIOManager {
          * example: ^SCPOL: 6,1
          */
         if (lines[1].startsWith("^SCPOL: ")) {
-            String[] values = StringSplitter.split(lines[1].substring(8), ",");
+            String[] values = StringFunc.split(lines[1].substring(8), ",");
             if (values.length == 2) {
                 int ioID;
                 int value;
@@ -97,7 +97,7 @@ public class GPIOManager {
     private void processSGIO(String message) {
         SLog.log(SLog.Debug, "GPIOManager", "Received SGIO: " + message);
 
-        String[] lines = StringSplitter.split(message, "\r\n");
+        String[] lines = StringFunc.split(message, "\r\n");
         SLog.log(SLog.Debug, "GPIOManager", "lines.length: " + lines.length);
 
         if (lines.length < 2) {

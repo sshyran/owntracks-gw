@@ -31,7 +31,7 @@ public class ProcessSMSThread extends Thread {
         String cmgs = ATManager.getInstance().executeCommandSynchron("AT+CPMS?\r");
         SLog.log(SLog.Debug, "ProcessSMSThread", "processCMGS " + cmgs);
 
-        String[] lines = StringSplitter.split(cmgs, "\r\n");
+        String[] lines = StringFunc.split(cmgs, "\r\n");
         SLog.log(SLog.Debug, "ProcessSMSThread", "lines.length: " + lines.length);
 
         if (lines.length < 2) {
@@ -44,7 +44,7 @@ public class ProcessSMSThread extends Thread {
          * example +CPMS: "MT",1,45,"MT",1,45,"MT",1,45
          */
         if (lines[1].startsWith("+CPMS: ")) {
-            String[] values = StringSplitter.split(lines[1].substring(7), ",");
+            String[] values = StringFunc.split(lines[1].substring(7), ",");
             SLog.log(SLog.Debug, "ProcessSMSThread", "values.length: " + values.length);
 
             if (values.length == 9) {
@@ -78,7 +78,7 @@ public class ProcessSMSThread extends Thread {
     public static void eventSMSArrived(String cmti) {
         SLog.log(SLog.Debug, "ProcessSMSThread", "processCMTI " + cmti);
 
-        String[] lines = StringSplitter.split(cmti, "\r\n");
+        String[] lines = StringFunc.split(cmti, "\r\n");
         SLog.log(SLog.Debug, "ProcessSMSThread", "lines.length: " + lines.length);
 
         if (lines.length < 2) {
@@ -90,7 +90,7 @@ public class ProcessSMSThread extends Thread {
          * example: +CMTI: "MT",1
          */
         if (lines[1].startsWith("+CMTI: ")) {
-            String[] values = StringSplitter.split(lines[1].substring(7), ",");
+            String[] values = StringFunc.split(lines[1].substring(7), ",");
             if (values.length == 2) {
                 int numberOfNewMessages;
 
@@ -110,7 +110,7 @@ public class ProcessSMSThread extends Thread {
     void processCMGR(String cmgr) {
         SLog.log(SLog.Debug, "ProcessSMSThread", "processCMGR " + cmgr);
 
-        String[] lines = StringSplitter.split(cmgr, "\r\n");
+        String[] lines = StringFunc.split(cmgr, "\r\n");
         SLog.log(SLog.Debug, "ProcessSMSThread", "lines.length: " + lines.length);
 
         if (lines.length < 2) {
@@ -125,7 +125,7 @@ public class ProcessSMSThread extends Thread {
          *           OK
          */
         if (lines[1].startsWith("+CMGR: ")) {
-            String[] values = StringSplitter.split(lines[1].substring(7), ",");
+            String[] values = StringFunc.split(lines[1].substring(7), ",");
             SLog.log(SLog.Debug, "ProcessSMSThread", "values.length: " + values.length);
             if (values.length > 3) {
                 int index = 0;
