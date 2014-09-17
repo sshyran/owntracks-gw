@@ -162,8 +162,8 @@
   - publish:
       values: ""
       validity: reboot
-      default: owntracks/gw
-      desc: Base topic for MQTT publishes
+      default: owntracks/gw/
+      desc: Base topic for MQTT publishes. Note, you'll want a trailing slash on this.
   - subscription:
       values: ""
       validity: reboot
