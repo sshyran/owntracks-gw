@@ -112,7 +112,7 @@
   - fields:
       values: ""
       validity: immediate
-      default: ""
+      default: "course,speed,altitude,distance,trip"
       desc: Comma separated list of optional fields in published message. May include any of `course`, `speed`, `altitude`, `distance`, `battery`, `trip`
   - host:
       values: string
