@@ -454,7 +454,7 @@ public class LocationManager {
 
     private String JSONString(Location location, String reason, double distance) {
         if (location != null) {
-            String[] fields = StringFunc.split(Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,battery,trip"), ",");
+            String[] fields = StringFunc.split(Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,trip"), ",");
 
             String json;
             json = "{\"_type\":\"location\"";
@@ -493,7 +493,7 @@ public class LocationManager {
                 json = json.concat(",\"trip\":" + (long) trip);
             }
             if (StringFunc.isInStringArray("battery", fields)) {
-                json = json.concat(",\"batt\":" + BatteryManager.getInstance().getExternalVoltageString() + "\"");
+                json = json.concat(",\"batt\":\"" + BatteryManager.getInstance().getExternalVoltageString() + "\"");
             }
 
             json = json.concat("}");

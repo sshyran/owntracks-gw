@@ -123,9 +123,13 @@ public class Settings {
                 fconn = (FileConnection) Connector.open(filePath + fileName + ".old");
                 if (!fconn.exists()) {
                     SLog.log(SLog.Warning, "Settings", "no .old");
+                    fconn.close();
+                    fconn = (FileConnection) Connector.open(filePath + fileName);
+                    fconn.create();
+                } else {    
                     fconn.rename(fileName);
                     fconn.close();
-                    return;
+                    fconn = (FileConnection) Connector.open(filePath + fileName);
                 }
             }
 
