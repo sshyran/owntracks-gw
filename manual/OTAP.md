@@ -67,5 +67,6 @@ See also: [OTAP on JavaCint](http://www.javacint.com/OTAP)
 
 * We haven't been able to convice the module to perform OTA upgrades if the `otapURI` doesn't end in the string `".jad"`, irrespective of filename, content-type or content-disposition.
 * `otapURI` is invoked with an HTTP GET method, whereas `notifyURI` is POSTed to.
+* The scheme must be `http`; HTTP over TLS (`https`) is not supported by the modem. This means that any credentials you use will be passed in clear-text.
 
 \newpage
