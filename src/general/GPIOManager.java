@@ -151,7 +151,7 @@ public class GPIOManager {
                             + "/gpio/1",
                             Settings.getInstance().getSetting("qos", 1),
                             Settings.getInstance().getSetting("retain", true),
-                            ("" + value).getBytes()
+                            ("" + (1 - value)).getBytes()
                     );
                 }
                 break;
@@ -164,7 +164,7 @@ public class GPIOManager {
                             + "/gpio/3",
                             Settings.getInstance().getSetting("qos", 1),
                             Settings.getInstance().getSetting("retain", true),
-                            ("" + value).getBytes()
+                            ("" + (1 - value)).getBytes()
                     );
                 }
                 break;
@@ -177,7 +177,7 @@ public class GPIOManager {
                         + "/gpio/7",
                         Settings.getInstance().getSetting("qos", 1),
                         Settings.getInstance().getSetting("retain", true),
-                        ("" + value).getBytes()
+                        ("" + (1 - value)).getBytes()
                 );
                 break;
             default:
