@@ -6,7 +6,7 @@ overhead. MQTT is ideal for "difficult" networks (such as mobile networks),
 which is why we chose this protocol for OwnTracks. The MQTT protocol has been
 standardized since 2013.
 
-The MQTT protocol provides one-to-may message distribution over TCP/IP with a
+The MQTT protocol provides one-to-many message distribution over TCP/IP with a
 small transport overhead, and a method to notify parties of abnormal
 disconnection of a client. This method is generally known as Last Will and
 Testament (LWT) which we use to inform you of a Greenwich' online/offline status.

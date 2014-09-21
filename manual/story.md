@@ -8,8 +8,8 @@ system, the low protocol overhead it requires, and its resilience to bad network
 (See the [section on MQTT](#mqttintro).) (Even so, you can remotely configure and
 query a Greenwich via SMS if you need to.)
 
-A very important aspect of Greenwich OwnTracks is our use of secure TLS
-(formerly SSL) for ensuring encrypted connections between the devices and your
+A very important aspect of Greenwich OwnTracks is our use of Transport Layer Security (TLS, 
+formerly SSL) for ensuring encrypted connections between the devices and your
 private infrastructure.
 
 Greenwich devices thus utilize MQTT for communications with your infrastructure.
