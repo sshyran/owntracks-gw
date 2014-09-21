@@ -20,7 +20,7 @@ public class SocketGPRSThread extends Thread {
     private TimerTask GPRSTimeoutTimerTask = null;
     private boolean GPRSTimeout;
 
-    final private int nothingSleep = 500;
+    final private int nothingSleep = 1000;
     final private int errorSleep = 5000;
     final private int closingSleep = 2000;
 
@@ -32,7 +32,6 @@ public class SocketGPRSThread extends Thread {
     public int cgreg = -1;
 
     private final Queue gpsQ;
-    private Publish publish = null;
 
     private final Timer timer;
     private final TimerTask timerTask;
@@ -59,7 +58,8 @@ public class SocketGPRSThread extends Thread {
     }
 
     public SocketGPRSThread() {
-        gpsQ = new Queue(100, "gpsQ");
+        //gpsQ = new Queue(100, "gpsQ");
+        gpsQ = new Queue("gpsQ");
 
         timer = new Timer();
         timerTask = new NetworkCheckTimerTask();
@@ -124,6 +124,39 @@ public class SocketGPRSThread extends Thread {
         public byte[] payload;
         public boolean retain;
         public int qos;
+
+        byte[] serialize() {
+            byte[] bytes = new byte[4 + topic.getBytes().length + payload.length];
+            bytes[0] = (byte) (retain ? 1 : 0);
+            bytes[1] = (byte) (qos % 3);
+            byte[] topicBytes = topic.getBytes();
+            bytes[2] = (byte) (topicBytes.length);
+            bytes[3] = (byte) (payload.length);
+            System.arraycopy(topicBytes, 0, bytes, 4, topicBytes.length);
+            System.arraycopy(payload, 0, bytes, 4 + topicBytes.length, payload.length);
+            SLog.log(SLog.Debug, "SocketGPRSThread",
+                    "Packed put " + bytes.length + " " + bytes[0] + " " + bytes[1] + " " + bytes[2] + " " + bytes[3]);
+            return bytes;
+        }
+
+    }
+
+    Publish deserialize(byte[] bytes) {
+        Publish publish = null;
+        if (bytes != null) {
+            SLog.log(SLog.Debug, "SocketGPRSThread",
+                    "Packed get " + bytes.length + " " + bytes[0] + " " + bytes[1] + " " + bytes[2] + " " + bytes[3]);
+
+            publish = new Publish();
+            publish.retain = (bytes[0] == 1);
+            publish.qos = bytes[1];
+            int slen = bytes[2] >= 0 ? bytes[2] : bytes[2] + 256;
+            publish.topic = new String(bytes, 4, slen);
+            int plen = bytes[3] >= 0 ? bytes[3] : bytes[3] + 256;
+            publish.payload = new byte[plen];
+            System.arraycopy(bytes, 4 + slen, publish.payload, 0, plen);
+        }
+        return publish;
     }
 
     public synchronized boolean put(String topic, int qos, boolean retain, byte[] payload) {
@@ -132,13 +165,13 @@ public class SocketGPRSThread extends Thread {
         publish.payload = payload;
         publish.retain = retain;
         publish.qos = qos;
-        boolean putResult = gpsQ.put(publish);
-        SLog.log(SLog.Debug, "SocketGRPSThread", "gpsQ.size " + qSize());
+
+        boolean putResult = gpsQ.put(publish.serialize());
         return putResult;
     }
 
     public synchronized int qSize() {
-        return gpsQ.size() + ((publish == null) ? 0 : 1);
+        return gpsQ.size();
     }
 
     public void open() {
@@ -193,14 +226,10 @@ public class SocketGPRSThread extends Thread {
                 open();
             }
             if (MQTTHandler.getInstance().isConnected()) {
-                if (publish == null) {
-                    SLog.log(SLog.Debug, "SocketGRPSThread", "pre gpsQ.size " + qSize());
-                    publish = (Publish) gpsQ.get();
-                    SLog.log(SLog.Debug, "SocketGRPSThread", "post gpsQ.size " + qSize());
-                }
+                Publish publish = deserialize(gpsQ.get());
                 if (publish != null) {
                     if (processMessage(publish)) {
-                        publish = null;
+                        gpsQ.consume();
                     } else {
                         try {
                             Thread.sleep(errorSleep);
@@ -216,6 +245,7 @@ public class SocketGPRSThread extends Thread {
             }
             Thread.yield();
         }
+
         close();
     }
 
@@ -223,6 +253,7 @@ public class SocketGPRSThread extends Thread {
         SLog.log(SLog.Debug, "SocketGRPSThread", "processMessage: " + publish.topic);
         MQTTHandler.getInstance().publish(publish.topic, publish.qos, publish.retain, publish.payload);
         return MQTTHandler.getInstance().isConnected();
+
     }
 
     class NetworkCheckTimerTask extends TimerTask {

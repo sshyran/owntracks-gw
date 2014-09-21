@@ -3,72 +3,115 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package general;
 
-import java.util.Vector;
+import javax.microedition.rms.RecordStore;
+import javax.microedition.rms.RecordStoreException;
+import javax.microedition.rms.RecordStoreFullException;
+import javax.microedition.rms.RecordStoreNotFoundException;
+import javax.microedition.rms.RecordStoreNotOpenException;
+import javax.microedition.rms.InvalidRecordIDException;
 
 /**
  *
  * @author christoph
  */
 public class Queue {
-    
-    private final Vector vector;
-    private final int capacity;
     private final String name;
-    private boolean loaded;
     
-    Queue(int capacity, String name) {
+    private RecordStore recordStore;
+    private int recordID = 1;
+
+    Queue(String name) {
         this.name = name;
-        this.capacity = capacity;
-        if (capacity > 0) {
-            vector = new Vector(capacity);
-        } else {
-            vector = new Vector();
+        try {
+            this.recordStore = RecordStore.openRecordStore(name, false);
+            SLog.log(SLog.Informational, "Queue", "openRecordStore " + name);
+            if (this.recordStore.getNumRecords() == 0) {
+                this.recordStore.closeRecordStore();
+                RecordStore.deleteRecordStore(name);
+                SLog.log(SLog.Informational, "Queue", "deleteRecordStore " + name);
+                this.recordStore = RecordStore.openRecordStore(name, true);
+                SLog.log(SLog.Informational, "Queue", "openRecordStore (create)" + name);
+            }
+        } catch (RecordStoreNotFoundException rsnfe) {
+            try {
+                this.recordStore = RecordStore.openRecordStore(name, true);
+                SLog.log(SLog.Informational, "Queue", "openRecordStore (create)" + name);
+            } catch (RecordStoreFullException rsfe) {
+                SLog.log(SLog.Error, "Queue", "RecordStoreFullException " + name);
+            } catch (RecordStoreException rse) {
+                SLog.log(SLog.Error, "Queue", "RecordStoreException " + name);
+
+            }
+        } catch (RecordStoreFullException rsfe) {
+            SLog.log(SLog.Error, "Queue", "RecordStoreFullException " + name);
+
+        } catch (RecordStoreException rse) {
+            SLog.log(SLog.Error, "Queue", "RecordStoreException " + name);
+
         }
     }
-    
-    public synchronized Object get() {
-        load();
-        if (vector.isEmpty()) {
-            return null;
-        } else {
-            Object o = vector.firstElement();
-            vector.removeElementAt(0);
-            return o;
+
+    public synchronized byte[] get() {
+        byte[] bytes = null;
+        try {
+            SLog.log(SLog.Debug, "Queue", "getNumRechords " + recordStore.getNumRecords());            
+            if (recordStore.getNumRecords() == 0) {
+                return null;
+            } else {
+                boolean gotRecord = false;
+                do {
+                    try {
+                        SLog.log(SLog.Debug, "Queue", "getRecord " + recordID);            
+                        bytes = recordStore.getRecord(recordID);
+                        gotRecord = true;
+                    } catch (InvalidRecordIDException irie) {
+                        SLog.log(SLog.Informational, "Queue", "InvalidRecordIDException " + recordID);            
+                        recordID++;
+                    }
+                } while (!gotRecord);
+            }
+        } catch (RecordStoreNotOpenException rsnoe) {
+            SLog.log(SLog.Error, "Queue", "RecordStoreNotOpenException getRecord " + recordID);
+        } catch (RecordStoreException rse) {
+            SLog.log(SLog.Error, "Queue", "RecordStoreException getRecord " + recordID);
+        }
+        return bytes;
+    }
+
+    public synchronized void consume() {
+        try {
+            SLog.log(SLog.Debug, "Queue", "deleteRecord " + recordID);            
+            recordStore.deleteRecord(recordID);
+            recordID++;
+        } catch (RecordStoreNotOpenException rsnoe) {
+            SLog.log(SLog.Error, "Queue", "RecordStoreNotOpenException deleteRecord " + recordID);
+        } catch (RecordStoreException rse) {
+            SLog.log(SLog.Error, "Queue", "RecordStoreException deleteRecord " + recordID);
         }
     }
-    
-    public synchronized boolean put(Object o) {
-        load();
-        boolean overflow = false;
-        if (capacity > 0  && vector.size() >= capacity) {
-            vector.removeElementAt(0);
-            overflow = true;
+
+    public synchronized boolean put(byte[] bytes) {
+        try {
+            int newRecordId =  recordStore.addRecord(bytes, 0, bytes.length);
+            SLog.log(SLog.Debug, "Queue", "addRecord " + newRecordId);
+        } catch (RecordStoreNotOpenException rsnoe) {
+            SLog.log(SLog.Error, "Queue", "RecordStoreNotOpenException addRecord");
+            return false;
+        } catch (RecordStoreException rse) {
+            SLog.log(SLog.Error, "Queue", "RecordStoreException addRecord");
+            return false;
         }
-        vector.addElement(o);
-        return overflow;
+        return true;
     }
-    
-    private int load() {
-        if (!loaded && name != null) {
-            loaded = true;
-        }
-        return vector.size();
-    }
-    
-    public synchronized void store() {
-        load();
-        if (name != null) {
-        }
-    }
-    
+
     public synchronized int size() {
-        return vector.size();
-    }
-    
-    public synchronized int capacity() {
-        return capacity;
+        try {
+            return recordStore.getNumRecords();
+        } catch (RecordStoreNotOpenException rsnoe) {
+            SLog.log(SLog.Error, "Queue", "RecordStoreNotOpenException getNumRecords");
+            return 0;
+        }
     }
 }
