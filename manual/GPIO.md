@@ -14,14 +14,14 @@ This is the 14pin Molex connector seen from the back (i.e. plugged into `S1` on 
 
 Each input (GPIO `1`, `3`, `7`) has an allowed voltage range of +- VIN (9-32V) with LOW being recognized at `<0.5V` and HIGH at `>3.0V`.
 
-The OwnTracks-Edition of the software surfaces the state (HIGH/LOW) of these pins into MQTT publishes by publishing a payload of `0` or `1`, respectively, depending on the pin's state. One publish occurs per pin as soon as its state changes. Note, that the internal state is inverted compared to the external level; this is supposed to be typical for embedded devices. In other words, the published payload is `0` for HIGH and `1` for LOW.
+The OwnTracks-Edition of the software surfaces the state (HIGH/LOW) of these pins into MQTT publishes by publishing a payload of `1` or `0`, respectively, depending on the pin's state. One publish occurs per pin as soon as its state changes.
 
 The topic used for publishing is the general topic of the device with `/gpio/<pin>` appended to it:
 
 ```
-owntracks/acme/van17/gpio/1 1
-owntracks/acme/van17/gpio/3 1
-owntracks/acme/van17/gpio/7 0
+owntracks/acme/van17/gpio/1 0
+owntracks/acme/van17/gpio/3 0
+owntracks/acme/van17/gpio/7 1
 ```
 
 ![Arduino](art/arduino.png)
