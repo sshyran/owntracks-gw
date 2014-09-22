@@ -58,8 +58,7 @@ public class SocketGPRSThread extends Thread {
     }
 
     public SocketGPRSThread() {
-        //gpsQ = new Queue(100, "gpsQ");
-        gpsQ = new Queue("gpsQ");
+        gpsQ = new Queue(Settings.getInstance().getSetting("maxSize", 1024L * 1024L), "gpsQ");
 
         timer = new Timer();
         timerTask = new NetworkCheckTimerTask();

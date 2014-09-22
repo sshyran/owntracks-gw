@@ -18,12 +18,20 @@ import javax.microedition.rms.InvalidRecordIDException;
  */
 public class Queue {
     private final String name;
+    private final long maxSize;
+    private static final int maxRecord = 4 + 255 + 255;
     
     private RecordStore recordStore;
-    private int recordID = 1;
+    private int recordID;
 
-    Queue(String name) {
+    Queue(long maxSize, String name) {
         this.name = name;
+        this.maxSize = maxSize;
+        shrink();
+    }
+    
+    private void shrink() {
+        recordID = 1;
         try {
             this.recordStore = RecordStore.openRecordStore(name, false);
             SLog.log(SLog.Informational, "Queue", "openRecordStore " + name);
@@ -32,12 +40,12 @@ public class Queue {
                 RecordStore.deleteRecordStore(name);
                 SLog.log(SLog.Informational, "Queue", "deleteRecordStore " + name);
                 this.recordStore = RecordStore.openRecordStore(name, true);
-                SLog.log(SLog.Informational, "Queue", "openRecordStore (create)" + name);
+                SLog.log(SLog.Informational, "Queue", "openRecordStore (create) " + name);
             }
         } catch (RecordStoreNotFoundException rsnfe) {
             try {
                 this.recordStore = RecordStore.openRecordStore(name, true);
-                SLog.log(SLog.Informational, "Queue", "openRecordStore (create)" + name);
+                SLog.log(SLog.Informational, "Queue", "openRecordStore (create) " + name);
             } catch (RecordStoreFullException rsfe) {
                 SLog.log(SLog.Error, "Queue", "RecordStoreFullException " + name);
             } catch (RecordStoreException rse) {
@@ -49,15 +57,22 @@ public class Queue {
 
         } catch (RecordStoreException rse) {
             SLog.log(SLog.Error, "Queue", "RecordStoreException " + name);
-
         }
     }
 
     public synchronized byte[] get() {
         byte[] bytes = null;
         try {
-            SLog.log(SLog.Debug, "Queue", "getNumRechords " + recordStore.getNumRecords());            
+            SLog.log(SLog.Debug, "Queue", "getNumRechords " + recordStore.getNumRecords()
+                + " size " + recordStore.getSize()
+                + "/" + recordStore.getSizeAvailable()
+                + "/" + maxSize);            
             if (recordStore.getNumRecords() == 0) {
+            if (recordStore.getSize() + maxRecord > maxSize
+                    || maxRecord > recordStore.getSizeAvailable()) {
+                    recordStore.closeRecordStore();
+                    shrink();
+                }
                 return null;
             } else {
                 boolean gotRecord = false;
@@ -94,8 +109,16 @@ public class Queue {
 
     public synchronized boolean put(byte[] bytes) {
         try {
+            SLog.log(SLog.Debug, "Queue", "addRecord " + recordStore.getNextRecordID()
+                + " size " + recordStore.getSize()
+                + "/" + recordStore.getSizeAvailable()
+                + "/" + maxSize);
+            if (recordStore.getSize() + maxRecord > maxSize
+                    || maxRecord > recordStore.getSizeAvailable()) {
+                SLog.log(SLog.Warning, "Queue", "maxSize limit reached");
+                return false;
+            }
             int newRecordId =  recordStore.addRecord(bytes, 0, bytes.length);
-            SLog.log(SLog.Debug, "Queue", "addRecord " + newRecordId);
         } catch (RecordStoreNotOpenException rsnoe) {
             SLog.log(SLog.Error, "Queue", "RecordStoreNotOpenException addRecord");
             return false;
