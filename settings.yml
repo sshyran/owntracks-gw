@@ -279,6 +279,11 @@
       validity: immediate
       default: "0"
       desc: timestamp in UNIX epoch (seconds since 1970-01-01 00:00) until location publishes are suspended
+  - maxSize:
+      values: "numeric"
+      validity: reboot
+      default: "1048576"
+      desc: maximum size of persistent message store in bytes (default = 1 MB).
 
 - Debugging and Logging:
   - block: |
