@@ -9,7 +9,6 @@ import choral.io.CheckUpgrade;
 import com.cinterion.io.BearerControl;
 import com.m2mgo.util.GPRSConnectOptions;
 import java.util.Date;
-import java.util.Enumeration;
 import javax.microedition.midlet.*;
 
 /**
@@ -28,7 +27,7 @@ public class AppMain extends MIDlet {
     final public static String accelerometerWakeup = "AccelerometerWakeup";
     final public static String alarmClockWakeup = "AlarmClockWakeup";
     public String wakeupMode = accelerometerWakeup;
-    
+
     UserwareWatchDogTask userwareWatchDogTask;
     GPIO6WatchDogTask gpio6WatchDogTask;
 
@@ -130,6 +129,17 @@ public class AppMain extends MIDlet {
 
             cleanup();
 
+            if (VersionChecker.getInstance().mismatch()) {
+                SLog.log(SLog.Informational, "AppMain", "version changed");
+                String parameters[] = new String[1];
+                parameters[0] = "upgrade";
+                CommandProcessor.getInstance().perform(parameters[0], parameters);
+                while (true) {
+                    SLog.log(SLog.Informational, "AppMain", "upgrading...");
+                    Thread.sleep(1000);
+                }
+            }
+
             CommGPSThread.getInstance().terminate = true;
             CommGPSThread.getInstance().join();
 
@@ -212,6 +222,7 @@ public class AppMain extends MIDlet {
 
     protected void shutdown() {
         SLog.log(SLog.Debug, "AppMain", "shutdown");
+
         Date date = LocationManager.getInstance().dateLastFix();
         if (date != null) {
             SLog.log(SLog.Debug, "AppMain", "powerDown last fix time " + DateFormatter.isoString(date));
@@ -277,6 +288,11 @@ public class AppMain extends MIDlet {
         if (BatteryManager.getInstance()
                 .isBatteryVoltageLow()) {
             SLog.log(SLog.Warning, "AppMain", "lowBattery");
+            return true;
+        }
+
+        if (VersionChecker.getInstance().mismatch()) {
+            SLog.log(SLog.Informational, "AppMain", "VersionChecker mismatch");
             return true;
         }
 

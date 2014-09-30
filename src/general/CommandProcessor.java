@@ -85,7 +85,7 @@ public class CommandProcessor {
                         return perform(words[0], words);
                     }
                 } else {
-                    message = message.concat("illegal command");
+                    message = message.concat("illegal command " + commandLine);
                     return false;
                 }
             } else {
@@ -96,7 +96,9 @@ public class CommandProcessor {
         }
     }
 
-    private boolean perform(String command, String[] parameters) {
+    public boolean perform(String command, String[] parameters) {
+        SLog.log(SLog.Debug, "CommandProcessor", "perform " + command + " " + parameters.length);
+
         message = "";
         Settings settings = Settings.getInstance();
         if (command.equalsIgnoreCase(gps)) {
