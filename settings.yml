@@ -65,6 +65,16 @@
       validity: upgrade
       default: ""
       desc: optional URL to POST result of an OTAP upgrade. If this is not set, no notification will be posted
+  - versionURI:
+      values: string
+      validity: immediate
+      default: ""
+      desc: optional URL to check for app version updates. If not set, version checking is off
+  - versionInterval:
+      values: integer
+      validity: immediate
+      default: 10800 (3 hours)
+      desc: interval in which the app version is checked (see versionURI)
   - lowBattery:
       values: integer
       validity: immediate
