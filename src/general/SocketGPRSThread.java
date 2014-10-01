@@ -9,6 +9,8 @@ package general;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+import org.json.me.JSONException;
+import org.json.me.JSONObject;
 
 public class SocketGPRSThread extends Thread {
 
@@ -33,9 +35,13 @@ public class SocketGPRSThread extends Thread {
 
     private final Queue gpsQ;
 
-    private final Timer timer;
-    private final TimerTask timerTask;
+    private final Timer networkCheckTimer;
+    private final TimerTask networkCheckTimerTask;
     private final int NetworkCheckLoop = 30;
+
+    private final Timer providerCheckTimer;
+    private final TimerTask providerCheckTimerTask;
+    private final int ProviderCheckLoop = 300;
 
     public boolean isConnected() {
         return MQTTHandler.getInstance().isConnected();
@@ -60,9 +66,13 @@ public class SocketGPRSThread extends Thread {
     public SocketGPRSThread() {
         gpsQ = new Queue(Settings.getInstance().getSetting("maxSize", 1024L * 1024L), "gpsQ");
 
-        timer = new Timer();
-        timerTask = new NetworkCheckTimerTask();
-        timer.schedule(timerTask, 0, NetworkCheckLoop * 1000);
+        networkCheckTimer = new Timer();
+        networkCheckTimerTask = new NetworkCheckTimerTask();
+        networkCheckTimer.schedule(networkCheckTimerTask, NetworkCheckLoop * 1000, NetworkCheckLoop * 1000);
+
+        providerCheckTimer = new Timer();
+        providerCheckTimerTask = new ProviderCheckTimerTask();
+        providerCheckTimer.schedule(providerCheckTimerTask, ProviderCheckLoop * 1000, ProviderCheckLoop * 1000);
 
         startTimeoutTimer();
     }
@@ -88,11 +98,13 @@ public class SocketGPRSThread extends Thread {
 
         GPRSTimeoutTimer = new Timer();
         GPRSTimeoutTimerTask = new GPRSTimeout();
-        GPRSTimeoutTimer.schedule(GPRSTimeoutTimerTask, Settings.getInstance().getSetting("gprsTimeout", 600) * 1000);
+        GPRSTimeoutTimer.schedule(GPRSTimeoutTimerTask,
+                Settings.getInstance().getSetting("gprsTimeout", 600) * 1000);
 
         MQTTTimeoutTimer = new Timer();
         MQTTTimeoutTimerTask = new MQTTTimeout();
-        MQTTTimeoutTimer.schedule(MQTTTimeoutTimerTask, Settings.getInstance().getSetting("mqttTimeout", 600) * 1000);
+        MQTTTimeoutTimer.schedule(MQTTTimeoutTimerTask,
+                Settings.getInstance().getSetting("mqttTimeout", 600) * 1000);
 
         SLog.log(SLog.Debug, "SocketGRPSThread", "start gprsTimeout  & mqttTimeout timer");
     }
@@ -125,16 +137,30 @@ public class SocketGPRSThread extends Thread {
         public int qos;
 
         byte[] serialize() {
-            byte[] bytes = new byte[4 + topic.getBytes().length + payload.length];
-            bytes[0] = (byte) (retain ? 1 : 0);
-            bytes[1] = (byte) (qos % 3);
-            byte[] topicBytes = topic.getBytes();
-            bytes[2] = (byte) (topicBytes.length);
-            bytes[3] = (byte) (payload.length);
-            System.arraycopy(topicBytes, 0, bytes, 4, topicBytes.length);
-            System.arraycopy(payload, 0, bytes, 4 + topicBytes.length, payload.length);
+            JSONObject json = new JSONObject();
+            try {
+                json.put("retain", retain);
+                json.put("qos", qos);
+                json.put("topic", topic);
+                json.put("payload", new String(payload));
+            } catch (JSONException je) {
+                //
+            }
             SLog.log(SLog.Debug, "SocketGPRSThread",
-                    "Packed put " + bytes.length + " " + bytes[0] + " " + bytes[1] + " " + bytes[2] + " " + bytes[3]);
+                    "JSON put " + json.toString());
+            byte[] bytes = json.toString().getBytes();
+            /*
+             byte[] bytes = new byte[4 + topic.getBytes().length + payload.length];
+             bytes[0] = (byte) (retain ? 1 : 0);
+             bytes[1] = (byte) (qos % 3);
+             byte[] topicBytes = topic.getBytes();
+             bytes[2] = (byte) (topicBytes.length);
+             bytes[3] = (byte) (payload.length);
+             System.arraycopy(topicBytes, 0, bytes, 4, topicBytes.length);
+             System.arraycopy(payload, 0, bytes, 4 + topicBytes.length, payload.length);
+             SLog.log(SLog.Debug, "SocketGPRSThread",
+             "Packed put " + bytes.length + " " + bytes[0] + " " + bytes[1] + " " + bytes[2] + " " + bytes[3]);
+             */
             return bytes;
         }
     }
@@ -142,17 +168,29 @@ public class SocketGPRSThread extends Thread {
     Publish deserialize(byte[] bytes) {
         Publish publish = null;
         if (bytes != null) {
-            SLog.log(SLog.Debug, "SocketGPRSThread",
-                    "Packed get " + bytes.length + " " + bytes[0] + " " + bytes[1] + " " + bytes[2] + " " + bytes[3]);
+            try {
+                JSONObject json = new JSONObject(new String(bytes));
+                SLog.log(SLog.Debug, "SocketGPRSThread",
+                        "JSON get " + json.toString());
 
-            publish = new Publish();
-            publish.retain = (bytes[0] == 1);
-            publish.qos = bytes[1];
-            int slen = bytes[2] >= 0 ? bytes[2] : bytes[2] + 256;
-            publish.topic = new String(bytes, 4, slen);
-            int plen = bytes[3] >= 0 ? bytes[3] : bytes[3] + 256;
-            publish.payload = new byte[plen];
-            System.arraycopy(bytes, 4 + slen, publish.payload, 0, plen);
+                publish = new Publish();
+                publish.retain = json.getBoolean("retain");
+                publish.qos = json.getInt("qos");
+                publish.topic = json.getString("topic");
+                publish.payload = json.getString("payload").getBytes();
+            } catch (JSONException je) {
+                SLog.log(SLog.Debug, "SocketGPRSThread",
+                        "Packed get " + bytes.length + " " + bytes[0] + " " + bytes[1] + " " + bytes[2] + " " + bytes[3]);
+
+                publish = new Publish();
+                publish.retain = (bytes[0] == 1);
+                publish.qos = bytes[1];
+                int slen = bytes[2] >= 0 ? bytes[2] : bytes[2] + 256;
+                publish.topic = new String(bytes, 4, slen);
+                int plen = bytes[3] >= 0 ? bytes[3] : bytes[3] + 256;
+                publish.payload = new byte[plen];
+                System.arraycopy(bytes, 4 + slen, publish.payload, 0, plen);
+            }
         }
         return publish;
     }
@@ -289,6 +327,14 @@ public class SocketGPRSThread extends Thread {
                 network = false;
                 operator = "";
             }
+            response = ATManager.getInstance().executeCommandSynchron("AT+CSQ\r");
+        }
+    }
+
+    class ProviderCheckTimerTask extends TimerTask {
+
+        public void run() {
+            String response = ATManager.getInstance().executeCommandSynchron("AT+COPS=?\r");
         }
     }
 }
