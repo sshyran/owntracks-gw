@@ -66,10 +66,11 @@ See also: [OTAP on JavaCint](http://www.javacint.com/OTAP)
 
 ### `versionURI`
 
-If the Greenwich is configured with a `versionURI`, it will periodically (every
-`versionInterval` seconds -- default: 3 hours) perform a HTTP POST to that URI
-in order to be informed on whether the device should or should not attempt an OTAP
-upgrade as described above.
+If the Greenwich is configured with a `versionURI`, it will periodically (first
+at startup and then every `versionInterval` seconds -- default: 3 hours)
+perform a HTTP POST to that URI in order to be informed on whether the device
+should or should not attempt an OTAP upgrade as described above. The device
+will also wake up during `sleep` to perform the check.
 
 ```
 set versionURI=http://example.com/versioncheck

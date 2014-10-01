@@ -17,35 +17,32 @@ the same MQTT broker we're talking to.
 
 ```bash
 mosquitto_pub -u $user -P $pass -t owntracks/acme/van17/cmd -m 'login 123456'
-mosquitto_pub -u $user -P $pass -t owntracks/acme/van17/cmd -m 'set raw=0'
+mosquitto_pub -u $user -P $pass -t owntracks/acme/van17/cmd -m 'state'
 ```
 
 We recommend subscribing to the output of the commands, as the device will inform
-you whether the operation was completed, and in the case of commands which produce
-output, will use that to communicate:
+you of errors, and in the case of commands which produce
+output, will use that topic to publish output:
 
 ```bash
 mosquitto_sub -u $user -P $pass -v -t owntracks/acme/van17/cmd/out
-
-owntracks/acme/van17/cmd/out ACK: login accepted
-owntracks/acme/van17/cmd/out ACK: raw=0
 ```
 
 Sample output for `state` command
 ```
-NUMSAT=10
-BEARER=3
-GPRS=1
-CREG=5
-CGREG=5
-BATT=4.4
-EXTV=12.2
-Q=0
-CONN=1
-NETW=1
-OPER="Provider"
-WAKEUP=IgnitionWakeup
-DATE=2014-08-28 15:02:40
+owntracks/acme/van17/cmd/out NUMSAT=10
+owntracks/acme/van17/cmd/out BEARER=3
+owntracks/acme/van17/cmd/out GPRS=1
+owntracks/acme/van17/cmd/out CREG=5
+owntracks/acme/van17/cmd/out CGREG=5
+owntracks/acme/van17/cmd/out BATT=4.4
+owntracks/acme/van17/cmd/out EXTV=12.2
+owntracks/acme/van17/cmd/out Q=0
+owntracks/acme/van17/cmd/out CONN=1
+owntracks/acme/van17/cmd/out NETW=1
+owntracks/acme/van17/cmd/out OPER="Provider"
+owntracks/acme/van17/cmd/out WAKEUP=IgnitionWakeup
+owntracks/acme/van17/cmd/out DATE=2014-08-28 15:02:40
 ```
 
 Sample out for `device` command
