@@ -73,9 +73,9 @@ public class VersionChecker {
                 }
             }
         } catch (IOException ioe) {
-            SLog.log(SLog.Error, "VersionChecker", "IOException " + ioe);
+            SLog.log(SLog.Warning, "VersionChecker", "IOException " + ioe);
         } catch (IllegalArgumentException iae) {
-            SLog.log(SLog.Error, "VersionChecker", "IllegalArgumentExeption " + uri);
+            SLog.log(SLog.Warning, "VersionChecker", "IllegalArgumentExeption " + uri);
         } finally {
             if (os != null) {
                 try {

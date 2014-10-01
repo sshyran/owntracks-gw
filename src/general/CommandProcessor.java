@@ -63,6 +63,9 @@ public class CommandProcessor {
         message = "";
         SLog.log(SLog.Debug, "CommandProcessor", "execute " + (commandLine != null ? commandLine : "<null>"));
         if (commandLine != null && commandLine.length() > 0) {
+            commandLine = StringFunc.replaceString(commandLine, "\n", "");
+            commandLine = StringFunc.replaceString(commandLine, "\r", "");
+            commandLine = StringFunc.replaceString(commandLine, "\t", "");
             String[] words = StringFunc.split(commandLine, " ");
             if (words.length >= 1) {
                 Settings settings = Settings.getInstance();

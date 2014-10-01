@@ -215,7 +215,13 @@ public class MQTTHandler implements MqttCallback {
         }
         
         if (response.length() > 0) {
-            SocketGPRSThread.getInstance().put(topic.getName() + "/out", 0, false, response.getBytes());
+            SLog.log(SLog.Informational, "MQTTHandler", "response(" + response.length() + ") " + response);
+            String[] lines = StringFunc.split(response, "\r\n");
+            for (int i = 0; i < lines.length; i++) {
+                if (lines[i].length() > 0) {
+                    SocketGPRSThread.getInstance().put(topic.getName() + "/out", 0, false, lines[i].getBytes());
+                }
+            }
         }
     }
 
