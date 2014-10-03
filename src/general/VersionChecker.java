@@ -17,9 +17,6 @@ import javax.microedition.io.HttpsConnection;
  * @author christoph
  */
 public class VersionChecker {
-
-    private static long lastCheck = 0;
-
     private VersionChecker() {
     }
 
@@ -33,7 +30,8 @@ public class VersionChecker {
     }
 
     public boolean mismatch() {
-        SLog.log(SLog.Debug, "VersionChecker", "mismatch " + lastCheck);
+        long lastCheck = Settings.getInstance().getSetting("lastVersionCheck", 0L) * 1000L;
+        SLog.log(SLog.Debug, "VersionChecker", "mismatch " + (lastCheck / 1000L));
 
         if (lastCheck > 0
                 && lastCheck + Settings.getInstance().getSetting("versionInterval", 3 * 3600L) * 1000L
@@ -100,9 +98,8 @@ public class VersionChecker {
             }
         }
         SLog.log(SLog.Debug, "VersionChecker", "returning " + checkResult);
-        if (!checkResult) {
-            lastCheck = System.currentTimeMillis();
-        }
+        lastCheck = System.currentTimeMillis();
+        Settings.getInstance().setSetting("lastVersionCheck", Long.toString(lastCheck / 1000L));
         return checkResult;
     }
 }
