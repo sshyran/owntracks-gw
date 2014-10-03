@@ -325,7 +325,7 @@ public class CommandProcessor {
         message = message.concat("Q=" + SocketGPRSThread.getInstance().qSize() + CRLF);
         message = message.concat("CONN=" + (SocketGPRSThread.getInstance().isConnected() ? 1 : 0) + CRLF);
         message = message.concat("NETW=" + (SocketGPRSThread.getInstance().isNetwork() ? 1 : 0) + CRLF);
-        message = message.concat("OPER=" + SocketGPRSThread.getInstance().getOperator() + CRLF);
+        message = message.concat("OPER=" + SocketGPRSThread.getInstance().getOperatorList() + CRLF);
         message = message.concat("WAKEUP=" + AppMain.getInstance().wakeupMode + CRLF);
         message = message.concat("DATE=" + DateFormatter.isoString(new Date()) + CRLF);
         return true;

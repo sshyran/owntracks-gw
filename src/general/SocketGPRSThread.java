@@ -29,6 +29,7 @@ public class SocketGPRSThread extends Thread {
     public boolean terminate = false;
     private boolean network = false;
     private String operator = "";
+    private String lastOperatorList = "";
 
     public int creg = -1;
     public int cgreg = -1;
@@ -55,6 +56,10 @@ public class SocketGPRSThread extends Thread {
         return operator;
     }
 
+    public String getOperatorList() {
+        return lastOperatorList;
+    }
+
     public boolean isGPRSTimeout() {
         return GPRSTimeout;
     }
@@ -68,11 +73,11 @@ public class SocketGPRSThread extends Thread {
 
         networkCheckTimer = new Timer();
         networkCheckTimerTask = new NetworkCheckTimerTask();
-        networkCheckTimer.schedule(networkCheckTimerTask, NetworkCheckLoop * 1000, NetworkCheckLoop * 1000);
+        networkCheckTimer.schedule(networkCheckTimerTask, 0, NetworkCheckLoop * 1000);
 
         providerCheckTimer = new Timer();
         providerCheckTimerTask = new ProviderCheckTimerTask();
-        providerCheckTimer.schedule(providerCheckTimerTask, ProviderCheckLoop * 1000, ProviderCheckLoop * 1000);
+        providerCheckTimer.schedule(providerCheckTimerTask, 0, ProviderCheckLoop * 1000);
 
         startTimeoutTimer();
     }
@@ -332,9 +337,56 @@ public class SocketGPRSThread extends Thread {
     }
 
     class ProviderCheckTimerTask extends TimerTask {
+        //  AT+COPS=?\r\r\n+COPS: (2,"Vodafone.de",,"26202"),(1,"o2 - de",,"26207"),(1,"E-Plus",,"26203"),(1,"Telekom.de",,"26201"),,(0-4),(0,2)\r\n\r\nOK\r\n
 
         public void run() {
             String response = ATManager.getInstance().executeCommandSynchron("AT+COPS=?\r");
+            String currentOperator = "";
+            String availableOperators = "";
+            String forbiddenOperators = "";
+            String unknownOperators = "";
+            final String cops = "+COPS: ";
+            if (response.indexOf(cops) != -1) {
+                int pos = response.indexOf(cops) + cops.length();
+                while (response.substring(pos, pos + 1).equals("(")) {
+                    int end = response.indexOf(")", pos);
+                    if (end != -1) {
+                        String[] values = StringFunc.split(response.substring(pos + 1, end), ",");
+                        if (values.length == 4) {
+                            String operatorNumber = values[3].substring(1, values[3].length() - 1);
+                            String operatorName = values[1].substring(1, values[1].length() - 1);
+                            switch (Integer.parseInt(values[0])) {
+                                case 1:
+                                    availableOperators = availableOperators.concat(" +" + operatorNumber);
+                                    break;
+                                case 2:
+                                    currentOperator = operatorNumber;
+                                    break;
+                                case 3:
+                                    forbiddenOperators = forbiddenOperators.concat(" -" + operatorNumber);
+                                    break;
+                                case 0:
+                                default:
+                                    unknownOperators = unknownOperators.concat(" ?" + operatorNumber);
+                                    break;
+                            }
+                        }
+                    }
+                    pos = end + 2;
+                }
+            }
+            String operatorList = currentOperator + availableOperators + forbiddenOperators + unknownOperators;
+            if (!lastOperatorList.equals(operatorList)) {
+                put(
+                        Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                        + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                        + "/operators",
+                        Settings.getInstance().getSetting("qos", 1),
+                        Settings.getInstance().getSetting("retain", true),
+                        operatorList.getBytes()
+                );
+                lastOperatorList = operatorList;
+            }
         }
     }
 }
