@@ -17,6 +17,9 @@ import javax.microedition.io.HttpsConnection;
  * @author christoph
  */
 public class VersionChecker {
+
+    private boolean checkResult = false;
+
     private VersionChecker() {
     }
 
@@ -30,76 +33,77 @@ public class VersionChecker {
     }
 
     public boolean mismatch() {
-        long lastCheck = Settings.getInstance().getSetting("lastVersionCheck", 0L) * 1000L;
-        SLog.log(SLog.Debug, "VersionChecker", "mismatch " + (lastCheck / 1000L));
+        if (!checkResult) {
 
-        if (lastCheck > 0
-                && lastCheck + Settings.getInstance().getSetting("versionInterval", 3 * 3600L) * 1000L
-                > System.currentTimeMillis()) {
-            return false;
-        }
+            long lastCheck = Settings.getInstance().getSetting("lastVersionCheck", 0L) * 1000L;
+            SLog.log(SLog.Debug, "VersionChecker", "mismatch " + (lastCheck / 1000L));
 
-        String uri = Settings.getInstance().getSetting("versionURI", null);
-        if (uri == null) {
-            return false;
-        }
+            if (lastCheck == 0
+                    || lastCheck + Settings.getInstance().getSetting("versionInterval", 3 * 3600L) * 1000L
+                    < System.currentTimeMillis()) {
 
-        HttpConnection c = null;
-        InputStream is = null;
-        OutputStream os = null;
-
-        boolean checkResult = false;
-        try {
-            c = (HttpConnection) Connector.open(uri);
-            c.setRequestMethod("POST");
-            c.setRequestProperty("user-agent", "GW/" + MicroManager.getInstance().getIMEI());
-
-            os = c.openOutputStream();
-            os.write(AppMain.appMain.getAppProperty("MIDlet-Version").getBytes());
-
-            is = c.openDataInputStream();
-
-            int response = c.getResponseCode();
-            SLog.log(SLog.Debug, "VersionChecker", "getResponseCode " + response);
-            if (response == HttpConnection.HTTP_OK) {
-                int ch;
-                while ((ch = is.read()) != -1) {
-                    SLog.log(SLog.Debug, "VersionChecker", "read " + ch);
-                    if (ch == '1') {
+                String uri = Settings.getInstance().getSetting("versionURI", null);
+                if (uri != null) {
+                    if (uri.equals("1")) {
                         checkResult = true;
+                    } else {
+
+                        HttpConnection c = null;
+                        InputStream is = null;
+                        OutputStream os = null;
+
+                        try {
+                            c = (HttpConnection) Connector.open(uri);
+                            c.setRequestMethod("POST");
+                            c.setRequestProperty("user-agent", "GW/" + MicroManager.getInstance().getIMEI());
+
+                            os = c.openOutputStream();
+                            os.write(AppMain.appMain.getAppProperty("MIDlet-Version").getBytes());
+
+                            is = c.openDataInputStream();
+
+                            int response = c.getResponseCode();
+                            SLog.log(SLog.Debug, "VersionChecker", "getResponseCode " + response);
+                            if (response == HttpConnection.HTTP_OK) {
+                                int ch;
+                                while ((ch = is.read()) != -1) {
+                                    SLog.log(SLog.Debug, "VersionChecker", "read " + ch);
+                                    if (ch == '1') {
+                                        checkResult = true;
+                                    }
+                                }
+                            }
+                        } catch (IOException ioe) {
+                            SLog.log(SLog.Warning, "VersionChecker", "IOException " + ioe);
+                        } catch (IllegalArgumentException iae) {
+                            SLog.log(SLog.Warning, "VersionChecker", "IllegalArgumentExeption " + uri);
+                        } finally {
+                            if (os != null) {
+                                try {
+                                    os.close();
+                                } catch (IOException ioe) {
+                                }
+                            }
+                            if (is != null) {
+                                try {
+                                    is.close();
+                                } catch (IOException ioe) {
+                                }
+                            }
+                            if (c != null) {
+                                try {
+                                    c.close();
+                                } catch (IOException ioe) {
+                                }
+                            }
+                        }
                     }
                 }
-            }
-        } catch (IOException ioe) {
-            SLog.log(SLog.Warning, "VersionChecker", "IOException " + ioe);
-        } catch (IllegalArgumentException iae) {
-            SLog.log(SLog.Warning, "VersionChecker", "IllegalArgumentExeption " + uri);
-        } finally {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException ioe) {
-                    //
-                }
-            }
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException ioe) {
-                    //
-                }
-            }
-            if (c != null) {
-                try {
-                    c.close();
-                } catch (IOException ioe) {
-                    //
-                }
+                lastCheck = System.currentTimeMillis();
+                Settings.getInstance().setSetting("lastVersionCheck", Long.toString(lastCheck / 1000L));
             }
         }
         SLog.log(SLog.Debug, "VersionChecker", "returning " + checkResult);
-        lastCheck = System.currentTimeMillis();
-        Settings.getInstance().setSetting("lastVersionCheck", Long.toString(lastCheck / 1000L));
         return checkResult;
     }
 }
