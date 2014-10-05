@@ -348,6 +348,8 @@
        * SocketGPRSThread
        * SSLSocketFactory
        * UserwareWatchDogTask
+       * Can
+       * VersionChecker
 
   - dbgComp:
       values: list
@@ -386,5 +388,5 @@
   - loginTimeout:
       values: 0-...
       validity: immediate
-      default: "30"
+      default: "600"
       desc: Successful logins expire after this number of seconds
