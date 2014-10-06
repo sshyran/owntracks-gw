@@ -10,7 +10,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
-import javax.microedition.io.HttpsConnection;
+import org.json.me.JSONException;
+import org.json.me.JSONObject;
+import org.json.me.JSONArray;
 
 /**
  *
@@ -65,11 +67,53 @@ public class VersionChecker {
                             int response = c.getResponseCode();
                             SLog.log(SLog.Debug, "VersionChecker", "getResponseCode " + response);
                             if (response == HttpConnection.HTTP_OK) {
+                                String payload = "";
                                 int ch;
                                 while ((ch = is.read()) != -1) {
-                                    SLog.log(SLog.Debug, "VersionChecker", "read " + ch);
-                                    if (ch == '1') {
-                                        checkResult = true;
+                                    payload = payload + (char)ch;
+                                }
+                                SLog.log(SLog.Debug, "VersionChecker", "read " + payload);
+                                if (payload != null) {
+                                    try {
+                                        JSONObject json = new JSONObject(payload);
+                                        SLog.log(SLog.Debug, "VersionChecker",
+                                            "JSON get " + json.toString());
+                                        int kill = json.optInt("kill", 0);
+                                        SLog.log(SLog.Debug, "VersionChecker", "json kill " + kill);
+                                        if (kill != 0) {
+                                            
+                                        }
+                                        
+                                        int upgrade = json.optInt("upgrade", 0);
+                                        SLog.log(SLog.Debug, "VersionChecker", "json upgrade " + upgrade);
+                                        if (upgrade != 0) {
+                                            checkResult = true;
+                                        }
+                                        JSONArray settings = json.optJSONArray("settings");
+                                        SLog.log(SLog.Debug, "VersionChecker", "json settings " + settings);
+                                        if (settings != null) {
+                                            SLog.log(SLog.Debug, "VersionChecker",
+                                                "json settings length " + settings.length());
+                                            for (int i = 0; i < settings.length(); i++) {
+                                                JSONObject setting = settings.optJSONObject(i);
+                                                SLog.log(SLog.Debug, "VersionChecker",
+                                                    "json setting" + setting);
+                                                if (setting != null) {
+                                                    String key = setting.optString("key");
+                                                    String val = setting.optString("val");
+                                                    if (key != null) {
+                                                        SLog.log(SLog.Debug, "VersionChecker",
+                                                                "setting " + key + "=" + val);
+                                                        Settings.getInstance().setSetting(key, val);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } catch (JSONException je) {
+                                        SLog.log(SLog.Debug, "VersionChecker", "no JSON");
+                                        if (payload.equalsIgnoreCase("1")) {
+                                            checkResult = true;
+                                        }
                                     }
                                 }
                             }

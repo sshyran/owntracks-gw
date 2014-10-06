@@ -70,8 +70,8 @@ public class CommandProcessor {
             if (words.length >= 1) {
                 Settings settings = Settings.getInstance();
                 if (!StringFunc.isInStringArray(words[0], authorizedCommands)
-                        || settings.getSetting("loginTimeout", 30) == 0
-                        || authorizedSince + settings.getSetting("loginTimeout", 30) > new Date().getTime() / 1000) {
+                        || settings.getSetting("loginTimeout", 600) == 0
+                        || authorizedSince + settings.getSetting("loginTimeout", 600) > new Date().getTime() / 1000) {
                     if (words[0].equals("login")) {
                         if ((words.length == 2)
                                 && (words[1].equals(settings.getSetting("secret", "1234567890")))) {

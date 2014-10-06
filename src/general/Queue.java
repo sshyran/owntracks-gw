@@ -30,16 +30,21 @@ public class Queue {
         this.maxSize = maxSize;
         shrink();
     }
-
+    
     private void shrink() {
         recordID = 1;
         try {
             this.recordStore = RecordStore.openRecordStore(name, false);
             SLog.log(SLog.Informational, "Queue", "openRecordStore " + name);
-            if (this.recordStore.getNumRecords() == 0) {
+            if (this.recordStore.getNumRecords() < 1  // < 0 should never happen
+                    || Settings.getInstance().getSetting("killQueue", false)) {
+                SLog.log(SLog.Informational, "Queue", "deleteRecordStore " + name);
+                if (Settings.getInstance().getSetting("killQueue", false)) {
+                    SLog.log(SLog.Informational, "Queue", "killedQueue");
+                    Settings.getInstance().setSetting("killQueue", null);
+                }
                 this.recordStore.closeRecordStore();
                 RecordStore.deleteRecordStore(name);
-                SLog.log(SLog.Informational, "Queue", "deleteRecordStore " + name);
                 this.recordStore = RecordStore.openRecordStore(name, true);
                 SLog.log(SLog.Informational, "Queue", "openRecordStore (create) " + name);
             }
@@ -68,7 +73,7 @@ public class Queue {
                     + " size " + recordStore.getSize()
                     + "/" + recordStore.getSizeAvailable()
                     + "/" + maxSize);
-            if (recordStore.getNumRecords() == 0) {
+            if (recordStore.getNumRecords() < 1) { // < 0 should never happen
                 if (recordStore.getSize() + maxRecord > maxSize
                         || maxRecord > recordStore.getSizeAvailable()) {
                     recordStore.closeRecordStore();
@@ -84,7 +89,11 @@ public class Queue {
                         gotRecord = true;
                     } catch (InvalidRecordIDException irie) {
                         SLog.log(SLog.Informational, "Queue", "InvalidRecordIDException " + recordID);
-                        recordID++;
+                        if (recordID < recordStore.getNextRecordID() - 1) {
+                                recordID++;
+                        } else {
+                            gotRecord = true; // should never happen
+                        }
                     }
                 } while (!gotRecord);
             }

@@ -35,6 +35,30 @@ public class StringFunc {
         }
         return false;
     }
+    
+    public static String toHexString(int[] ints) {
+        String string = "";
+        for (int i = 0; i < ints.length; i++) {
+            String hex = Integer.toHexString(ints[i]);
+            if (hex.length() < 2) {
+                hex = "0" + hex;
+            }
+            string = string.concat(hex);
+        }
+        return string;
+    }
+
+    public static String toHexString(byte[] bytes) {
+        String string = "";
+        for (int i = 0; i < bytes.length; i++) {
+            String hex = Integer.toHexString(bytes[i]);
+            if (hex.length() < 2) {
+                hex = "0" + hex;
+            }
+            string = string.concat(hex);
+        }
+        return string;
+    }
 
     public static String replaceString(String originalString, String oldString, String newString) {
         String intermediateString = originalString;

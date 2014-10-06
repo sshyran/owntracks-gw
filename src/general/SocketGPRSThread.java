@@ -6,9 +6,9 @@
  */
 package general;
 
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Vector;
 import org.json.me.JSONException;
 import org.json.me.JSONObject;
 
@@ -39,10 +39,12 @@ public class SocketGPRSThread extends Thread {
     private final Timer networkCheckTimer;
     private final TimerTask networkCheckTimerTask;
     private final int NetworkCheckLoop = 30;
+    private final int NetworkCheckDelay = 10;
 
     private final Timer providerCheckTimer;
     private final TimerTask providerCheckTimerTask;
     private final int ProviderCheckLoop = 300;
+    private final int ProviderCheckDelay = 30;
 
     public boolean isConnected() {
         return MQTTHandler.getInstance().isConnected();
@@ -73,11 +75,11 @@ public class SocketGPRSThread extends Thread {
 
         networkCheckTimer = new Timer();
         networkCheckTimerTask = new NetworkCheckTimerTask();
-        networkCheckTimer.schedule(networkCheckTimerTask, 0, NetworkCheckLoop * 1000);
+        networkCheckTimer.schedule(networkCheckTimerTask, NetworkCheckDelay * 1000L, NetworkCheckLoop * 1000L);
 
         providerCheckTimer = new Timer();
         providerCheckTimerTask = new ProviderCheckTimerTask();
-        providerCheckTimer.schedule(providerCheckTimerTask, 0, ProviderCheckLoop * 1000);
+        providerCheckTimer.schedule(providerCheckTimerTask, ProviderCheckDelay * 1000L, ProviderCheckLoop * 1000L);
 
         startTimeoutTimer();
     }
@@ -342,9 +344,11 @@ public class SocketGPRSThread extends Thread {
         public void run() {
             String response = ATManager.getInstance().executeCommandSynchron("AT+COPS=?\r");
             String currentOperator = "";
-            String availableOperators = "";
-            String forbiddenOperators = "";
-            String unknownOperators = "";
+
+            Vector availableOperatorVector = new Vector();
+            Vector forbiddenOperatorVector = new Vector();
+            Vector unknownOperatorVector = new Vector();
+
             final String cops = "+COPS: ";
             if (response.indexOf(cops) != -1) {
                 int pos = response.indexOf(cops) + cops.length();
@@ -356,27 +360,60 @@ public class SocketGPRSThread extends Thread {
                             String operatorNumber = values[3].substring(1, values[3].length() - 1);
                             String operatorName = values[1].substring(1, values[1].length() - 1);
                             switch (Integer.parseInt(values[0])) {
-                                case 1:
-                                    availableOperators = availableOperators.concat(" +" + operatorNumber);
+                                case 1: {
+                                    int i;
+                                    for (i = 0; i < availableOperatorVector.size(); i++) {
+                                        String vectorKey = (String) availableOperatorVector.elementAt(i);
+                                        if (operatorNumber.compareTo(vectorKey) < 0) {
+                                            break;
+                                        }
+                                    }
+                                    availableOperatorVector.insertElementAt(operatorNumber, i);
                                     break;
+                                }
                                 case 2:
                                     currentOperator = operatorNumber;
                                     break;
-                                case 3:
-                                    forbiddenOperators = forbiddenOperators.concat(" -" + operatorNumber);
+                                case 3: {
+                                    int i;
+                                    for (i = 0; i < forbiddenOperatorVector.size(); i++) {
+                                        String vectorKey = (String) forbiddenOperatorVector.elementAt(i);
+                                        if (operatorNumber.compareTo(vectorKey) < 0) {
+                                            break;
+                                        }
+                                    }
+                                    forbiddenOperatorVector.insertElementAt(operatorNumber, i);
                                     break;
+                            }
                                 case 0:
-                                default:
-                                    unknownOperators = unknownOperators.concat(" ?" + operatorNumber);
+                                default: {
+                                    int i;
+                                    for (i = 0; i < unknownOperatorVector.size(); i++) {
+                                        String vectorKey = (String) unknownOperatorVector.elementAt(i);
+                                        if (operatorNumber.compareTo(vectorKey) < 0) {
+                                            break;
+                                        }
+                                    }
+                                    unknownOperatorVector.insertElementAt(operatorNumber, i);
                                     break;
+                                }
                             }
                         }
                     }
                     pos = end + 2;
                 }
             }
-            String operatorList = currentOperator + availableOperators + forbiddenOperators + unknownOperators;
-            if (!lastOperatorList.equals(operatorList)) {
+            String operatorList = currentOperator;
+            for (int i = 0; i < availableOperatorVector.size(); i++) {
+                operatorList = operatorList.concat(" +" + (String) availableOperatorVector.elementAt(i));
+            }
+            for (int i = 0; i < forbiddenOperatorVector.size(); i++) {
+                operatorList = operatorList.concat(" -" + (String) forbiddenOperatorVector.elementAt(i));
+            }
+            for (int i = 0; i < unknownOperatorVector.size(); i++) {
+                operatorList = operatorList.concat(" ?" + (String) unknownOperatorVector.elementAt(i));
+            }
+            if (operatorList.length() > 0 && !lastOperatorList.equals(operatorList)) {
                 put(
                         Settings.getInstance().getSetting("publish", "owntracks/gw/")
                         + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())

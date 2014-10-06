@@ -45,17 +45,17 @@ public class AppMain extends MIDlet {
         CheckUpgrade fw = new CheckUpgrade("");
 
         Settings settings = Settings.getInstance();
+        SLog.log(SLog.Informational, "AppMain", "Running "
+                + MicroManager.getInstance().getIMEI()
+                + " " + getAppProperty("MIDlet-Version")
+                + " " + DateFormatter.isoString(new Date()));
 
         ATManager.getInstance();
         CommASC0Thread.getInstance();
         SocketGPRSThread.getInstance();
         CommGPSThread.getInstance();
+        CanManager.getInstance();
         ProcessSMSThread.setup();
-
-        SLog.log(SLog.Informational, "AppMain", "Running "
-                + MicroManager.getInstance().getIMEI()
-                + " " + getAppProperty("MIDlet-Version")
-                + " " + DateFormatter.isoString(new Date()));
 
         SocketGPRSThread.getInstance().put(
                 settings.getSetting("publish", "owntracks/gw/")
@@ -122,6 +122,7 @@ public class AppMain extends MIDlet {
             CommGPSThread.getInstance().start();
             CommASC0Thread.getInstance().start();
             SocketGPRSThread.getInstance().start();
+            CanManager.getInstance().start();
 
             while (!loop()) {
                 Thread.sleep(1000);
@@ -139,6 +140,9 @@ public class AppMain extends MIDlet {
                     Thread.sleep(1000);
                 }
             }
+
+            CanManager.getInstance().terminate = true;
+            CanManager.getInstance().join();
 
             CommGPSThread.getInstance().terminate = true;
             CommGPSThread.getInstance().join();
