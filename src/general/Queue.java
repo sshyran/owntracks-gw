@@ -35,8 +35,9 @@ public class Queue {
         recordID = 1;
         try {
             this.recordStore = RecordStore.openRecordStore(name, false);
-            SLog.log(SLog.Informational, "Queue", "openRecordStore " + name);
-            if (this.recordStore.getNumRecords() < 1  // < 0 should never happen
+            int numRecords = this.recordStore.getNumRecords();
+            SLog.log(SLog.Informational, "Queue", "openRecordStore " + name + " " + numRecords);
+            if (numRecords < 1  // < 0 should never happen
                     || Settings.getInstance().getSetting("killQueue", false)) {
                 SLog.log(SLog.Informational, "Queue", "deleteRecordStore " + name);
                 if (Settings.getInstance().getSetting("killQueue", false)) {
