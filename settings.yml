@@ -31,10 +31,10 @@
       desc: time in seconds after which the system no longer expects GPRS
   - cellInfo:
       values: 0/1
-      validity: next change of cellinfo
+      validity: cell change
       default: 0
-      desc: Whether or not to publish cellinfo 
-  
+      desc: Whether or not to publish cellinfo when a new GSM cell is detected
+ 
 - Device:
   - block: >
            The device-related settings lay down how the device operates in general.
@@ -78,8 +78,8 @@
   - versionInterval:
       values: integer
       validity: immediate
-      default: 10800 (3 hours)
-      desc: interval in which the app version is checked (see versionURI)
+      default: 10800
+      desc: interval (default 3 hours) in which the app version is checked (see `versionURI`)
   - lowBattery:
       values: integer
       validity: immediate
@@ -127,8 +127,8 @@
   - fields:
       values: ""
       validity: immediate
-      default: "course,speed,altitude,distance,trip"
-      desc: Comma separated list of optional fields in published message. May include any of `course`, `speed`, `altitude`, `distance`, `battery`, `trip`
+      default: _see text_
+      desc: Comma separated list of optional fields in published message. May include any of `course`, `speed`, `altitude`, `distance`, `battery`, `trip`. Defaults to `course,speed,altitude,distance,trip`
   - host:
       values: string
       validity: reboot
@@ -332,7 +332,7 @@
        `topicLogLevel=C`, only critical, alert and emergency log messages are sent via MQTT.
        `fileLogLevel=E`, error, critical, alert, and emergency log messages are written to the local file. Warning, notice, informational anddebug messages are ignored
 
-       To limit the amount of debug messages, the set of components for which the messages are written can be controlled by the `dbgComp` parameter. If set to `"all"`, all debug messages are shown. When `"none"` is specified, no debug messages will be shown. `"none" is the default value. 
+       To limit the amount of debug messages, the set of components for which the messages are written can be controlled by the `dbgComp` parameter. If set to `"all"`, all debug messages are shown. When `"none"` is specified, no debug messages will be shown. `"none" is the default value.
 
        Otherwise a comma separated list of components allows granular control of the output (e.g. `"AppMain,LocationManager"`). Currently the following components exist:
 

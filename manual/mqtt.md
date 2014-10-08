@@ -95,6 +95,7 @@ messages. Recall that the _base topic_ is constructed from the `publish` setting
 |                  |* `-1` Greenwich disconnects intentionally (on user request, ignition-off, etc.)
 +------------------+-------------------------------------------------------------------------------+
 |`../start`        |  _IMEI_ _midlet-version_ _date/time_
+|                  |  For example: 
 |                  |  `123456789012345 0.7.38 2014-09-01 08:37:04`
 +------------------+-------------------------------------------------------------------------------+
 |`../voltage/batt` |   Built-in battery voltage is published when voltage
