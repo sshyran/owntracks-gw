@@ -73,19 +73,34 @@ should or should not attempt an OTAP upgrade as described above. The device
 will also wake up during `sleep` to perform the check.
 
 ```
-set versionURI=http://example.com/versioncheck
+set versionURI=http://example.com/vc
 ```
 
 The Midlet version currently running on the device is POSTed to the URL (e.g.
 `0.1.2`), as though the following had been issued on the command-line:
 
 ```
-curl -X POST --user-agent "GW/12345678901234" -d 0.1.2 http://example.com/versioncheck
-1
+curl -X POST --user-agent "GW/12345678901234" -d 0.1.2 http://example.com/vc
 ```
 
-The resource should return a message with status code 200 and `text/plain` containing
-either a `1` or a `0` indicating whether an upgrade should be performed or not, respectively.
+The resource should return a message with status code 200 and content-type `application/json` containing with a JSON payload describing whether or not an update should be performed. The object
+must have an element named `upgrade` with an integer value of `1` or `0` depending on whether
+the upgrade should be performed or not. Additionally, an array called `settings` may be
+returned. This optional array is an array of objects which will enforce particular settings
+on the device. Both the name of the setting (`key`) and its value (`val`) must be strings.
+
+```json
+{
+    "upgrade": 1,
+    "settings": [
+        {
+            "key": "keepAlive",
+            "val": "60"
+        }
+    ]
+}
+```
+
 
 Removing the setting will disable version checks:
 
