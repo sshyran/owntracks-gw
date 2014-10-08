@@ -83,31 +83,20 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
         logEvent = StringFunc.replaceString(logEvent, "\r", "\\r");
 
         SLog.log(SLog.Debug, "ATManager", "ATListenerEvents: " + logEvent);
-        
-        if (event.indexOf("+CGREG") >= 0) {
-            try {
-                SocketGPRSThread.getInstance().cgreg = Integer.parseInt(
-                        event.substring((event.indexOf(": ")) + 2,
-                                (event.indexOf(": ")) + 3)
-                );
-            } catch (NumberFormatException nfe) {
-                SocketGPRSThread.getInstance().cgreg = -1;
-            }
-        } else if (event.indexOf("+CREG") >= 0) {
-            try {
-                SocketGPRSThread.getInstance().creg = Integer.parseInt(
-                        event.substring((event.indexOf(": ")) + 2,
-                                (event.indexOf(": ")) + 3));
-            } catch (NumberFormatException nfe) {
-                SocketGPRSThread.getInstance().creg = -1;
-            }
-        } else if (event.indexOf("^SCPOL: ") >= 0) {
+
+         if (event.indexOf("^SCPOL: ") >= 0) {
             GPIOManager.getInstance().eventGPIOValueChanged(event);
-        } else if (event.indexOf("+CMTI: ") >= 0) {
+
+        } else if (event.indexOf(
+                "+CMTI: ") >= 0) {
             ProcessSMSThread.eventSMSArrived(event);
-        } else if (event.indexOf("^SBC: Undervoltage") >= 0) {
+
+        } else if (event.indexOf(
+                "^SBC: Undervoltage") >= 0) {
             BatteryManager.getInstance().eventLowBattery();
-        } else if (event.indexOf("^SCKS") >= 0) {
+
+        } else if (event.indexOf(
+                "^SCKS") >= 0) {
             if (event.indexOf("2") >= 0) {
                 AppMain.getInstance().invalidSIM = true;
                 SLog.log(SLog.Alert, "ATManager", event);

@@ -29,6 +29,11 @@
       validity: next loop
       default: 600
       desc: time in seconds after which the system no longer expects GPRS
+  - cellInfo:
+      values: 0/1
+      validity: next change of cellinfo
+      default: 0
+      desc: Whether or not to publish cellinfo 
   
 - Device:
   - block: >

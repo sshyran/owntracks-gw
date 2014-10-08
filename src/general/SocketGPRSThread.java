@@ -28,11 +28,17 @@ public class SocketGPRSThread extends Thread {
 
     public boolean terminate = false;
     private boolean network = false;
-    private String operator = "";
     private String lastOperatorList = "";
+    private String lastCellInfo = "";
 
-    public int creg = -1;
+    // MCC is 3 digits, MNC is 2 or 3 digits, MCC+MNC are called LAI
+    public int MCC = -1;
+    public int MNC = -1;
+    public int rssi = 99;
+    public int ber = 99;
     public int cgreg = -1;
+    public int cgregLAC = -1;
+    public int cgregCellID = -1;
 
     private final Queue gpsQ;
 
@@ -54,12 +60,12 @@ public class SocketGPRSThread extends Thread {
         return network;
     }
 
-    public String getOperator() {
-        return operator;
-    }
-
     public String getOperatorList() {
         return lastOperatorList;
+    }
+
+    public String getCellInfo() {
+        return lastCellInfo;
     }
 
     public boolean isGPRSTimeout() {
@@ -219,6 +225,8 @@ public class SocketGPRSThread extends Thread {
 
     public void open() {
         ATManager.getInstance().executeCommandSynchron("at^smong\r");
+        ATManager.getInstance().executeCommandSynchron("at+cops=3,2\r");
+        ATManager.getInstance().executeCommandSynchron("at+cgreg=2\r");
 
         String cgatt;
         do {
@@ -306,35 +314,110 @@ public class SocketGPRSThread extends Thread {
             String[] lines = StringFunc.split(response, "\r\n");
             if (lines.length >= 2) {
                 final String COPS = "+COPS: ";
-                if (lines[1].startsWith(COPS)
-                        && lines[1].length() > COPS.length()) {
+                if (lines[1].startsWith(COPS) && lines[1].length() > COPS.length()) {
                     String[] values = StringFunc.split(lines[1].substring(COPS.length()), ",");
                     if (values.length == 3) {
                         stopTimeoutTimer();
                         network = true;
-                        operator = values[2];
+                        if (values[1].equalsIgnoreCase("2")) {
+                            try {
+                                MCC = Integer.parseInt(values[2].substring(1, 4));
+                            } catch (NumberFormatException nfe) {
+                                MCC = -1;
+                            }
+                            try {
+                                MNC = Integer.parseInt(values[2].substring(4, values[2].length() - 1));
+                            } catch (NumberFormatException nfe) {
+                                MNC = -1;
+                            }
+                        }
+
                     } else {
                         if (network) {
                             startTimeoutTimer();
                         }
                         network = false;
-                        operator = "";
+                        MCC = -1;
+                        MNC = -1;
                     }
                 } else {
                     if (network) {
                         startTimeoutTimer();
                     }
                     network = false;
-                    operator = "";
+                    MCC = -1;
+                    MNC = -1;
                 }
             } else {
                 if (network) {
                     startTimeoutTimer();
                 }
                 network = false;
-                operator = "";
+                MCC = -1;
+                MNC = -1;
             }
+
+            response = ATManager.getInstance().executeCommandSynchron("AT+CGREG?\r");
+            lines = StringFunc.split(response, "\r\n");
+            if (lines.length >= 2) {
+                final String CGREG = "+CGREG: ";
+                if (lines[1].startsWith(CGREG) && lines[1].length() > CGREG.length()) {
+                    String[] values = StringFunc.split(lines[1].substring(CGREG.length()), ",");
+                    if (values.length == 4) {
+                        try {
+                            cgreg = Integer.parseInt(values[1]);
+                        } catch (NumberFormatException nfe) {
+                            cgreg = -1;
+                        }
+                        try {
+                            cgregLAC = Integer.parseInt(values[2].substring(1, values[2].length() - 1), 16);
+                        } catch (NumberFormatException nfe) {
+                            cgregLAC = -1;
+                        }
+                        try {
+                            cgregCellID = Integer.parseInt(values[3].substring(1, values[3].length() - 1), 16);
+                        } catch (NumberFormatException nfe) {
+                            cgregCellID = -1;
+                        }
+                    }
+                }
+            }
+
             response = ATManager.getInstance().executeCommandSynchron("AT+CSQ\r");
+            lines = StringFunc.split(response, "\r\n");
+            if (lines.length >= 2) {
+                final String CSQ = "+CSQ: ";
+                if (lines[1].startsWith(CSQ) && lines[1].length() > CSQ.length()) {
+                    String[] values = StringFunc.split(lines[1].substring(CSQ.length()), ",");
+                    if (values.length == 2) {
+                        try {
+                            rssi = Integer.parseInt(values[0]);
+                        } catch (NumberFormatException nfe) {
+                            rssi = 99;
+                        }
+                        try {
+                            ber = Integer.parseInt(values[1]);
+                        } catch (NumberFormatException nfe) {
+                            ber = 99;
+                        }
+                    }
+                }
+            }
+
+            String cellInfo = "" + MCC + " " + MNC + " " + cgregLAC + " " + cgregCellID; // + " " + rssi + " " + ber;
+            if (!lastCellInfo.equals(cellInfo)) {
+                if (Settings.getInstance().getSetting("cellInfo", false)) {
+                    put(
+                            Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                            + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                            + "/cellinfo",
+                            Settings.getInstance().getSetting("qos", 1),
+                            Settings.getInstance().getSetting("retain", true),
+                            cellInfo.getBytes()
+                    );
+                }
+                lastCellInfo = cellInfo;
+            }
         }
     }
 
@@ -384,7 +467,7 @@ public class SocketGPRSThread extends Thread {
                                     }
                                     forbiddenOperatorVector.insertElementAt(operatorNumber, i);
                                     break;
-                            }
+                                }
                                 case 0:
                                 default: {
                                     int i;

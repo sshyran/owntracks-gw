@@ -116,9 +116,6 @@ public class AppMain extends MIDlet {
 
             SLog.log(SLog.Debug, "AppMain", "SWITCH ON RADIO PART of the module...");
 
-            ATManager.getInstance().executeCommandSynchron("AT+CREG=1\r");
-            ATManager.getInstance().executeCommandSynchron("AT+CGREG=1\r");
-
             CommGPSThread.getInstance().start();
             CommASC0Thread.getInstance().start();
             SocketGPRSThread.getInstance().start();

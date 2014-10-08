@@ -18,6 +18,7 @@ public class MicroManager implements MovListener {
 
     private String ati = "unknown";
     private String imei = "unknown";
+    private String imsi = "unknown";
     private String release = "unknown";
     private String bootRelease = "unknown";
     private String javaRelease = "unknown";
@@ -39,6 +40,10 @@ public class MicroManager implements MovListener {
         response = ATManager.getInstance().executeCommandSynchron("AT+CGSN\r");
         lines = StringFunc.split(response, "\r\n");
         imei = lines[1];
+
+        response = ATManager.getInstance().executeCommandSynchron("AT+CIMI\r");
+        lines = StringFunc.split(response, "\r\n");
+        imsi = lines[1];
 
         InfoMicro infoMicro = new InfoMicro();
         try {
@@ -93,6 +98,10 @@ public class MicroManager implements MovListener {
 
     public String getIMEI() {
         return imei;
+    }
+
+    public String getIMSI() {
+        return imsi;
     }
 
     public String getRelease() {

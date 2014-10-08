@@ -318,14 +318,17 @@ public class CommandProcessor {
         message = "NUMSAT=" + LocationManager.getInstance().getNumSat() + CRLF;
         message = message.concat("BEARER=" + Bearer.getInstance().getBearerState() + CRLF);
         message = message.concat("GPRS=" + (Bearer.getInstance().isGprsOn() ? 1 : 0) + CRLF);
-        message = message.concat("CREG=" + SocketGPRSThread.getInstance().creg + CRLF);
-        message = message.concat("CGREG=" + SocketGPRSThread.getInstance().cgreg + CRLF);
         message = message.concat("BATT=" + BatteryManager.getInstance().getBatteryVoltageString() + CRLF);
         message = message.concat("EXTV=" + BatteryManager.getInstance().getExternalVoltageString() + CRLF);
-        message = message.concat("Q=" + SocketGPRSThread.getInstance().qSize() + CRLF);
-        message = message.concat("CONN=" + (SocketGPRSThread.getInstance().isConnected() ? 1 : 0) + CRLF);
-        message = message.concat("NETW=" + (SocketGPRSThread.getInstance().isNetwork() ? 1 : 0) + CRLF);
-        message = message.concat("OPER=" + SocketGPRSThread.getInstance().getOperatorList() + CRLF);
+        
+        SocketGPRSThread s = SocketGPRSThread.getInstance();
+        message = message.concat("QSIZE=" + s.qSize() + CRLF);
+        message = message.concat("CONN=" + (s.isConnected() ? 1 : 0) + CRLF);
+        message = message.concat("NETW=" + (s.isNetwork() ? 1 : 0) + CRLF);
+        message = message.concat("CELL=" + s.getCellInfo() + CRLF);
+        message = message.concat("QUAL=" + s.rssi + "," + s.ber + CRLF);        
+        message = message.concat("OPER=" + s.getOperatorList() + CRLF);
+        
         message = message.concat("WAKEUP=" + AppMain.getInstance().wakeupMode + CRLF);
         message = message.concat("DATE=" + DateFormatter.isoString(new Date()) + CRLF);
         return true;
@@ -338,6 +341,7 @@ public class CommandProcessor {
         message = message.concat("SW=" + AppMain.getInstance().getAppProperty("MIDlet-Version") + CRLF);
         message = message.concat("EG5=" + MicroManager.getInstance().getInfo() + CRLF);
         message = message.concat("IMEI=" + MicroManager.getInstance().getIMEI() + CRLF);
+        message = message.concat("IMSI=" + MicroManager.getInstance().getIMSI() + CRLF);
         return true;
     }
 
