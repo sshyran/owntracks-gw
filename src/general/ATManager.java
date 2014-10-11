@@ -87,16 +87,13 @@ public class ATManager implements ATCommandListener, ATCommandResponseListener {
          if (event.indexOf("^SCPOL: ") >= 0) {
             GPIOManager.getInstance().eventGPIOValueChanged(event);
 
-        } else if (event.indexOf(
-                "+CMTI: ") >= 0) {
+        } else if (event.indexOf("+CMTI: ") >= 0) {
             ProcessSMSThread.eventSMSArrived(event);
 
-        } else if (event.indexOf(
-                "^SBC: Undervoltage") >= 0) {
+        } else if (event.indexOf("^SBC: Undervoltage") >= 0) {
             BatteryManager.getInstance().eventLowBattery();
 
-        } else if (event.indexOf(
-                "^SCKS") >= 0) {
+        } else if (event.indexOf("^SCKS") >= 0) {
             if (event.indexOf("2") >= 0) {
                 AppMain.getInstance().invalidSIM = true;
                 SLog.log(SLog.Alert, "ATManager", event);
