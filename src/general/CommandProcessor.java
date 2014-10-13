@@ -404,8 +404,13 @@ public class CommandProcessor {
     }
 
     boolean execCommand(String[] parameters) {
+        String response;
         if (parameters.length == 2) {
-            String response = ATManager.getInstance().executeCommandSynchron(parameters[1] + "\r");
+            response = ATManager.getInstance().executeCommandSynchron(parameters[1] + "\r");
+            message = response;
+            return true;
+        } else if (parameters.length == 3) {
+            response = ATManager.getInstance().executeCommandSynchron(parameters[1] + "\r", parameters[2]);
             message = response;
             return true;
         } else {

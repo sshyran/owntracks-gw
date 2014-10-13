@@ -100,6 +100,31 @@
       validity: reboot
       default: 0
       desc: if 0, device will shutdown when external power is disconnectd. if 1, device will keep running until lowBattery is detected
+  - fmsInterval:
+      values: 0,1...
+      validity: immediate
+      default: 0
+      desc: if > 0, device will try to connect every fmsInterval seconds via can Bus to get FMS data. Output currently to Debug only ($set dbgComp=Can)
+  - obd2Interval:
+      values: 0,1...
+      validity: immediate
+      default: 0
+      desc: if > 0, device will try to connect every obd2Interval seconds via Can Bus to get ODB2 data including vehicle information, trouble codes, etc. and publish to mqtt
+  - obd2Sensors:
+      values: 0,1...
+      validity: immediate
+      default: 0
+      desc: if > 0, device will try to connect every obd2Interval seconds via Can Bus to get ODB2 sensor data and publish to mqtt
+  - obd2Addresses:
+      values: comma separated list of obd2 controller addresses to scan (use lower case, 8 character hex values)
+      validity: immediate
+      default: 000007e8,000007e9,000007ea,000007eb,000007ec,000007ed,000007ee,000007ef0
+      desc: device addresses to listen to (restricting the number of addresses speeds up the data collection cycle)
+  - obd2Speed:
+      values: 50..1000
+      validity: immediate
+      default: 500
+      desc: Can Bus baud rate in kbps 
 
 - MQTT:
   - block: >
@@ -354,6 +379,7 @@
        * SSLSocketFactory
        * UserwareWatchDogTask
        * Can
+       * CanRaw
        * VersionChecker
 
   - dbgComp:

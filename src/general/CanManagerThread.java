@@ -167,29 +167,27 @@ public class CanManagerThread extends Thread {
         }
 
         getSensors(address);
-        
+
         result = getObd2(true, address, "0101");
         if (result.data8 != null) {
             if (result.data8[4] == 6) {
                 int numDtc = result.data8[4 + 3] & 0x7f;
                 for (int dtc = 1; dtc <= numDtc; dtc++) {
                     int base = 0;
-                    do {
-                        result = getObd2(true, address, "02" + hexString(base) + hexString(dtc));
-                        if (result.data8 != null) {
-                            int[] four = new int[4];
-                            System.arraycopy(result.data8, 4 + 4, four, 0, four.length);
-                            String pids = StringFunc.toHexString(four);
-                            cacheAndPut("/" + address + "/02/" + hexString(base) + "/" + hexString(dtc),
-                                    result.payload.substring(6));
-                            getPids(address, 0x02, base, Long.parseLong(pids, 16), hexString(dtc));
-                            if ((four[3] & 0x01) == 0x01) {
-                                base += 0x20;
-                            } else {
-                                break;
-                            }
+                    result = getObd2(true, address, "02" + hexString(base) + hexString(dtc));
+                    if (result.data8 != null) {
+                        int[] four = new int[4];
+                        System.arraycopy(result.data8, 4 + 4, four, 0, four.length);
+                        String pids = StringFunc.toHexString(four);
+                        cacheAndPut("/" + address + "/02/" + hexString(base) + "/" + hexString(dtc),
+                                result.payload.substring(6));
+                        getPids(address, 0x02, base, Long.parseLong(pids, 16), hexString(dtc));
+                        if ((four[3] & 0x01) == 0x01) {
+                            base += 0x20;
+                        } else {
+                            break;
                         }
-                    } while (true);
+                    }
                 }
             }
         }
@@ -203,7 +201,8 @@ public class CanManagerThread extends Thread {
     private void getSensors(String address) {
         canResult result;
         int base = 0;
-        do {
+
+        while (true) {
             result = getObd2(true, address, "01" + hexString(base));
             if (result.data8 != null) {
                 int[] four = new int[4];
@@ -216,8 +215,10 @@ public class CanManagerThread extends Thread {
                 } else {
                     break;
                 }
+            } else {
+                break;
             }
-        } while (true);
+        }
     }
 
     private void getPids(String address, int mode, int base, long pids, String payload) {
@@ -246,13 +247,13 @@ public class CanManagerThread extends Thread {
             int[] raw = getObd2RawNomatch(broadcast, address, payload);
             if (raw != null) {
                 if (raw[4] < 8) {
-                    result.data8 = raw;
                     String hexString = StringFunc.toHexString(raw);
                     if (hexString.substring(11, 12).equals(payload.substring(1, 2))
                             && hexString.substring(12).startsWith(payload.substring(2))) {
                         result.payload = hexString.substring(10, 10 + raw[4] * 2);
-                        return result;
+                        result.data8 = raw;
                     }
+                    return result;
                 } else if ((raw[4] & 0xf0) == 0x10) {
                     result.data8 = raw;
                     int length = (raw[4] * 256 + raw[5]) & 0x0fff;
