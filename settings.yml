@@ -100,11 +100,11 @@
       validity: reboot
       default: 0
       desc: if 0, device will shutdown when external power is disconnectd. if 1, device will keep running until lowBattery is detected
-  - fmsInterval:
-      values: 0,1...
+  - fms:
+      values: 0/1
       validity: immediate
       default: 0
-      desc: if > 0, device will try to connect every fmsInterval seconds via can Bus to get FMS data. Output currently to Debug only ($set dbgComp=Can)
+      desc: if true, device will switch into fms mode.
   - obd2Interval:
       values: 0,1...
       validity: immediate
@@ -125,6 +125,11 @@
       validity: immediate
       default: 500
       desc: Can Bus baud rate in kbps 
+  - obd2Mode:
+      values: STD|EXT
+      validity: immediate
+      default: STD
+      desc: Can bus mode STD=11 bit, EXT= 29 bit
 
 - MQTT:
   - block: >

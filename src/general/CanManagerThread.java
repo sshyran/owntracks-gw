@@ -44,9 +44,7 @@ public class CanManagerThread extends Thread {
 
     public void run() {
         while (!terminate) {
-            long fms = Settings.getInstance().getSetting("fmsInterval", 0);
-            if (fms != 0 && System.currentTimeMillis() / 1000L > lastFms + fms) {
-                lastFms = System.currentTimeMillis() / 1000L;
+            if (Settings.getInstance().getSetting("fms", false)) {
                 can = new Can();
                 try {
                     can.canOff();
@@ -55,15 +53,25 @@ public class CanManagerThread extends Thread {
 
                     SLog.log(SLog.Debug, "Can", "canState=" + can.canState());
                     SLog.log(SLog.Debug, "Can", "canMode=" + can.getCanMode());
-                    SLog.log(SLog.Debug, "Can", "canNodeState=" + can.getCanNodeState());
                     SLog.log(SLog.Debug, "Can", "canSpeed=" + can.getCanSpeed());
                     SLog.log(SLog.Debug, "Can", "canType=" + can.getCanType());
-                    SLog.log(SLog.Debug, "Can", "canDriverID=" + StringFunc.toHexString(can.getDriverID()));
-                    SLog.log(SLog.Debug, "Can", "canFMSData=" + StringFunc.toHexString(can.getFMSdata()));
-                    SLog.log(SLog.Debug, "Can", "canStandardData=" + StringFunc.toHexString(can.getStandardData()));
-                    SLog.log(SLog.Debug, "Can", "canTimeDate=" + StringFunc.toHexString(can.getTimeDate()));
-                    SLog.log(SLog.Debug, "Can", "canVehicleID=" + StringFunc.toHexString(can.getVehicleID()));
+                    SLog.log(SLog.Debug, "Can", "canNodeState=" + can.getCanNodeState());
 
+                    while (!terminate) {
+                        SLog.log(SLog.Debug, "Can", "canDriverID=" + StringFunc.toHexString(can.getDriverID()));
+                        cacheAndPut("/fms/driverid", StringFunc.toHexString(can.getDriverID()));
+                        SLog.log(SLog.Debug, "Can", "canTimeDate=" + StringFunc.toHexString(can.getTimeDate()));
+                        cacheAndPut("/fms/timedate", StringFunc.toHexString(can.getTimeDate()));
+                        SLog.log(SLog.Debug, "Can", "canVehicleID=" + StringFunc.toHexString(can.getVehicleID()));
+                        cacheAndPut("/fms/vehicleid", StringFunc.toHexString(can.getVehicleID()));
+                        SLog.log(SLog.Debug, "Can", "canFMSData=" + StringFunc.toHexString(can.getFMSdata()));
+                        cacheAndPut("/fms/data", StringFunc.toHexString(can.getFMSdata()));
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ie) {
+                            //
+                        }
+                    }
                     can.canOff();
                     can = null;
                 } catch (IOException ioe) {
@@ -79,7 +87,10 @@ public class CanManagerThread extends Thread {
                     can.canOff();
                     can.deleteAllAddress();
 
-                    can.setCan("STD", Settings.getInstance().getSetting("obd2Speed", 500), "STD", "ACTIVE");
+                    can.setCan(Settings.getInstance().getSetting("obd2Mode", "STD"),
+                            Settings.getInstance().getSetting("obd2Speed", 500),
+                            "STD",
+                            "ACTIVE");
 
                     String odb2Addresses = Settings.getInstance().getSetting("obd2Addresses",
                             "000007e8,000007e9,000007ea,000007eb,000007ec,000007ed,000007ee,000007ef");
@@ -123,7 +134,10 @@ public class CanManagerThread extends Thread {
                     can.canOff();
                     can.deleteAllAddress();
 
-                    can.setCan("STD", Settings.getInstance().getSetting("obd2Speed", 500), "STD", "ACTIVE");
+                    can.setCan(Settings.getInstance().getSetting("obd2Mode", "STD"),
+                            Settings.getInstance().getSetting("obd2Speed", 500),
+                            "STD",
+                            "ACTIVE");
 
                     String odb2Addresses = Settings.getInstance().getSetting("obd2Addresses",
                             "000007e8,000007e9,000007ea,000007eb,000007ec,000007ed,000007ee,000007ef");
@@ -132,6 +146,13 @@ public class CanManagerThread extends Thread {
                         can.setAddress(addresses[i]);
                     }
                     can.canOn();
+
+                    SLog.log(SLog.Debug, "CanRaw", "canState=" + can.canState());
+                    SLog.log(SLog.Debug, "CanRaw", "canMode=" + can.getCanMode());
+                    SLog.log(SLog.Debug, "CanRaw", "canNodeState=" + can.getCanNodeState());
+                    SLog.log(SLog.Debug, "CanRaw", "canSpeed=" + can.getCanSpeed());
+                    SLog.log(SLog.Debug, "CanRaw", "canType=" + can.getCanType());
+                    SLog.log(SLog.Debug, "CanRAw", "canWatchList=" + StringFunc.toHexString(can.getWatchList()));
 
                     for (int i = 0; i < addresses.length; i++) {
                         canResult result = getObd2(true, addresses[i], "0900");
@@ -162,7 +183,7 @@ public class CanManagerThread extends Thread {
             int[] four = new int[4];
             System.arraycopy(result.data8, 4 + 4, four, 0, four.length);
             String pids = StringFunc.toHexString(four);
-            cacheAndPut("/" + address + "/09/00", result.payload.substring(6));
+            cacheAndPut("/obd2/" + address + "/09/00", result.payload.substring(6));
             getPids(address, 0x09, 0x00, Long.parseLong(pids, 16), "");
         }
 
@@ -179,7 +200,7 @@ public class CanManagerThread extends Thread {
                         int[] four = new int[4];
                         System.arraycopy(result.data8, 4 + 4, four, 0, four.length);
                         String pids = StringFunc.toHexString(four);
-                        cacheAndPut("/" + address + "/02/" + hexString(base) + "/" + hexString(dtc),
+                        cacheAndPut("/obd2/" + address + "/02/" + hexString(base) + "/" + hexString(dtc),
                                 result.payload.substring(6));
                         getPids(address, 0x02, base, Long.parseLong(pids, 16), hexString(dtc));
                         if ((four[3] & 0x01) == 0x01) {
@@ -194,7 +215,7 @@ public class CanManagerThread extends Thread {
 
         result = getObd2(true, address, "03");
         if (result.data8 != null) {
-            cacheAndPut("/" + address + "/03", result.payload.substring(2));
+            cacheAndPut("/obd2/" + address + "/03", result.payload.substring(2));
         }
     }
 
@@ -208,7 +229,7 @@ public class CanManagerThread extends Thread {
                 int[] four = new int[4];
                 System.arraycopy(result.data8, 4 + 3, four, 0, four.length);
                 String pids = StringFunc.toHexString(four);
-                cacheAndPut("/" + address + "/01/" + hexString(base), result.payload.substring(4));
+                cacheAndPut("/obd2/" + address + "/01/" + hexString(base), result.payload.substring(4));
                 getPids(address, 0x01, base, Long.parseLong(pids, 16), "");
                 if ((four[3] & 0x01) == 0x01) {
                     base += 0x20;
@@ -226,7 +247,7 @@ public class CanManagerThread extends Thread {
             if ((pids & (1 << p)) != 0) {
                 canResult result = getObd2(true, address, hexString(mode) + hexString(base + (32 - p)) + payload);
                 if (result.data8 != null) {
-                    cacheAndPut("/" + address + "/" + hexString(mode) + "/" + hexString(base + (32 - p))
+                    cacheAndPut("/obd2/" + address + "/" + hexString(mode) + "/" + hexString(base + (32 - p))
                             + ((payload.length() > 0) ? ("/" + payload) : ""),
                             result.payload.substring((payload.length() > 0) ? 6 : 4));
                 }
@@ -392,7 +413,7 @@ public class CanManagerThread extends Thread {
     private void cacheAndPut(String subtopic, String payload) {
         String topic = Settings.getInstance().getSetting("publish", "owntracks/gw/")
                 + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
-                + "/obd2" + subtopic;
+                + subtopic;
 
         String value = (String) hashtable.get(topic);
         if (value == null || !value.equals(payload)) {
