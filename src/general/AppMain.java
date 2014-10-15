@@ -54,7 +54,9 @@ public class AppMain extends MIDlet {
         CommASC0Thread.getInstance();
         SocketGPRSThread.getInstance();
         CommGPSThread.getInstance();
-        CanManagerThread.getInstance();
+        if (MicroManager.getInstance().isAdvanced()) {
+            CanManagerThread.getInstance();
+        }
         ProcessSMSThread.setup();
 
         SocketGPRSThread.getInstance().put(
@@ -119,8 +121,10 @@ public class AppMain extends MIDlet {
             CommGPSThread.getInstance().start();
             CommASC0Thread.getInstance().start();
             SocketGPRSThread.getInstance().start();
-            CanManagerThread.getInstance().start();
-
+            if (MicroManager.getInstance().isAdvanced()) {
+                CanManagerThread.getInstance().start();
+            }
+            
             while (!loop()) {
                 Thread.sleep(1000);
             }
@@ -138,9 +142,11 @@ public class AppMain extends MIDlet {
                 }
             }
 
-            CanManagerThread.getInstance().terminate = true;
-            CanManagerThread.getInstance().join();
-
+            if (MicroManager.getInstance().isAdvanced()) {
+                CanManagerThread.getInstance().terminate = true;
+                CanManagerThread.getInstance().join();
+            }
+            
             CommGPSThread.getInstance().terminate = true;
             CommGPSThread.getInstance().join();
 

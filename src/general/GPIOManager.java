@@ -4,6 +4,8 @@ public class GPIOManager {
 
     public int gpio1;
     public int gpio3;
+    public int gpio4;
+    public int gpio5;
     public int gpio7;
 
     public GPIOManager() {
@@ -17,14 +19,26 @@ public class GPIOManager {
 
         ATManager.getInstance().executeCommandSynchron("at^scpin=1,0,0\r");
         ATManager.getInstance().executeCommandSynchron("at^scpin=1,2,0\r");
+        if (MicroManager.getInstance().isAdvanced()) {
+            ATManager.getInstance().executeCommandSynchron("at^scpin=1,3,0\r");
+            ATManager.getInstance().executeCommandSynchron("at^scpin=1,4,0\r");
+        }
         ATManager.getInstance().executeCommandSynchron("at^scpin=1,6,0\r");
 
         processSGIO(ATManager.getInstance().executeCommandSynchron("at^sgio=0\r"));
         processSGIO(ATManager.getInstance().executeCommandSynchron("at^sgio=2\r"));
+        if (MicroManager.getInstance().isAdvanced()) {
+            processSGIO(ATManager.getInstance().executeCommandSynchron("at^sgio=3\r"));
+            processSGIO(ATManager.getInstance().executeCommandSynchron("at^sgio=4\r"));
+        }
         processSGIO(ATManager.getInstance().executeCommandSynchron("at^sgio=6\r"));
 
         ATManager.getInstance().executeCommandSynchron("at^scpol=1,0\r");
         ATManager.getInstance().executeCommandSynchron("at^scpol=1,2\r");
+        if (MicroManager.getInstance().isAdvanced()) {
+            ATManager.getInstance().executeCommandSynchron("at^scpol=1,3\r");
+            ATManager.getInstance().executeCommandSynchron("at^scpol=1,4\r");
+        }
         ATManager.getInstance().executeCommandSynchron("at^scpol=1,6\r");
 
         ATManager.getInstance().executeCommandSynchron("at^scpin=1,5,1,0\r");
@@ -35,10 +49,18 @@ public class GPIOManager {
     public void close() {
         ATManager.getInstance().executeCommandSynchron("at^scpol=0,0\r");
         ATManager.getInstance().executeCommandSynchron("at^scpol=0,2\r");
+        if (MicroManager.getInstance().isAdvanced()) {
+            ATManager.getInstance().executeCommandSynchron("at^scpol=0,3\r");
+            ATManager.getInstance().executeCommandSynchron("at^scpol=0,4\r");            
+        }
         ATManager.getInstance().executeCommandSynchron("at^scpol=0,6\r");
 
         ATManager.getInstance().executeCommandSynchron("at^scpin=0,0\r");
         ATManager.getInstance().executeCommandSynchron("at^scpin=0,2\r");
+        if (MicroManager.getInstance().isAdvanced()) {
+            ATManager.getInstance().executeCommandSynchron("at^scpin=0,3\r");
+            ATManager.getInstance().executeCommandSynchron("at^scpin=0,4\r");            
+        }
         ATManager.getInstance().executeCommandSynchron("at^scpin=0,6\r");
 
         ATManager.getInstance().executeCommandSynchron("at^scpin=0,5\r");
@@ -162,6 +184,34 @@ public class GPIOManager {
                             Settings.getInstance().getSetting("publish", "owntracks/gw/")
                             + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
                             + "/gpio/3",
+                            Settings.getInstance().getSetting("qos", 1),
+                            Settings.getInstance().getSetting("retain", true),
+                            ("" + (1 - value)).getBytes()
+                    );
+                }
+                break;
+
+            case 3:
+                gpio4 = value;
+                if (Settings.getInstance().getSetting("useGPIO4", false)) {
+                    SocketGPRSThread.getInstance().put(
+                            Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                            + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                            + "/gpio/4",
+                            Settings.getInstance().getSetting("qos", 1),
+                            Settings.getInstance().getSetting("retain", true),
+                            ("" + (1 - value)).getBytes()
+                    );
+                }
+                break;
+
+            case 4:
+                gpio5 = value;
+                if (Settings.getInstance().getSetting("useGPIO5", false)) {
+                    SocketGPRSThread.getInstance().put(
+                            Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                            + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                            + "/gpio/5",
                             Settings.getInstance().getSetting("qos", 1),
                             Settings.getInstance().getSetting("retain", true),
                             ("" + (1 - value)).getBytes()

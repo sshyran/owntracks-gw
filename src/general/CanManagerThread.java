@@ -57,13 +57,14 @@ public class CanManagerThread extends Thread {
                     SLog.log(SLog.Debug, "Can", "canType=" + can.getCanType());
                     SLog.log(SLog.Debug, "Can", "canNodeState=" + can.getCanNodeState());
 
-                    while (!terminate) {
+                    while (!terminate && Settings.getInstance().getSetting("fms", false)) {
                         SLog.log(SLog.Debug, "Can", "canDriverID=" + StringFunc.toHexString(can.getDriverID()));
                         cacheAndPut("/fms/driverid", StringFunc.toHexString(can.getDriverID()));
                         SLog.log(SLog.Debug, "Can", "canTimeDate=" + StringFunc.toHexString(can.getTimeDate()));
                         cacheAndPut("/fms/timedate", StringFunc.toHexString(can.getTimeDate()));
                         SLog.log(SLog.Debug, "Can", "canVehicleID=" + StringFunc.toHexString(can.getVehicleID()));
-                        cacheAndPut("/fms/vehicleid", StringFunc.toHexString(can.getVehicleID()));
+                        cacheAndPut("/fms/vehicl) {\n" +
+"                        SLog.log(SLogeid", StringFunc.toHexString(can.getVehicleID()));
                         SLog.log(SLog.Debug, "Can", "canFMSData=" + StringFunc.toHexString(can.getFMSdata()));
                         cacheAndPut("/fms/data", StringFunc.toHexString(can.getFMSdata()));
                         try {
