@@ -473,8 +473,8 @@ public class LocationManager {
                 csv = tid
                         + "," + Long.toString(location.date.getTime() / 1000, 16)
                         + "," + reason
-                        + "," + (long) (location.longitude * 1000000.0)
                         + "," + (long) (location.latitude * 1000000.0)
+                        + "," + (long) (location.longitude * 1000000.0)
                         + "," + (long) (location.course / 10)
                         + "," + (long) location.speed
                         + "," + (long) (location.altitude / 10)
@@ -492,8 +492,8 @@ public class LocationManager {
                 json = json.concat(",\"tid\":\"" + tid + "\"");
 
                 json = json.concat(",\"tst\":\"" + (location.date.getTime() / 1000) + "\"");
-                json = json.concat(",\"lon\":\"" + location.longitude + "\"");
                 json = json.concat(",\"lat\":\"" + location.latitude + "\"");
+                json = json.concat(",\"lon\":\"" + location.longitude + "\"");
 
                 if (StringFunc.isInStringArray("course", fields)) {
                     json = json.concat(",\"cog\":" + (long) location.course);
