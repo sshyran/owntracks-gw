@@ -440,6 +440,7 @@ public class LocationManager {
             }
             lastReportedLocation = currentLocation;
             currentLocation = null;
+            lastReportedLocation.incrementalDistance = incrementalDistance;
             incrementalDistance = 0.0;
             return PayloadString(lastReportedLocation, reason, distance);
         } else {
@@ -475,11 +476,11 @@ public class LocationManager {
                         + "," + reason
                         + "," + (long) (location.latitude * 1000000.0)
                         + "," + (long) (location.longitude * 1000000.0)
-                        + "," + (long) (location.course / 10)
+                        + "," + (long) ((location.course  + 5 )/ 10)
                         + "," + (long) location.speed
-                        + "," + (long) (location.altitude / 10)
-                        + "," + (long) incrementalDistance
-                        + "," + (long) (trip / 1000);
+                        + "," + (long) ((location.altitude + 5 )/ 10)
+                        + "," + (long) location.incrementalDistance
+                        + "," + (long) ((trip + 500 ) / 1000);
                 return csv;
             } else {
 
@@ -505,7 +506,7 @@ public class LocationManager {
                     json = json.concat(",\"alt\":" + (long) location.altitude);
                 }
                 if (StringFunc.isInStringArray("distance", fields)) {
-                    json = json.concat(",\"dist\":" + (long) incrementalDistance);
+                    json = json.concat(",\"dist\":" + (long) location.incrementalDistance);
                 }
                 if (StringFunc.isInStringArray("trip", fields)) {
                     json = json.concat(",\"trip\":" + (long) trip);

@@ -20,6 +20,7 @@ public class Location {
     public double course;
     public double speed;
     public double altitude; 
+    public double incrementalDistance;
     
     /** arcus cosinus implementation
      * using Newton's iterative method
