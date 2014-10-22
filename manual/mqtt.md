@@ -5,6 +5,12 @@ is user-configurable by setting the `publish` and `clientID` settings. Assuming 
 is set to `owntracks/acme` and the latter to `van17`, the _base topic_ becomes `owntracks/acme/van17`, and that is where location messages (in JSON) are published to. (All publishes are typically
 retained, unless you configure `retain=0`.)
 
+Location messages are published in either of two configurable formats:
+
+1. JSON, if `set payload=json` (default) has been configured
+2. CSV, if `set payload=csv` has been configured.
+
+### JSON
 
 A JSON message as published by Greenwich could look like this^[JSON elements
 marked with an asterisk `(*)` may or may not be present, depending on the
@@ -19,12 +25,12 @@ them here as explanation):
   "tid": "V7",                 // tracker-ID (configurable)
   "lat": "48.858334",          // latitude
   "lon": "2.295134",           // longitude
-  "alt": "38.0",               // altitude (*)
-  "vel": "46.5315",            // velocity (speed) (*)
+  "alt": 732,                  // altitude (*)
+  "vel": 46,                   // velocity (speed) (*)
   "batt": "12.4",              // external battery level (*)
-  "cog": "283.35",             // course over ground (*)
-  "dist": "569",               // distance in meters since last publish (*)
-  "trip": "8441"               // trip distance in meters since last reboot (*)
+  "cog": 283,                  // course over ground (*)
+  "dist": 569,                 // distance in meters since last publish (*)
+  "trip": 8441                 // trip distance in meters since last reboot (*)
                                //  so trip(n+1) = trip(n) + dist(n+1)
 }
 ```
@@ -33,13 +39,36 @@ In particular, these elements need explanation
 
 
 * `trip` is counted incrementally based on the GPS messages reported per/second, whereas
-* `dist` represents a _crow's flight_ between two publishes: it is calculated
-   with the Haversine formula from the locations between publishes.
+* `dist` is the distance travelled in meters since last publish.
+
+### CSV
+
+Messages published as CSV (Comma Separated Values) are shorter and thus easier on the
+volume of data incurred by Greenwich devices. If you are on a tight data budget, CSV
+is well suited.
+
+In interest of saving as much as possible data, the CSV messages published by the
+device are as follows.
+
+![CSV format](art/gw-csp-format.png)
+
+The field names in the diagram correspond to the JSON fields described above. However,
+the values can be slightly different.
+
+* `tst` is the hexadecimal (base 16) representation of the UNIX epoch timestamp.
+* `lat` and `lon` are integer representations of the latitude and longitude respectively.
+  To determine the exact decimal positions, divide both of these values by 1 million.
+* `cog` must be multiplied by 10 to arrive at the original approximate course
+* `alt` is the original altitude divided by 10.
+* `trip` is not in meters (as in JSON) but in Km. Multiply this value by 1000 to obtain
+  the value published in JSON.
+
+
 
 
 ### Triggers
 
-In the JSON above, we mention the word _trigger_. This describes why a particular
+In the messages above, we mention the word _trigger_. This describes why a particular
 location message was published. The following is a list of triggers:
 
 --------- ---------------------------------------------------------
