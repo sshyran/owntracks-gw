@@ -184,11 +184,6 @@
       validity: reboot
       default: 1
       desc: Quality of Service (QoS) for MQTT publishes
-  - raw:
-      values: 0/1
-      validity: immediate
-      default: 1
-      desc: Publish raw GPS string to the `../raw` topic
   - retained:
       values: 0/1
       validity: reboot
@@ -329,6 +324,16 @@
       validity: reboot
       default: "1048576"
       desc: maximum size of persistent message store in bytes (default = 1 MB). When app starts and no unsent records are in storage, storage is reset.  When storage reaches maxSize and all records are sent, storage is reset while running.  When storage reaches maxSize, new records are not stored anymore
+  - raw:
+      values: 0/1
+      validity: immediate
+      default: 1
+      desc: Publish raw GPS string to the `../raw` topic
+  - payload:
+      values: "csv/json"
+      validity: "immediate"
+      default: "json"
+      desc: Publish payload in JSON or CSV format
 
 - Debugging and Logging:
   - block: |

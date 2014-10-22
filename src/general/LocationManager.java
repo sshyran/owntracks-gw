@@ -27,6 +27,7 @@ public class LocationManager {
     private Location currentLocation = null;
 
     private double trip = 0.0;
+    private double incrementalDistance = 0.0;
 
     private String rmc;
     private Date tempDate;
@@ -160,8 +161,8 @@ public class LocationManager {
                         fix = false;
                         setLED(false);
                         startTimer();
-                        String json = getlastJSONString("l");
-                        send(json);
+                        String payload = getlastPayloadString("l");
+                        send(payload);
                     }
 
                 } else {
@@ -333,6 +334,7 @@ public class LocationManager {
                 SLog.log(SLog.Debug, "LocationManager",
                         "move: " + distance + " speed: " + currentLocation.speed);
                 if (distance > sensitivity) {
+                    incrementalDistance += distance;
                     trip += distance;
                 }
             }
@@ -357,17 +359,17 @@ public class LocationManager {
                 long timeSinceLast = currentLocation.date.getTime() / 1000 - lastReportedLocation.date.getTime() / 1000;
 
                 if (stationary && timeSinceLast > minInterval) {
-                    String json = getJSONString("T");
-                    send(json);
+                    String payload = getPayloadString("T");
+                    send(payload);
                 } else if (!stationary && timeSinceLast > maxInterval) {
-                    String json = getJSONString("t");
-                    send(json);
+                    String payload = getPayloadString("t");
+                    send(payload);
                 } else if (transitionMoveToPark) {
-                    String json = getJSONString("k");
-                    send(json);
+                    String payload = getPayloadString("k");
+                    send(payload);
                 } else if (transitionParkToMove) {
-                    String json = getJSONString("v");
-                    send(json);
+                    String payload = getPayloadString("v");
+                    send(payload);
                 }
             } else {
                 Date fixDate = currentLocation.date;
@@ -376,8 +378,8 @@ public class LocationManager {
                         + DateFormatter.atString(date)
                         + "\"\r";
                 ATManager.getInstance().executeCommandSynchron(rtc);
-                String json = getJSONString("f");
-                send(json);
+                String payload = getPayloadString("f");
+                send(payload);
                 if (vel > minSpeed) {
                     stationary = false;
                 } else {
@@ -387,49 +389,49 @@ public class LocationManager {
         }
         if (!once) {
             if (AppMain.getInstance().wakeupMode.equals(AppMain.accelerometerWakeup)) {
-                String json = JSONString(secretLocation, "a", 0);
-                //send(json);
-                sendAlarm(json);
+                String payload = PayloadString(secretLocation, "a", 0);
+                //send(payload);
+                sendAlarm(payload);
                 once = true;
             } else if (AppMain.getInstance().wakeupMode.equals(AppMain.alarmClockWakeup)) {
-                //String json = getlastJSONString("c");
-                //send(json);
+                //String payload = getlastPayloadString("c");
+                //send(payload);
                 once = true;
             }
         }
     }
 
-    public void send(String json) {
-        sendAnywhere(json, "");
+    public void send(String payload) {
+        sendAnywhere(payload, "");
     }
 
-    public void sendAlarm(String json) {
-        if (json != null) {
+    public void sendAlarm(String payload) {
+        if (payload != null) {
             SocketGPRSThread.getInstance().put(
                     Settings.getInstance().getSetting("publish", "owntracks/gw/")
                     + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
                     + "/alarm",
                     Settings.getInstance().getSetting("qos", 1),
                     false,
-                    json.getBytes()
+                    payload.getBytes()
             );
         }
     }
 
-    private synchronized void sendAnywhere(String json, String subTopic) {
-        if (json != null) {
+    private synchronized void sendAnywhere(String payload, String subTopic) {
+        if (payload != null) {
             SocketGPRSThread.getInstance().put(
                     Settings.getInstance().getSetting("publish", "owntracks/gw/")
                     + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
                     + subTopic,
                     Settings.getInstance().getSetting("qos", 1),
                     Settings.getInstance().getSetting("retain", true),
-                    json.getBytes()
+                    payload.getBytes()
             );
         }
     }
 
-    private synchronized String getJSONString(String reason) {
+    private synchronized String getPayloadString(String reason) {
         if (currentLocation != null) {
             double distance = 0;
             if (lastReportedLocation != null) {
@@ -438,28 +440,23 @@ public class LocationManager {
             }
             lastReportedLocation = currentLocation;
             currentLocation = null;
-            return JSONString(lastReportedLocation, reason, distance);
+            incrementalDistance = 0.0;
+            return PayloadString(lastReportedLocation, reason, distance);
         } else {
             return null;
         }
     }
 
-    public String getlastJSONString(String reason) {
+    public String getlastPayloadString(String reason) {
         if (currentLocation != null) {
-            return JSONString(currentLocation, reason, 0);
+            return PayloadString(currentLocation, reason, 0);
         } else {
-            return JSONString(lastReportedLocation, reason, 0);
+            return PayloadString(lastReportedLocation, reason, 0);
         }
     }
 
-    private String JSONString(Location location, String reason, double distance) {
+    private String PayloadString(Location location, String reason, double distance) {
         if (location != null) {
-            String[] fields = StringFunc.split(Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,trip"), ",");
-
-            String json;
-            json = "{\"_type\":\"location\"";
-            json = json.concat(",\"t\":\"" + reason + "\"");
-
             String tid = Settings.getInstance().getSetting("tid", null);
             if (tid == null) {
                 String clientID = Settings.getInstance().getSetting("clientID",
@@ -471,33 +468,55 @@ public class LocationManager {
                     tid = clientID;
                 }
             }
-            json = json.concat(",\"tid\":\"" + tid + "\"");
+            if (Settings.getInstance().getSetting("payload", "json").equalsIgnoreCase("csv")) {
+                String csv;
+                csv = tid
+                        + "," + Long.toString(location.date.getTime() / 1000, 16)
+                        + "," + reason
+                        + "," + (long) (location.longitude * 1000000.0)
+                        + "," + (long) (location.latitude * 1000000.0)
+                        + "," + (long) (location.course / 10)
+                        + "," + (long) location.speed
+                        + "," + (long) (location.altitude / 10)
+                        + "," + (long) incrementalDistance
+                        + "," + (long) (trip / 1000);
+                return csv;
+            } else {
 
-            json = json.concat(",\"tst\":\"" + (location.date.getTime() / 1000) + "\"");
-            json = json.concat(",\"lon\":\"" + location.longitude + "\"");
-            json = json.concat(",\"lat\":\"" + location.latitude + "\"");
+                String[] fields = StringFunc.split(Settings.getInstance().getSetting("fields", "course,speed,altitude,distance,trip"), ",");
 
-            if (StringFunc.isInStringArray("course", fields)) {
-                json = json.concat(",\"cog\":" + (long) location.course);
-            }
-            if (StringFunc.isInStringArray("speed", fields)) {
-                json = json.concat(",\"vel\":" + (long) location.speed);
-            }
-            if (StringFunc.isInStringArray("altitude", fields)) {
-                json = json.concat(",\"alt\":" + (long) location.altitude);
-            }
-            if (StringFunc.isInStringArray("distance", fields)) {
-                json = json.concat(",\"dist\":" + (long) distance);
-            }
-            if (StringFunc.isInStringArray("trip", fields)) {
-                json = json.concat(",\"trip\":" + (long) trip);
-            }
-            if (StringFunc.isInStringArray("battery", fields)) {
-                json = json.concat(",\"batt\":\"" + BatteryManager.getInstance().getExternalVoltageString() + "\"");
-            }
+                String json;
+                json = "{\"_type\":\"location\"";
+                json = json.concat(",\"t\":\"" + reason + "\"");
 
-            json = json.concat("}");
-            return json;
+                json = json.concat(",\"tid\":\"" + tid + "\"");
+
+                json = json.concat(",\"tst\":\"" + (location.date.getTime() / 1000) + "\"");
+                json = json.concat(",\"lon\":\"" + location.longitude + "\"");
+                json = json.concat(",\"lat\":\"" + location.latitude + "\"");
+
+                if (StringFunc.isInStringArray("course", fields)) {
+                    json = json.concat(",\"cog\":" + (long) location.course);
+                }
+                if (StringFunc.isInStringArray("speed", fields)) {
+                    json = json.concat(",\"vel\":" + (long) location.speed);
+                }
+                if (StringFunc.isInStringArray("altitude", fields)) {
+                    json = json.concat(",\"alt\":" + (long) location.altitude);
+                }
+                if (StringFunc.isInStringArray("distance", fields)) {
+                    json = json.concat(",\"dist\":" + (long) incrementalDistance);
+                }
+                if (StringFunc.isInStringArray("trip", fields)) {
+                    json = json.concat(",\"trip\":" + (long) trip);
+                }
+                if (StringFunc.isInStringArray("battery", fields)) {
+                    json = json.concat(",\"batt\":\"" + BatteryManager.getInstance().getExternalVoltageString() + "\"");
+                }
+
+                json = json.concat("}");
+                return json;
+            }
         } else {
             return null;
         }

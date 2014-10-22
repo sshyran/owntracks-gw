@@ -114,7 +114,7 @@ public class CommandProcessor {
                 message = message.concat("no location available");
             }
 
-            String json = locationManager.getlastJSONString("m");
+            String json = locationManager.getlastPayloadString("m");
             if (json != null) {
                 SocketGPRSThread.getInstance().put(
                         settings.getSetting("publish", "owntracks/gw/")

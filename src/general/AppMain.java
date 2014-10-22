@@ -208,7 +208,7 @@ public class AppMain extends MIDlet {
     protected void cleanup() {
         SLog.log(SLog.Debug, "AppMain", "cleanup");
 
-        String json = LocationManager.getInstance().getlastJSONString("L");
+        String json = LocationManager.getInstance().getlastPayloadString("L");
         LocationManager.getInstance().send(json);
         Settings.getInstance().setSetting("lastFix", json);
 
