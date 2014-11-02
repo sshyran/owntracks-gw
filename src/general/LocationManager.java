@@ -41,12 +41,25 @@ public class LocationManager {
     private double tempAlt;
 
     private int numSat = 0;
+    
+    private PersistentRecord persistentRecord = null;
 
     private LocationManager() {
         fix = false;
         userLed = new UserLed();
         setLED(false);
         startTimer();
+        persistentRecord = new PersistentRecord("LocationManager");
+        byte[] bytes = persistentRecord.get(1);
+        if (bytes != null) {
+            String string = new String(bytes);
+            try {
+                trip = Double.parseDouble(string);
+            } catch (NumberFormatException nfe) {
+                //
+            }
+        }
+        SLog.log(SLog.Debug, "LocationManager", "persistent trip " + trip);
     }
 
     public static LocationManager getInstance() {
@@ -105,6 +118,8 @@ public class LocationManager {
 
     public void zero() {
         trip = 0.0;
+        persistentRecord.set(1, Double.toString(trip).getBytes());
+        SLog.log(SLog.Debug, "LocationManager", "trip persited " + trip);
     }
 
     public Date dateLastFix() {
@@ -326,7 +341,6 @@ public class LocationManager {
 
             if (firstLocation == null) {
                 firstLocation = currentLocation;
-                trip = 0.0;
             }
 
             if (lastLocation != null) {
@@ -336,6 +350,8 @@ public class LocationManager {
                 if (distance > sensitivity) {
                     incrementalDistance += distance;
                     trip += distance;
+                    persistentRecord.set(1, Double.toString(trip).getBytes());
+                    SLog.log(SLog.Debug, "LocationManager", "trip persited " + trip);
                 }
             }
             lastLocation = currentLocation;
