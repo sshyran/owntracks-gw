@@ -302,9 +302,7 @@ public class SocketGPRSThread extends Thread {
 
     boolean processMessage(Publish publish) {
         SLog.log(SLog.Debug, "SocketGRPSThread", "processMessage: " + publish.topic);
-        MQTTHandler.getInstance().publish(publish.topic, publish.qos, publish.retain, publish.payload);
-        return MQTTHandler.getInstance().isConnected();
-
+        return MQTTHandler.getInstance().publish(publish.topic, publish.qos, publish.retain, publish.payload);
     }
 
     class NetworkCheckTimerTask extends TimerTask {

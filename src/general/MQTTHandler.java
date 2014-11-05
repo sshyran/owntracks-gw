@@ -6,6 +6,7 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.MqttTopic;
 import org.eclipse.paho.client.mqttv3.internal.MemoryPersistence;
@@ -125,44 +126,62 @@ public class MQTTHandler implements MqttCallback {
 
     }
 
-    public synchronized void publishIfConnected(String topicName,
+    public synchronized boolean publishIfConnected(String topicName,
             int qos,
             boolean retained,
             byte[] payload) {
 
-        SLog.log(SLog.Debug, "MQTTHandler", "publish");
+        SLog.log(SLog.Debug, "MQTTHandler", "publishIfConnected");
 
         if (client.isConnected()) {
             MqttTopic topic = client.getTopic(topicName);
             MqttMessage message = new MqttMessage(payload);
             message.setQos(qos);
             message.setRetained(retained);
+            MqttDeliveryToken token;
+            
+            try {
+                SLog.log(SLog.Debug, "MQTTHandler", "publish " + StringFunc.toHexString(payload));
+                token = topic.publish(message);
+            } catch (MqttPersistenceException pe) {
+                SLog.log(SLog.Warning, "MQTTHandler", "MqttPersistenceException " + pe.getReasonCode());
+                return false;
+            } catch (MqttException e) {
+                SLog.log(SLog.Warning, "MQTTHandler", "MqttException " + e.getReasonCode());
+                return false;
+            }
 
             try {
-                MqttDeliveryToken token = topic.publish(message);
+                SLog.log(SLog.Debug, "MQTTHandler", "waitForCompletion");
+                token.waitForCompletion();
+                return true;
+            } catch (MqttSecurityException se) {
+                SLog.log(SLog.Warning, "MQTTHandler", "MqttSecurityException " + se.getReasonCode());
+                return false;
             } catch (MqttException e) {
-                SLog.log(SLog.Warning, "MQTTHandler", "publish: " + e.getReasonCode());
+                SLog.log(SLog.Warning, "MQTTHandler", "MqttException " + e.getReasonCode());
+                return false;
             }
         } else {
-            // not connected
+            return false;
         }
     }
 
-    public synchronized void publish(String topicName,
+    public synchronized boolean publish(String topicName,
             int qos,
             boolean retained,
             byte[] payload) {
 
-        if (!client.isConnected()) {
+        if (client == null && !client.isConnected()) {
             connectToBroker();
         }
 
-        publishIfConnected(topicName, qos, retained, payload);
+        return publishIfConnected(topicName, qos, retained, payload);
     }
 
     public synchronized void subscribe(String topicName, int qos) {
         SLog.log(SLog.Debug, "MQTTHandler", "subscribe " + topicName + " " + qos);
-        if (client.isConnected()) {
+        if (client != null && client.isConnected()) {
             try {
                 client.subscribe(topicName, qos);
             } catch (MqttException e) {
@@ -176,7 +195,7 @@ public class MQTTHandler implements MqttCallback {
     public synchronized void disconnect() {
         SLog.log(SLog.Debug, "MQTTHandler", "disconnect");
 
-        if (client.isConnected()) {
+        if (client != null && client.isConnected()) {
             publish(willTopic, willQos, willRetain, "-1".getBytes());
         }
 

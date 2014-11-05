@@ -65,7 +65,7 @@ public class PersistentRecord {
         } catch (RecordStoreNotOpenException rsnoe) {
             SLog.log(SLog.Error, "Persistent", "RecordStoreNotOpenException getRecord");
         } catch (InvalidRecordIDException irie) {
-            SLog.log(SLog.Error, "Persistent", "InvalidRecordIDException getRecord");
+            SLog.log(SLog.Informational, "Persistent", "InvalidRecordIDException getRecord");
         } catch (RecordStoreException rse) {
             SLog.log(SLog.Error, "Persistent", "RecordStoreException getRecord");
         }
@@ -75,9 +75,13 @@ public class PersistentRecord {
     public synchronized boolean set(int recordID, byte[] bytes) {
         try {
             SLog.log(SLog.Debug, "Persistent", "setRecord " + recordID);
+            SLog.log(SLog.Debug, "Persistent", "getNextRecordID " + recordStore.getNextRecordID());
+
             while (recordStore.getNextRecordID() <= recordID) {
                 int addedRecordID = recordStore.addRecord(null, 0, 0);
                 SLog.log(SLog.Debug, "Persistent", "addedRecord " + addedRecordID);
+                SLog.log(SLog.Debug, "Persistent", "getNextRecordID " + recordStore.getNextRecordID());
+
             }
             recordStore.setRecord(recordID, bytes, 0, bytes.length);
         } catch (RecordStoreNotOpenException rsnoe) {

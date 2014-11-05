@@ -21,7 +21,6 @@ public class LocationManager {
     private boolean stationary = false;
     private boolean once = false;
 
-    private Location firstLocation = null;
     private Location lastLocation = null;
     private Location lastReportedLocation = null;
     private Location currentLocation = null;
@@ -41,7 +40,7 @@ public class LocationManager {
     private double tempAlt;
 
     private int numSat = 0;
-    
+
     private PersistentRecord persistentRecord = null;
 
     private LocationManager() {
@@ -119,7 +118,7 @@ public class LocationManager {
     public void zero() {
         trip = 0.0;
         persistentRecord.set(1, Double.toString(trip).getBytes());
-        SLog.log(SLog.Debug, "LocationManager", "trip persited " + trip);
+        SLog.log(SLog.Debug, "LocationManager", "trip persisted " + trip);
     }
 
     public Date dateLastFix() {
@@ -331,36 +330,23 @@ public class LocationManager {
                 "offUntil " + DateFormatter.isoString(offUntil)
                 + " date " + DateFormatter.isoString(date));
         if (offUntil.getTime() < date.getTime()) {
-            int sensitivity = Settings.getInstance().getSetting("sensitivity", 1);
             int minDistance = Settings.getInstance().getSetting("minDistance", 100);
             int minSpeed = Settings.getInstance().getSetting("minSpeed", 5);
             int maxInterval = Settings.getInstance().getSetting("maxInterval", 60);
             int minInterval = Settings.getInstance().getSetting("minInterval", 1800);
 
             currentLocation = secretLocation;
+            calculateIncrementalDistances();
 
-            if (firstLocation == null) {
-                firstLocation = currentLocation;
-            }
-
-            if (lastLocation != null) {
-                double distance = lastLocation.distance(currentLocation);
-                SLog.log(SLog.Debug, "LocationManager",
-                        "move: " + distance + " speed: " + currentLocation.speed);
-                if (distance > sensitivity) {
-                    incrementalDistance += distance;
-                    trip += distance;
-                    persistentRecord.set(1, Double.toString(trip).getBytes());
-                    SLog.log(SLog.Debug, "LocationManager", "trip persited " + trip);
-                }
-            }
-            lastLocation = currentLocation;
-
-            if (lastReportedLocation != null) {
+            if (lastReportedLocation == null) {
+                SLog.log(SLog.Debug, "LocationManager", "set RTC w/ first fix " + DateFormatter.isoString(date));
+                String rtc = "at+cclk=\"" + DateFormatter.atString(date) + "\"\r";
+                ATManager.getInstance().executeCommandSynchron(rtc);
+                send(getPayloadString("f"));
+            } else {
                 boolean transitionMoveToPark = false;
                 boolean transitionParkToMove = false;
-                double distance = lastReportedLocation.distance(currentLocation);
-                if (vel > minSpeed || distance > minDistance) {
+                if (vel > minSpeed || incrementalDistance > minDistance) {
                     if (stationary) {
                         transitionParkToMove = true;
                     }
@@ -375,50 +361,41 @@ public class LocationManager {
                 long timeSinceLast = currentLocation.date.getTime() / 1000 - lastReportedLocation.date.getTime() / 1000;
 
                 if (stationary && timeSinceLast > minInterval) {
-                    String payload = getPayloadString("T");
-                    send(payload);
+                    send(getPayloadString("T"));
                 } else if (!stationary && timeSinceLast > maxInterval) {
-                    String payload = getPayloadString("t");
-                    send(payload);
+                    send(getPayloadString("t"));
                 } else if (transitionMoveToPark) {
-                    String payload = getPayloadString("k");
-                    send(payload);
+                    send(getPayloadString("k"));
                 } else if (transitionParkToMove) {
-                    String payload = getPayloadString("v");
-                    send(payload);
-                }
-            } else {
-                Date fixDate = currentLocation.date;
-                SLog.log(SLog.Debug, "LocationManager", "set RTC w/ first fix " + DateFormatter.isoString(date));
-                String rtc = "at+cclk=\""
-                        + DateFormatter.atString(date)
-                        + "\"\r";
-                ATManager.getInstance().executeCommandSynchron(rtc);
-                String payload = getPayloadString("f");
-                send(payload);
-                if (vel > minSpeed) {
-                    stationary = false;
-                } else {
-                    stationary = true;
+                    send(getPayloadString("v"));
                 }
             }
         }
         if (!once) {
             if (AppMain.getInstance().wakeupMode.equals(AppMain.accelerometerWakeup)) {
-                String payload = PayloadString(secretLocation, "a", 0);
-                //send(payload);
+                String payload = PayloadString(secretLocation, "a");
                 sendAlarm(payload);
                 once = true;
             } else if (AppMain.getInstance().wakeupMode.equals(AppMain.alarmClockWakeup)) {
-                //String payload = getlastPayloadString("c");
-                //send(payload);
                 once = true;
             }
         }
     }
 
-    public void send(String payload) {
-        sendAnywhere(payload, "");
+    private void calculateIncrementalDistances() {
+        if (lastLocation != null) {
+            double distance = lastLocation.distance(currentLocation);
+            SLog.log(SLog.Debug, "LocationManager",
+                    "move: " + distance +
+                    " speed: " + currentLocation.speed);
+            if (distance > Settings.getInstance().getSetting("sensitivity", 1)) {
+                incrementalDistance += distance;
+                trip += distance;
+                persistentRecord.set(1, Double.toString(trip).getBytes());
+                SLog.log(SLog.Debug, "LocationManager", "trip persisted " + trip);
+            }
+        }
+        lastLocation = currentLocation;
     }
 
     public void sendAlarm(String payload) {
@@ -434,12 +411,11 @@ public class LocationManager {
         }
     }
 
-    private synchronized void sendAnywhere(String payload, String subTopic) {
+    public void send(String payload) {
         if (payload != null) {
             SocketGPRSThread.getInstance().put(
                     Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
-                    + subTopic,
+                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI()),
                     Settings.getInstance().getSetting("qos", 1),
                     Settings.getInstance().getSetting("retain", true),
                     payload.getBytes()
@@ -449,16 +425,11 @@ public class LocationManager {
 
     private synchronized String getPayloadString(String reason) {
         if (currentLocation != null) {
-            double distance = 0;
-            if (lastReportedLocation != null) {
-                distance = lastReportedLocation.distance(currentLocation);
-                SLog.log(SLog.Debug, "LocationManager", "dist: " + distance);
-            }
             lastReportedLocation = currentLocation;
             currentLocation = null;
             lastReportedLocation.incrementalDistance = incrementalDistance;
             incrementalDistance = 0.0;
-            return PayloadString(lastReportedLocation, reason, distance);
+            return PayloadString(lastReportedLocation, reason);
         } else {
             return null;
         }
@@ -466,13 +437,13 @@ public class LocationManager {
 
     public String getlastPayloadString(String reason) {
         if (currentLocation != null) {
-            return PayloadString(currentLocation, reason, 0);
+            return PayloadString(currentLocation, reason);
         } else {
-            return PayloadString(lastReportedLocation, reason, 0);
+            return PayloadString(lastReportedLocation, reason);
         }
     }
 
-    private String PayloadString(Location location, String reason, double distance) {
+    private String PayloadString(Location location, String reason) {
         if (location != null) {
             String tid = Settings.getInstance().getSetting("tid", null);
             if (tid == null) {
@@ -492,11 +463,11 @@ public class LocationManager {
                         + "," + reason
                         + "," + (long) (location.latitude * 1000000.0)
                         + "," + (long) (location.longitude * 1000000.0)
-                        + "," + (long) ((location.course  + 5 )/ 10)
+                        + "," + (long) ((location.course + 5) / 10)
                         + "," + (long) location.speed
-                        + "," + (long) ((location.altitude + 5 )/ 10)
+                        + "," + (long) ((location.altitude + 5) / 10)
                         + "," + (long) location.incrementalDistance
-                        + "," + (long) ((trip + 500 ) / 1000);
+                        + "," + (long) ((trip + 500) / 1000);
                 return csv;
             } else {
 
