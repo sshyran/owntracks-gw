@@ -334,6 +334,17 @@
       validity: "immediate"
       default: "json"
       desc: Publish payload in JSON or CSV format
+  - killQueue:
+      values: "0/1"
+      validity: "reboot"
+      default: "0"
+      desc: emergeny functionality removes queue file when set to "1". The parameter is set to "0" afterwards.
+  - killTrip:
+      values: "0/1"
+      validity: "reboot"
+      default: "0"
+      desc:  emergeny functionality removes the persistent trip counter file when set to "1". The parameter is set to "0" afterwards.
+      
 
 - Debugging and Logging:
   - block: |
