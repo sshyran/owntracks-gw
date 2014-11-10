@@ -15,6 +15,7 @@ SOURCES= header.yaml \
 	 _settings.md \
 	 GPIO.md \
 	 OTAP.md \
+	 CAN.md \
 	 notes.md \
 	 credits.md \
 
