@@ -63,13 +63,31 @@
     params: ""
     auth: true
     desc: |
-        Switches back to non-Java AT-mode. (Used only during provisioning.)
+        Immediately switches back to non-Java AT-mode. (Used only during provisioning.)
+
+- restart:
+    params: ""
+    auth: true
+    desc: |
+        Restarts the device immediately. (Used only during provisioning.)
+
+- stop:
+    params: ""
+    auth: true
+    desc: |
+        Switches gracefully back to non-Java AT-mode. (Used only during provisioning.)
 
 - upgrade:
     params: ""
     auth: true
     desc: |
-        Performs an [OTA](#otap) upgrade.
+        Shuts down the device gracefully and performs an [OTA](#otap) upgrade.
+
+- reboot:
+    params: ""
+    auth: true
+    desc: |
+        Shuts down the device gracefully and reboots the device.
 
 - exec:
     params: "_at-command_"
@@ -81,7 +99,7 @@
     params: "_switch_"
     auth: true
     desc: |
-        Swtich [GPIO](#gpio) outputs.
+        Switch [GPIO](#gpio) outputs.
 
 - "off":
     params: "_minutes_"
