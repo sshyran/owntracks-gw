@@ -26,6 +26,8 @@ public class CommandProcessor {
     private final String destroy = "destroy";
     private final String log = "log";
     private final String bootstrap = "bootstrap";
+    private final String stop = "stop";
+    private final String restart = "restart";
 
     private final String[] authorizedCommands = {
         set,
@@ -39,7 +41,9 @@ public class CommandProcessor {
         logout,
         destroy,
         exec,
-        upgrade
+        upgrade,
+        stop,
+        restart
     };
 
     private final String CRLF = "\r\n";
@@ -129,7 +133,11 @@ public class CommandProcessor {
             }
 
         } else if (command.equalsIgnoreCase(reboot)) {
-            BatteryManager.getInstance().reboot();
+            AppMain.getInstance().reboot = true;
+            return true;
+
+        } else if (command.equalsIgnoreCase(stop)) {
+            AppMain.getInstance().stop = true;
             return true;
 
         } else if (command.equalsIgnoreCase(zero)) {
@@ -143,6 +151,12 @@ public class CommandProcessor {
                 SLog.log(SLog.Error, "CommandProcessor", "MidletStateChangeException");
             }
             message = message.concat("destroying app");
+            return true;
+            
+        } else if (command.equalsIgnoreCase(restart)) {
+            SLog.log(SLog.Informational, "CommandProcessor", "restarting...");
+            ATManager.getInstance().executeCommandSynchron("AT+CFUN=1,1\r");
+            message = message.concat("restarting app");
             return true;
 
         } else if (command.equalsIgnoreCase(reconnect)) {
@@ -164,7 +178,8 @@ public class CommandProcessor {
             return offCommand(parameters);
 
         } else if (command.equalsIgnoreCase(upgrade)) {
-            return upgradeCommand(parameters);
+            AppMain.getInstance().upgrade = true;
+            return true;
 
         } else if (command.equalsIgnoreCase(exec)) {
             return execCommand(parameters);
@@ -363,43 +378,6 @@ public class CommandProcessor {
             }
         } else {
             message = "usage " + log + "[old|del]";
-            return false;
-        }
-    }
-
-    boolean upgradeCommand(String[] parameters) {
-        if (parameters.length == 1) {
-            String clientID = Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI());
-            String otapURI = Settings.getInstance().getSetting("otapURI", "");
-            String notifyURI = Settings.getInstance().getSetting("notifyURI", "");
-            otapURI = StringFunc.replaceString(otapURI, "@", clientID);
-            notifyURI = StringFunc.replaceString(notifyURI, "@", clientID);
-
-            String apn = Settings.getInstance().getSetting("apn", "internet");
-            String otapUser = Settings.getInstance().getSetting("otapUser", "");
-            String otapPassword = Settings.getInstance().getSetting("otapPassword", "");
-
-            String otap
-                    = "AT^SJOTAP=,"
-                    + otapURI
-                    + ",a:/app,"
-                    + otapUser
-                    + ","
-                    + otapPassword
-                    + ",gprs,"
-                    + apn
-                    + ",,,8.8.8.8,"
-                    + notifyURI
-                    + "\r";
-
-            SLog.log(SLog.Debug, "CommandProcessor", "upgrade " + otap);
-
-            String response1 = ATManager.getInstance().executeCommandSynchron(otap);
-            String response2 = ATManager.getInstance().executeCommandSynchron("AT^SJOTAP\r");
-            message = "upgrade " + response1 + " " + response2;
-            return true;
-        } else {
-            message = "usage " + upgrade;
             return false;
         }
     }

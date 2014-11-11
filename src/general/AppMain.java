@@ -22,6 +22,9 @@ import javax.microedition.midlet.*;
 public class AppMain extends MIDlet {
 
     public boolean invalidSIM = false;
+    public boolean upgrade = false;
+    public boolean reboot = false;
+    public boolean stop = false;
 
     final public static String ignitionWakeup = "IgnitionWakeup";
     final public static String accelerometerWakeup = "AccelerometerWakeup";
@@ -124,7 +127,7 @@ public class AppMain extends MIDlet {
             if (MicroManager.getInstance().isAdvanced()) {
                 CanManagerThread.getInstance().start();
             }
-            
+
             while (!loop()) {
                 Thread.sleep(1000);
             }
@@ -146,7 +149,7 @@ public class AppMain extends MIDlet {
                 CanManagerThread.getInstance().terminate = true;
                 CanManagerThread.getInstance().join();
             }
-            
+
             CommGPSThread.getInstance().terminate = true;
             CommGPSThread.getInstance().join();
 
@@ -230,6 +233,58 @@ public class AppMain extends MIDlet {
     protected void shutdown() {
         SLog.log(SLog.Debug, "AppMain", "shutdown");
 
+        if (reboot) {
+            SLog.log(SLog.Informational, "AppMain", "rebooting...");
+            BatteryManager.getInstance().reboot();
+            for (int i = 1; true; i++) {
+                SLog.log(SLog.Debug, "AppMain", "counting " + i);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ie) {
+                    //
+                }
+            }
+        }
+
+        if (upgrade) {
+            SLog.log(SLog.Informational, "AppMain", "upgrading...");
+            String clientID = Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI());
+            String otapURI = Settings.getInstance().getSetting("otapURI", "");
+            String notifyURI = Settings.getInstance().getSetting("notifyURI", "");
+            otapURI = StringFunc.replaceString(otapURI, "@", clientID);
+            notifyURI = StringFunc.replaceString(notifyURI, "@", clientID);
+
+            String apn = Settings.getInstance().getSetting("apn", "internet");
+            String otapUser = Settings.getInstance().getSetting("otapUser", "");
+            String otapPassword = Settings.getInstance().getSetting("otapPassword", "");
+
+            String otap
+                    = "AT^SJOTAP=,"
+                    + otapURI
+                    + ",a:/app,"
+                    + otapUser
+                    + ","
+                    + otapPassword
+                    + ",gprs,"
+                    + apn
+                    + ",,,8.8.8.8,"
+                    + notifyURI
+                    + "\r";
+
+            SLog.log(SLog.Debug, "CommandProcessor", "upgrade " + otap);
+
+            ATManager.getInstance().executeCommandSynchron(otap);
+            ATManager.getInstance().executeCommandSynchron("AT^SJOTAP\r");
+            for (int i = 1; true; i++) {
+                SLog.log(SLog.Debug, "AppMain", "counting " + i);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ie) {
+                    //
+                }
+            }
+        }
+
         Date date = LocationManager.getInstance().dateLastFix();
         if (date != null) {
             SLog.log(SLog.Debug, "AppMain", "powerDown last fix time " + DateFormatter.isoString(date));
@@ -264,15 +319,39 @@ public class AppMain extends MIDlet {
 
         SLog.log(SLog.Debug, "AppMain", "watchdogs stopped");
 
-        BatteryManager.getInstance().lowPowerMode();
-        SLog.log(SLog.Debug, "AppMain", "lowPowerMode");
-        ATManager.getInstance().executeCommandSynchron("AT^SMSO\r");
-        SLog.log(SLog.Debug, "AppMain", "SMSO");
+        if (stop) {
+            SLog.log(SLog.Debug, "AppMain", "stoppping...");
+            try {
+                destroyApp(true);
+            } catch (MIDletStateChangeException msce) {
+                //
+            }
+        } else {
+            BatteryManager.getInstance().lowPowerMode();
+            SLog.log(SLog.Debug, "AppMain", "lowPowerMode");
+            ATManager.getInstance().executeCommandSynchron("AT^SMSO\r");
+            SLog.log(SLog.Debug, "AppMain", "SMSO");
+        }
     }
 
     private boolean loop() {
         if (invalidSIM) {
-            SLog.log(SLog.Error, "AppMain", "invalidSim");
+            SLog.log(SLog.Informational, "AppMain", "invalidSim");
+            return true;
+        }
+
+        if (upgrade) {
+            SLog.log(SLog.Informational, "AppMain", "upgrade");
+            return true;
+        }
+
+        if (reboot) {
+            SLog.log(SLog.Informational, "AppMain", "reboot");
+            return true;
+        }
+
+        if (stop) {
+            SLog.log(SLog.Informational, "AppMain", "stop");
             return true;
         }
 
