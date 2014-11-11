@@ -1,7 +1,7 @@
 ---
 title: Choral Greenwich, *OwnTracks Edition*
 author: Christoph Krey & Jan-Piet Mens 
-date: 2014-11-10
+date: 2014-11-11
 header-includes:
     - \usepackage{fancyhdr}
     - \pagestyle{fancy}
