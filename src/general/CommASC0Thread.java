@@ -77,7 +77,7 @@ public class CommASC0Thread extends Thread {
             CommandProcessor commandProcessor = CommandProcessor.getInstance();
             try {
                 String response;
-                if (commandProcessor.execute(command)) {
+                if (commandProcessor.execute(command, false)) {
                     response = commandProcessor.message;
                 } else {
                     response = "NACK: " + commandProcessor.message;

@@ -59,7 +59,7 @@ public class CommandProcessor {
         private static final CommandProcessor INSTANCE = new CommandProcessor();
     }
 
-    public synchronized boolean execute(String commandLine) {
+    public synchronized boolean execute(String commandLine, boolean ignoreAuthorization) {
         message = "";
         SLog.log(SLog.Debug, "CommandProcessor", "execute " + (commandLine != null ? commandLine : "<null>"));
         if (commandLine != null && commandLine.length() > 0) {
@@ -71,7 +71,8 @@ public class CommandProcessor {
                 Settings settings = Settings.getInstance();
                 if (!StringFunc.isInStringArray(words[0], authorizedCommands)
                         || settings.getSetting("loginTimeout", 600) == 0
-                        || authorizedSince + settings.getSetting("loginTimeout", 600) > new Date().getTime() / 1000) {
+                        || authorizedSince + settings.getSetting("loginTimeout", 600) > new Date().getTime() / 1000
+                        || ignoreAuthorization) {
                     if (words[0].equals("login")) {
                         if ((words.length == 2)
                                 && (words[1].equals(settings.getSetting("secret", "1234567890")))) {

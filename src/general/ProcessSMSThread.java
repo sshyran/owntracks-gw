@@ -153,7 +153,7 @@ public class ProcessSMSThread extends Thread {
 
                 CommandProcessor commandProcessor = CommandProcessor.getInstance();
                 String response;
-                if (commandProcessor.execute(text)) {
+                if (commandProcessor.execute(text, false)) {
                     response = commandProcessor.message;
                 } else {
                     response = "NACK: " + commandProcessor.message;

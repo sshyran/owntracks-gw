@@ -227,7 +227,7 @@ public class MQTTHandler implements MqttCallback {
                 + "\r\n" + new String(message.getPayload()));
         CommandProcessor commandProcessor = CommandProcessor.getInstance();
         String response;
-        if (commandProcessor.execute(message.toString())) {
+        if (commandProcessor.execute(message.toString(), true)) {
             response = commandProcessor.message;
         } else {
             response = "NACK: " + commandProcessor.message;
