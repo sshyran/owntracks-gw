@@ -17,6 +17,7 @@ SOURCES= header.yaml \
 	 OTAP.md \
 	 CAN.md \
 	 notes.md \
+	 starting.md \
 	 credits.md \
 
 $(TARGET).pdf: Makefile $(SOURCES)
