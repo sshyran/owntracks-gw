@@ -100,6 +100,26 @@
       validity: reboot
       default: 0
       desc: if 0, device will shutdown when external power is disconnectd. if 1, device will keep running until lowBattery is detected
+  - useGPIO1:
+      values: 0/1
+      validity: immediate
+      default: 0
+      desc: if true, device will report initial state and changes to GPIO1
+  - useGPIO2:
+      values: 0/1
+      validity: immediate
+      default: 0
+      desc: if true, device will report initial state and changes to GPIO2 (advanced Greenwich only)
+  - useGPIO3:
+      values: 0/1
+      validity: immediate
+      default: 0
+      desc: if true, device will report initial state and changes to GPIO3
+  - useGPIO5:
+      values: 0/1
+      validity: immediate
+      default: 0
+      desc: if true, device will report initial state and changes to GPIO5 (advanced Greenwich only)
   - fms:
       values: 0/1
       validity: immediate
