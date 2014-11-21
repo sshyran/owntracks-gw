@@ -74,7 +74,7 @@ public class SLog {
                     Settings.getInstance().getSetting("publish", "owntracks/gw/")
                     + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
                     + "/log/" + priority,
-                    2,
+                    0,
                     false,
                     (component + " " + error).getBytes()
             );

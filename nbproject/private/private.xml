@@ -5,6 +5,7 @@
         <group>
             <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/SocketGPRSThread.java</file>
             <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/LocationManager.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/VersionChecker.java</file>
             <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/CommASC0Thread.java</file>
             <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/GPIOManager.java</file>
             <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/org/eclipse/paho/client/mqttv3/MqttTopic.java</file>
@@ -13,11 +14,13 @@
             <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/org/eclipse/paho/client/mqttv3/MqttClient.java</file>
             <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/PersistentRecord.java</file>
             <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/GPIO6WatchDogTask.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/CanManagerThread.java</file>
             <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/AppMain.java</file>
             <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/MQTTHandler.java</file>
             <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/CommandProcessor.java</file>
             <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/ProcessSMSThread.java</file>
             <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/ATManager.java</file>
+            <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/SLog.java</file>
             <file>file:/C:/Users/christoph/Documents/GitHub/gw/src/general/UserwareWatchDogTask.java</file>
         </group>
     </open-files>

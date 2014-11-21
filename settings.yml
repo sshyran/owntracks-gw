@@ -124,7 +124,12 @@
       values: 0/1
       validity: immediate
       default: 0
-      desc: if true, device will switch into fms mode.
+      desc: if true, device will read FMS data.
+  - fmsLoops:
+      values: 1... 
+      validity: immediate
+      default: 1
+      desc: sets the number of consecutive FMS data reads before closing the interface
   - obd2Interval:
       values: 0,1...
       validity: immediate

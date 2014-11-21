@@ -51,20 +51,20 @@ public class CanManagerThread extends Thread {
                     can.setCan("EXT", 250, "FMS", "SILENT");
                     can.canOn();
 
-                    SLog.log(SLog.Debug, "Can", "canState=" + can.canState());
-                    SLog.log(SLog.Debug, "Can", "canMode=" + can.getCanMode());
-                    SLog.log(SLog.Debug, "Can", "canSpeed=" + can.getCanSpeed());
-                    SLog.log(SLog.Debug, "Can", "canType=" + can.getCanType());
-                    SLog.log(SLog.Debug, "Can", "canNodeState=" + can.getCanNodeState());
+                    SLog.log(SLog.Debug, "CanRaw", "canState=" + can.canState());
+                    SLog.log(SLog.Debug, "CanRaw", "canMode=" + can.getCanMode());
+                    SLog.log(SLog.Debug, "CanRaw", "canSpeed=" + can.getCanSpeed());
+                    SLog.log(SLog.Debug, "CanRaw", "canType=" + can.getCanType());
+                    SLog.log(SLog.Debug, "CanRaw", "canNodeState=" + can.getCanNodeState());
 
-                    while (!terminate && Settings.getInstance().getSetting("fms", false)) {
+                    int loops = Settings.getInstance().getSetting("fmsLoops", 1);
+                    while (!terminate && Settings.getInstance().getSetting("fms", false) && loops-- > 0) {
                         SLog.log(SLog.Debug, "Can", "canDriverID=" + StringFunc.toHexString(can.getDriverID()));
                         cacheAndPut("/fms/driverid", StringFunc.toHexString(can.getDriverID()));
                         SLog.log(SLog.Debug, "Can", "canTimeDate=" + StringFunc.toHexString(can.getTimeDate()));
                         cacheAndPut("/fms/timedate", StringFunc.toHexString(can.getTimeDate()));
                         SLog.log(SLog.Debug, "Can", "canVehicleID=" + StringFunc.toHexString(can.getVehicleID()));
-                        cacheAndPut("/fms/vehicl) {\n" +
-"                        SLog.log(SLogeid", StringFunc.toHexString(can.getVehicleID()));
+                        cacheAndPut("/fms/vehicleid", StringFunc.toHexString(can.getVehicleID()));
                         SLog.log(SLog.Debug, "Can", "canFMSData=" + StringFunc.toHexString(can.getFMSdata()));
                         cacheAndPut("/fms/data", StringFunc.toHexString(can.getFMSdata()));
                         try {
