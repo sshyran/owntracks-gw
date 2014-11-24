@@ -134,17 +134,6 @@ public class AppMain extends MIDlet {
 
             cleanup();
 
-            if (VersionChecker.getInstance().mismatch()) {
-                SLog.log(SLog.Informational, "AppMain", "version changed");
-                String parameters[] = new String[1];
-                parameters[0] = "upgrade";
-                CommandProcessor.getInstance().perform(parameters[0], parameters);
-                while (true) {
-                    SLog.log(SLog.Informational, "AppMain", "upgrading...");
-                    Thread.sleep(1000);
-                }
-            }
-
             if (MicroManager.getInstance().isAdvanced()) {
                 CanManagerThread.getInstance().terminate = true;
                 CanManagerThread.getInstance().join();
@@ -320,7 +309,7 @@ public class AppMain extends MIDlet {
         SLog.log(SLog.Debug, "AppMain", "watchdogs stopped");
 
         if (stop) {
-            SLog.log(SLog.Debug, "AppMain", "stoppping...");
+            SLog.log(SLog.Debug, "AppMain", "stopping...");
             try {
                 destroyApp(true);
             } catch (MIDletStateChangeException msce) {
@@ -379,6 +368,7 @@ public class AppMain extends MIDlet {
 
         if (VersionChecker.getInstance().mismatch()) {
             SLog.log(SLog.Informational, "AppMain", "VersionChecker mismatch");
+            upgrade = true;
             return true;
         }
 
