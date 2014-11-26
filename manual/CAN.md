@@ -2,7 +2,7 @@
 
 [CAN-Bus](http://en.wikipedia.org/wiki/CAN_bus) (for *controller area network*) is a data link layer protocol used in newer vehicles which is used for monitoring and controlling most components of the car.
 
-Greenwich Advanced devices are equipped with a CAN-Bus interface. This interface supports 11-bit or 29-bit identifiers and 250 or 500 kBit/s transfer speeds.
+Greenwich Advanced devices are equipped with a CAN-Bus interface. This interface supports 11-bit or 29-bit identifiers and 25, 125, 250, 500 or 1000 kBit/s transfer speeds.
 
 Other protocols could be in use in (older) vehicles (e.g. PWM, VPW, ISO 9142, KWP), but these are not supported by Greenwich devices natively.
 
@@ -87,12 +87,13 @@ Current Gear
 
 The FMS/OBD functionality in OwnTracks Greenwich is controlled by 3 settings:
 
-* `fms`=`0/1` Switches the FMS interface off or on
-* `obd2Interval`=_seconds_ The complete set of available OBD-II data is read every _seconds_. If set to zero, OBD-II data is not read.
+* `fms`=`0/1` Switches the FMS interface off or on. Default is `0`.
+* `fmsLoops`=`1..` defines the fms data reads before closing/reopening the device. Defaults to `1`.
+* `obd2Interval`=_seconds_ The complete set of available OBD-II data is read every _seconds_. If set to zero, OBD-II data is not read. Default is `0`.
 * `obd2Sensors`=_seconds_ Mode 1 of available OBD-II data is read every _seconds_. If set to zero, Mode 1 data is not read.
-* `obd2Speed`=`kBit/s` transmission speed for OBD-II protocol, default is 500
+* `obd2Speeds`=`comma-separateds-speeds` transmission speed in kb/s for OBD-II protocol, default is `25,50,126,250,500,1000`
 * `obd2Addresses`=`comma-separated-addresses` defaults to `000007e8,000007e9,000007ea,000007eb,000007ec,000007ed,000007ee,000007ef0`
-* `obd2Mode`=`STD/EXT` switches between 11 or 29 bit identifier addresses in the OBD-II protocol
+* `obd2Modes`=`comma-separated-modes `STD` for 11 or `EXT` for 29 bit identifier addresses in the OBD-II protocol
 
 ### Sample data
 

@@ -83,89 +83,107 @@ public class CanManagerThread extends Thread {
             long obd2 = Settings.getInstance().getSetting("obd2Interval", 0);
             if (obd2 != 0 && System.currentTimeMillis() / 1000L > lastObd2 + obd2) {
                 lastObd2 = System.currentTimeMillis() / 1000L;
-                can = new Can();
-                try {
-                    can.canOff();
-                    can.deleteAllAddress();
+                String odb2Modes = Settings.getInstance().getSetting("obd2Modes",
+                        "STD,EXT");
+                String[] modes = StringFunc.split(odb2Modes, ",");
+                for (int mode = 0; mode < modes.length; mode++) {
 
-                    can.setCan(Settings.getInstance().getSetting("obd2Mode", "STD"),
-                            Settings.getInstance().getSetting("obd2Speed", 500),
-                            "STD",
-                            "ACTIVE");
+                    String odb2Speeds = Settings.getInstance().getSetting("obd2Speeds",
+                            "50,125,250,500,1000");
+                    String[] speeds = StringFunc.split(odb2Speeds, ",");
+                    for (int speed = 0; speed < speeds.length; speed++) {
+                        SLog.log(SLog.Debug, "Can", "Trying all " + modes[mode] + " " + speeds[speed]);
+                        can = new Can();
 
-                    String odb2Addresses = Settings.getInstance().getSetting("obd2Addresses",
-                            "000007e8,000007e9,000007ea,000007eb,000007ec,000007ed,000007ee,000007ef");
-                    String[] addresses = StringFunc.split(odb2Addresses, ",");
-                    for (int i = 0; i < addresses.length; i++) {
-                        can.setAddress(addresses[i]);
-                    }
-                    can.canOn();
+                        try {
+                            can.canOff();
+                            can.deleteAllAddress();
 
-                    SLog.log(SLog.Debug, "CanRaw", "canState=" + can.canState());
-                    SLog.log(SLog.Debug, "CanRaw", "canMode=" + can.getCanMode());
-                    SLog.log(SLog.Debug, "CanRaw", "canNodeState=" + can.getCanNodeState());
-                    SLog.log(SLog.Debug, "CanRaw", "canSpeed=" + can.getCanSpeed());
-                    SLog.log(SLog.Debug, "CanRaw", "canType=" + can.getCanType());
-                    SLog.log(SLog.Debug, "CanRAw", "canWatchList=" + StringFunc.toHexString(can.getWatchList()));
+                            can.setCan(modes[mode],
+                                    Integer.parseInt(speeds[speed]),
+                                    "STD",
+                                    "ACTIVE");
 
-                    String ecus = "";
-                    for (int i = 0; i < addresses.length; i++) {
-                        canResult result = getObd2(true, addresses[i], "0900");
-                        if (result.data8 != null) {
-                            if (ecus.length() > 0) {
-                                ecus = ecus.concat(" ");
+                            String odb2Addresses = Settings.getInstance().getSetting("obd2Addresses",
+                                    "000007e8,000007e9,000007ea,000007eb,000007ec,000007ed,000007ee,000007ef");
+                            String[] addresses = StringFunc.split(odb2Addresses, ",");
+                            for (int i = 0; i < addresses.length; i++) {
+                                can.setAddress(addresses[i]);
                             }
-                            ecus = ecus.concat(addresses[i]);
-                            getEcu(addresses[i]);
+                            can.canOn();
+
+                            for (int i = 0; i < addresses.length; i++) {
+                                canResult result = getObd2(true, addresses[i], "0900");
+                                if (result.data8 != null) {
+                                    cacheAndPut("/obd2/" + addresses[i] + "/09", modes[mode] + " " + speeds[speed] + " 1");
+                                    getEcu(addresses[i]);
+                                } else {
+                                    cacheAndPut("/obd2/" + addresses[i] + "/09", modes[mode] + " " + speeds[speed] + " 0");
+                                }
+                            }
+
+                            can.canOff();
+                            can = null;
+                        } catch (IOException ioe) {
+                            SLog.log(SLog.Error, "Can", "IOException " + ioe);
+                        } catch (NumberFormatException nfe) {
+                            SLog.log(SLog.Error, "Can", "NumberFormatException " + nfe);
                         }
                     }
-
-                    can.canOff();
-                    can = null;
-                } catch (IOException ioe) {
-                    SLog.log(SLog.Error, "Can", "IOException " + ioe);
                 }
             }
 
             long sensors = Settings.getInstance().getSetting("obd2Sensors", 0);
             if (sensors != 0 && System.currentTimeMillis() / 1000L > lastSensors + sensors) {
                 lastSensors = System.currentTimeMillis() / 1000L;
-                can = new Can();
-                try {
-                    can.canOff();
-                    can.deleteAllAddress();
 
-                    can.setCan(Settings.getInstance().getSetting("obd2Mode", "STD"),
-                            Settings.getInstance().getSetting("obd2Speed", 500),
-                            "STD",
-                            "ACTIVE");
+                String odb2Modes = Settings.getInstance().getSetting("obd2Modes",
+                        "STD,EXT");
+                String[] modes = StringFunc.split(odb2Modes, ",");
+                for (int mode = 0; mode < modes.length; mode++) {
 
-                    String odb2Addresses = Settings.getInstance().getSetting("obd2Addresses",
-                            "000007e8,000007e9,000007ea,000007eb,000007ec,000007ed,000007ee,000007ef");
-                    String[] addresses = StringFunc.split(odb2Addresses, ",");
-                    for (int i = 0; i < addresses.length; i++) {
-                        can.setAddress(addresses[i]);
-                    }
-                    can.canOn();
+                    String odb2Speeds = Settings.getInstance().getSetting("obd2Speeds",
+                            "50,125,250,500,1000");
+                    String[] speeds = StringFunc.split(odb2Speeds, ",");
+                    for (int speed = 0; speed < speeds.length; speed++) {
+                        SLog.log(SLog.Debug, "Can", "Trying sensors " + modes[mode] + " " + speeds[speed]);
+                        can = new Can();
 
-                    SLog.log(SLog.Debug, "CanRaw", "canState=" + can.canState());
-                    SLog.log(SLog.Debug, "CanRaw", "canMode=" + can.getCanMode());
-                    SLog.log(SLog.Debug, "CanRaw", "canNodeState=" + can.getCanNodeState());
-                    SLog.log(SLog.Debug, "CanRaw", "canSpeed=" + can.getCanSpeed());
-                    SLog.log(SLog.Debug, "CanRaw", "canType=" + can.getCanType());
-                    SLog.log(SLog.Debug, "CanRAw", "canWatchList=" + StringFunc.toHexString(can.getWatchList()));
+                        try {
+                            can.canOff();
+                            can.deleteAllAddress();
 
-                    for (int i = 0; i < addresses.length; i++) {
-                        canResult result = getObd2(true, addresses[i], "0900");
-                        if (result.data8 != null) {
-                            getSensors(addresses[i]);
+                            can.setCan(modes[mode],
+                                    Integer.parseInt(speeds[speed]),
+                                    "STD",
+                                    "ACTIVE");
+
+                            String odb2Addresses = Settings.getInstance().getSetting("obd2Addresses",
+                                    "000007e8,000007e9,000007ea,000007eb,000007ec,000007ed,000007ee,000007ef");
+                            String[] addresses = StringFunc.split(odb2Addresses, ",");
+                            for (int i = 0; i < addresses.length; i++) {
+                                can.setAddress(addresses[i]);
+                            }
+                            can.canOn();
+
+                            for (int i = 0; i < addresses.length; i++) {
+                                canResult result = getObd2(true, addresses[i], "0900");
+                                if (result.data8 != null) {
+                                    cacheAndPut("/obd2/" + addresses[i] + "/09", modes[mode] + " " + speeds[speed] + " 1");
+                                    getSensors(addresses[i]);
+                                } else {
+                                    cacheAndPut("/obd2/" + addresses[i] + "/09", modes[mode] + " " + speeds[speed] + " 0");
+                                }
+                            }
+
+                            can.canOff();
+                            can = null;
+                        } catch (IOException ioe) {
+                            SLog.log(SLog.Error, "Can", "IOException");
+                        } catch (NumberFormatException nfe) {
+                            SLog.log(SLog.Error, "Can", "NumberFormatException");
                         }
                     }
-
-                    can.canOff();
-                    can = null;
-                } catch (IOException ioe) {
-                    SLog.log(SLog.Error, "Can", "IOException " + ioe);
                 }
             }
 
