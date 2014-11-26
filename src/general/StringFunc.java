@@ -51,7 +51,7 @@ public class StringFunc {
     public static String toHexString(byte[] bytes) {
         String string = "";
         for (int i = 0; i < bytes.length; i++) {
-            String hex = Integer.toHexString(bytes[i]);
+            String hex = Integer.toHexString(((int)bytes[i]) & 0xFF);
             if (hex.length() < 2) {
                 hex = "0" + hex;
             }
