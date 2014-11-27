@@ -46,6 +46,10 @@ public class BatteryManager {
     }
     
     public boolean isBatteryVoltageLow() {
+        if (lastBatteryVoltage == -1.0) {
+            SLog.log(SLog.Informational, "BatteryManager", "Battery Voltage not known yet");
+            return false;
+        }
         return batteryVoltage <= Settings.getInstance().getSetting("lowBattery", 3599) / 1000.0;
     }
     

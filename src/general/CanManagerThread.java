@@ -22,6 +22,7 @@ public class CanManagerThread extends Thread {
     private long lastFms = 0;
     private long lastObd2 = 0;
     private long lastSensors = 0;
+    private boolean fmsDate = false;
 
     private CanManagerThread() {
         hashtable = new Hashtable();
@@ -59,14 +60,62 @@ public class CanManagerThread extends Thread {
 
                     int loops = Settings.getInstance().getSetting("fmsLoops", 1);
                     while (!terminate && Settings.getInstance().getSetting("fms", false) && loops-- > 0) {
-                        SLog.log(SLog.Debug, "Can", "canDriverID=" + StringFunc.toHexString(can.getDriverID()));
-                        cacheAndPut("/fms/driverid", StringFunc.toHexString(can.getDriverID()));
                         SLog.log(SLog.Debug, "Can", "canTimeDate=" + StringFunc.toHexString(can.getTimeDate()));
-                        cacheAndPut("/fms/timedate", StringFunc.toHexString(can.getTimeDate()));
+                        if (!fmsDate) {
+                            cacheAndPut("/fms/timedate", StringFunc.toHexString(can.getTimeDate()));
+                            fmsDate = true;
+                        }
+                        
                         SLog.log(SLog.Debug, "Can", "canVehicleID=" + StringFunc.toHexString(can.getVehicleID()));
                         cacheAndPut("/fms/vehicleid", StringFunc.toHexString(can.getVehicleID()));
+                        SLog.log(SLog.Debug, "Can", "canDriverID=" + StringFunc.toHexString(can.getDriverID()));
+                        cacheAndPut("/fms/driverid", StringFunc.toHexString(can.getDriverID()));
+
                         SLog.log(SLog.Debug, "Can", "canFMSData=" + StringFunc.toHexString(can.getFMSdata()));
-                        cacheAndPut("/fms/data", StringFunc.toHexString(can.getFMSdata()));
+                        //cacheAndPut("/fms/data", StringFunc.toHexString(can.getFMSdata()));
+                  
+                        String fmsString = StringFunc.toHexString(can.getFMSdata());
+                        cacheAndPut("/fms/data/maxspeed", fmsString.substring(0, 2));
+                        
+                        cacheAndPut("/fms/data/speed0", fmsString.substring(2, 6));
+                        cacheAndPut("/fms/data/speed1", fmsString.substring(6, 10));
+                        cacheAndPut("/fms/data/speed16", fmsString.substring(10, 14));
+                        cacheAndPut("/fms/data/speed46", fmsString.substring(14, 18));
+                        cacheAndPut("/fms/data/speed70", fmsString.substring(18, 22));
+
+                        cacheAndPut("/fms/data/breaks", fmsString.substring(22, 26));
+                        cacheAndPut("/fms/data/cruise", fmsString.substring(26, 30));
+                        cacheAndPut("/fms/data/pto", fmsString.substring(30, 34));
+                        
+                        cacheAndPut("/fms/data/rpm0", fmsString.substring(34, 38));
+                        cacheAndPut("/fms/data/rpm801", fmsString.substring(38, 42));
+                        cacheAndPut("/fms/data/rpm1101", fmsString.substring(42, 46));
+                        cacheAndPut("/fms/data/rpm1451", fmsString.substring(46, 50));
+                        cacheAndPut("/fms/data/rpm1701", fmsString.substring(50, 54));
+                        
+                        cacheAndPut("/fms/data/totalfuel", fmsString.substring(54, 62));
+                        cacheAndPut("/fms/data/fuellevel", fmsString.substring(62, 64));
+                        cacheAndPut("/fms/data/axesweight", fmsString.substring(64, 74));
+                        cacheAndPut("/fms/data/enginehours", fmsString.substring(74, 82));
+                        cacheAndPut("/fms/data/totaldist", fmsString.substring(82, 90));
+                        cacheAndPut("/fms/data/coolingtemp", fmsString.substring(90, 92));
+                        cacheAndPut("/fms/data/engineload", fmsString.substring(92, 94));
+                        cacheAndPut("/fms/data/servicedist", fmsString.substring(94, 98));
+                        cacheAndPut("/fms/data/tachodata", fmsString.substring(98, 106));
+                        cacheAndPut("/fms/data/tachospeed", fmsString.substring(106, 110));
+                        cacheAndPut("/fms/data/fuelrate", fmsString.substring(110, 114));
+                        cacheAndPut("/fms/data/fuelecon", fmsString.substring(114, 118));
+                        cacheAndPut("/fms/data/fmssw", fmsString.substring(118, 128));
+                        
+                        cacheAndPut("/fms/data/pedal0", fmsString.substring(128, 132));
+                        cacheAndPut("/fms/data/pedal20", fmsString.substring(132, 136));
+                        cacheAndPut("/fms/data/pedal40", fmsString.substring(136, 140));
+                        cacheAndPut("/fms/data/pedal60", fmsString.substring(140, 144));
+                        cacheAndPut("/fms/data/pedal80", fmsString.substring(144, 148));
+                        
+                        cacheAndPut("/fms/data/selectedgear", fmsString.substring(148, 150));
+                        cacheAndPut("/fms/data/currentgear", fmsString.substring(150));
+                        
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException ie) {
