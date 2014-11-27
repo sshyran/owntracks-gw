@@ -45,7 +45,9 @@ public class CanManagerThread extends Thread {
 
     public void run() {
         while (!terminate) {
-            if (Settings.getInstance().getSetting("fms", false)) {
+            long fms = Settings.getInstance().getSetting("fmsInterval", 0);
+            if (fms != 0 && System.currentTimeMillis() / 1000L > lastFms + fms) {
+                lastFms = System.currentTimeMillis() / 1000L;
                 can = new Can();
                 try {
                     can.canOff();
@@ -59,7 +61,7 @@ public class CanManagerThread extends Thread {
                     SLog.log(SLog.Debug, "CanRaw", "canNodeState=" + can.getCanNodeState());
 
                     int loops = Settings.getInstance().getSetting("fmsLoops", 1);
-                    while (!terminate && Settings.getInstance().getSetting("fms", false) && loops-- > 0) {
+                    while (loops-- > 0) {
                         SLog.log(SLog.Debug, "Can", "canTimeDate=" + StringFunc.toHexString(can.getTimeDate()));
                         if (!fmsDate) {
                             cacheAndPut("/fms/timedate", StringFunc.toHexString(can.getTimeDate()));
@@ -83,7 +85,7 @@ public class CanManagerThread extends Thread {
                         cacheAndPut("/fms/data/speed46", fmsString.substring(14, 18));
                         cacheAndPut("/fms/data/speed70", fmsString.substring(18, 22));
 
-                        cacheAndPut("/fms/data/breaks", fmsString.substring(22, 26));
+                        cacheAndPut("/fms/data/brakes", fmsString.substring(22, 26));
                         cacheAndPut("/fms/data/cruise", fmsString.substring(26, 30));
                         cacheAndPut("/fms/data/pto", fmsString.substring(30, 34));
                         

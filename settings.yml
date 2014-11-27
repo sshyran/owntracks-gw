@@ -120,11 +120,11 @@
       validity: immediate
       default: 0
       desc: if true, device will report initial state and changes to GPIO5 (advanced Greenwich only)
-  - fms:
-      values: 0/1
+  - fmsInterval:
+      values: 0,1...
       validity: immediate
       default: 0
-      desc: if true, device will read FMS data.
+      desc: if > 0, device will try to connect every fmsInterval seconds via Can Bus to get fms data and publish to mqtt
   - fmsLoops:
       values: 1... 
       validity: immediate
