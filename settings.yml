@@ -143,18 +143,18 @@
   - obd2Addresses:
       values: comma separated list of obd2 controller addresses to scan (use lower case, 8 character hex values)
       validity: immediate
-      default: 000007e8,000007e9,000007ea,000007eb,000007ec,000007ed,000007ee,000007ef0
+      default: "000007e8" for STD (11 bit) addressing, "18daf110" for EXT (29 bit) addressing
       desc: device addresses to listen to (restricting the number of addresses speeds up the data collection cycle)
   - obd2Speeds:
       values: comma separated list of obd2 speeds to try scanning
       validity: immediate
       default: "25,125,250,500,1000"
-      desc: Can Bus baud rates in kbps (restricting the number of addresses speeds up the data collection cycle)
+      desc: Can Bus baud rates in kbps (restricting the number of speeds up the data collection cycle)
   - obd2Modes:
       values: comma separated list of obd2 modes to try scanning
       validity: immediate
       default: "STD,EXT"
-      desc: Can bus modes STD=11 bit, EXT= 29 bit (restricting the number of addresses speeds up the data collection cycle)
+      desc: Can bus modes STD=11 bit, EXT= 29 bit (restricting the number of modes up the data collection cycle)
   - obd2Modes:
 
 - MQTT:

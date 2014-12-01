@@ -15,7 +15,6 @@ import java.util.Hashtable;
  */
 public class CanManagerThread extends Thread {
 
-    Can can;
     public boolean terminate = false;
     Hashtable hashtable;
 
@@ -44,84 +43,23 @@ public class CanManagerThread extends Thread {
     }
 
     public void run() {
+        try {
+            Can can;
+            can = new Can();
+            can.canOff();
+            can = null;
+        } catch (IOException ioe) {
+            SLog.log(SLog.Error, "Can", "IOException " + ioe);
+        }
+
         while (!terminate) {
             long fms = Settings.getInstance().getSetting("fmsInterval", 0);
             if (fms != 0 && System.currentTimeMillis() / 1000L > lastFms + fms) {
                 lastFms = System.currentTimeMillis() / 1000L;
-                can = new Can();
-                try {
-                    can.canOff();
-                    can.setCan("EXT", 250, "FMS", "SILENT");
-                    can.canOn();
-
-                    int loops = Settings.getInstance().getSetting("fmsLoops", 1);
-                    while (loops-- > 0) {
-                        SLog.log(SLog.Debug, "Can", "canTimeDate=" + StringFunc.toHexString(can.getTimeDate()));
-                        if (!fmsDate) {
-                            cacheAndPut("/fms/timedate", StringFunc.toHexString(can.getTimeDate()));
-                            fmsDate = true;
-                        }
-                        
-                        SLog.log(SLog.Debug, "Can", "canVehicleID=" + StringFunc.toHexString(can.getVehicleID()));
-                        cacheAndPut("/fms/vehicleid", StringFunc.toHexString(can.getVehicleID()));
-                        SLog.log(SLog.Debug, "Can", "canDriverID=" + StringFunc.toHexString(can.getDriverID()));
-                        cacheAndPut("/fms/driverid", StringFunc.toHexString(can.getDriverID()));
-
-                        SLog.log(SLog.Debug, "Can", "canFMSData=" + StringFunc.toHexString(can.getFMSdata()));
-                        //cacheAndPut("/fms/data", StringFunc.toHexString(can.getFMSdata()));
-                  
-                        String fmsString = StringFunc.toHexString(can.getFMSdata());
-                        cacheAndPut("/fms/data/maxspeed", fmsString.substring(0, 2));
-                        
-                        cacheAndPut("/fms/data/speed0", fmsString.substring(2, 6));
-                        cacheAndPut("/fms/data/speed1", fmsString.substring(6, 10));
-                        cacheAndPut("/fms/data/speed16", fmsString.substring(10, 14));
-                        cacheAndPut("/fms/data/speed46", fmsString.substring(14, 18));
-                        cacheAndPut("/fms/data/speed70", fmsString.substring(18, 22));
-
-                        cacheAndPut("/fms/data/brakes", fmsString.substring(22, 26));
-                        cacheAndPut("/fms/data/cruise", fmsString.substring(26, 30));
-                        cacheAndPut("/fms/data/pto", fmsString.substring(30, 34));
-                        
-                        cacheAndPut("/fms/data/rpm0", fmsString.substring(34, 38));
-                        cacheAndPut("/fms/data/rpm801", fmsString.substring(38, 42));
-                        cacheAndPut("/fms/data/rpm1101", fmsString.substring(42, 46));
-                        cacheAndPut("/fms/data/rpm1451", fmsString.substring(46, 50));
-                        cacheAndPut("/fms/data/rpm1701", fmsString.substring(50, 54));
-                        
-                        cacheAndPut("/fms/data/totalfuel", fmsString.substring(54, 62));
-                        cacheAndPut("/fms/data/fuellevel", fmsString.substring(62, 64));
-                        cacheAndPut("/fms/data/axesweight", fmsString.substring(64, 74));
-                        cacheAndPut("/fms/data/enginehours", fmsString.substring(74, 82));
-                        cacheAndPut("/fms/data/totaldist", fmsString.substring(82, 90));
-                        cacheAndPut("/fms/data/coolingtemp", fmsString.substring(90, 92));
-                        cacheAndPut("/fms/data/engineload", fmsString.substring(92, 94));
-                        cacheAndPut("/fms/data/servicedist", fmsString.substring(94, 98));
-                        cacheAndPut("/fms/data/tachodata", fmsString.substring(98, 106));
-                        cacheAndPut("/fms/data/tachospeed", fmsString.substring(106, 110));
-                        cacheAndPut("/fms/data/fuelrate", fmsString.substring(110, 114));
-                        cacheAndPut("/fms/data/fuelecon", fmsString.substring(114, 118));
-                        cacheAndPut("/fms/data/fmssw", fmsString.substring(118, 128));
-                        
-                        cacheAndPut("/fms/data/pedal0", fmsString.substring(128, 132));
-                        cacheAndPut("/fms/data/pedal20", fmsString.substring(132, 136));
-                        cacheAndPut("/fms/data/pedal40", fmsString.substring(136, 140));
-                        cacheAndPut("/fms/data/pedal60", fmsString.substring(140, 144));
-                        cacheAndPut("/fms/data/pedal80", fmsString.substring(144, 148));
-                        
-                        cacheAndPut("/fms/data/selectedgear", fmsString.substring(148, 150));
-                        cacheAndPut("/fms/data/currentgear", fmsString.substring(150));
-                        
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException ie) {
-                            //
-                        }
-                    }
-                    can.canOff();
-                    can = null;
-                } catch (IOException ioe) {
-                    SLog.log(SLog.Error, "Can", "IOException " + ioe);
+                if (Settings.getInstance().getSetting("fmsRaw", false)) {
+                    fmsRaw();
+                } else {
+                    fmsChoral();
                 }
             }
 
@@ -137,42 +75,18 @@ public class CanManagerThread extends Thread {
                             "50,125,250,500,1000");
                     String[] speeds = StringFunc.split(odb2Speeds, ",");
                     for (int speed = 0; speed < speeds.length; speed++) {
-                        SLog.log(SLog.Debug, "Can", "Trying all " + modes[mode] + " " + speeds[speed]);
-                        can = new Can();
 
-                        try {
-                            can.canOff();
-                            can.deleteAllAddress();
-
-                            can.setCan(modes[mode],
-                                    Integer.parseInt(speeds[speed]),
-                                    "STD",
-                                    "ACTIVE");
-
-                            String odb2Addresses = Settings.getInstance().getSetting("obd2Addresses",
-                                    "000007e8,000007e9,000007ea,000007eb,000007ec,000007ed,000007ee,000007ef");
-                            String[] addresses = StringFunc.split(odb2Addresses, ",");
-                            for (int i = 0; i < addresses.length; i++) {
-                                can.setAddress(addresses[i]);
-                            }
-                            can.canOn();
-
-                            for (int i = 0; i < addresses.length; i++) {
-                                canResult result = getObd2(true, addresses[i], "0900");
-                                if (result.data8 != null) {
-                                    cacheAndPut("/obd2/" + addresses[i] + "/09", modes[mode] + " " + speeds[speed] + " 1");
-                                    getEcu(addresses[i]);
-                                } else {
-                                    cacheAndPut("/obd2/" + addresses[i] + "/09", modes[mode] + " " + speeds[speed] + " 0");
-                                }
-                            }
-
-                            can.canOff();
-                            can = null;
-                        } catch (IOException ioe) {
-                            SLog.log(SLog.Error, "Can", "IOException " + ioe);
-                        } catch (NumberFormatException nfe) {
-                            SLog.log(SLog.Error, "Can", "NumberFormatException " + nfe);
+                        String defaultAddresses;
+                        if (modes[mode].equalsIgnoreCase("STD")) {
+                            defaultAddresses = "000007e8";
+                        } else {
+                            defaultAddresses = "18daf110";
+                        }
+                        String odb2Addresses = Settings.getInstance().getSetting("obd2Addresses", defaultAddresses);
+                        String[] addresses = StringFunc.split(odb2Addresses, ",");
+                        for (int address = 0; address < addresses.length; address++) {
+                            SLog.log(SLog.Debug, "Can", "Trying all " + modes[mode] + " " + speeds[speed] + " " + modes[mode]);
+                            obd2(modes[mode], Integer.parseInt(speeds[speed]), addresses[address]);
                         }
                     }
                 }
@@ -191,42 +105,18 @@ public class CanManagerThread extends Thread {
                             "50,125,250,500,1000");
                     String[] speeds = StringFunc.split(odb2Speeds, ",");
                     for (int speed = 0; speed < speeds.length; speed++) {
-                        SLog.log(SLog.Debug, "Can", "Trying sensors " + modes[mode] + " " + speeds[speed]);
-                        can = new Can();
 
-                        try {
-                            can.canOff();
-                            can.deleteAllAddress();
-
-                            can.setCan(modes[mode],
-                                    Integer.parseInt(speeds[speed]),
-                                    "STD",
-                                    "ACTIVE");
-
-                            String odb2Addresses = Settings.getInstance().getSetting("obd2Addresses",
-                                    "000007e8,000007e9,000007ea,000007eb,000007ec,000007ed,000007ee,000007ef");
-                            String[] addresses = StringFunc.split(odb2Addresses, ",");
-                            for (int i = 0; i < addresses.length; i++) {
-                                can.setAddress(addresses[i]);
-                            }
-                            can.canOn();
-
-                            for (int i = 0; i < addresses.length; i++) {
-                                canResult result = getObd2(true, addresses[i], "0900");
-                                if (result.data8 != null) {
-                                    cacheAndPut("/obd2/" + addresses[i] + "/09", modes[mode] + " " + speeds[speed] + " 1");
-                                    getSensors(addresses[i]);
-                                } else {
-                                    cacheAndPut("/obd2/" + addresses[i] + "/09", modes[mode] + " " + speeds[speed] + " 0");
-                                }
-                            }
-
-                            can.canOff();
-                            can = null;
-                        } catch (IOException ioe) {
-                            SLog.log(SLog.Error, "Can", "IOException");
-                        } catch (NumberFormatException nfe) {
-                            SLog.log(SLog.Error, "Can", "NumberFormatException");
+                        String defaultAddresses;
+                        if (modes[mode].equalsIgnoreCase("STD")) {
+                            defaultAddresses = "000007e8";
+                        } else {
+                            defaultAddresses = "18daf110";
+                        }
+                        String odb2Addresses = Settings.getInstance().getSetting("obd2Addresses", defaultAddresses);
+                        String[] addresses = StringFunc.split(odb2Addresses, ",");
+                        for (int address = 0; address < addresses.length; address++) {
+                            SLog.log(SLog.Debug, "Can", "Trying sensors " + modes[mode] + " " + speeds[speed] + " " + modes[mode]);
+                            obd2Sensors(modes[mode], Integer.parseInt(speeds[speed]), addresses[address]);
                         }
                     }
                 }
@@ -240,33 +130,86 @@ public class CanManagerThread extends Thread {
         }
     }
 
-    private void getEcu(String address) {
+    private void obd2(String mode, int speed, String address) {
+        try {
+            Can can;
+            can = new Can();
+            can.deleteAllAddress();
+            can.deleteStandardData();
+            can.setCan(mode, speed, "STD", "ACTIVE");
+            can.setAddress(address);
+            can.canOn();
+
+            canResult result = getObd2(can, true, address, "0900");
+            if (result.data8 != null) {
+                cacheAndPut("/obd2/" + address + "/09", mode + " " + speed + " 1");
+                getEcu(can, address);
+            } else {
+                cacheAndPut("/obd2/" + address + "/09", mode + " " + speed + " 0");
+            }
+
+            can.canOff();
+        } catch (IOException ioe) {
+            SLog.log(SLog.Error, "Can", "IOException " + ioe);
+        } catch (NumberFormatException nfe) {
+            SLog.log(SLog.Error, "Can", "NumberFormatException " + nfe);
+        }
+    }
+
+    private void obd2Sensors(String mode, int speed, String address) {
+        try {
+            Can can;
+            can = new Can();
+            can.deleteAllAddress();
+            can.deleteStandardData();
+            can.setCan(mode, speed, "STD", "ACTIVE");
+
+            can.setAddress(address);
+            can.canOn();
+
+            CanManagerThread.canResult result = getObd2(can, true, address, "0900");
+            if (result.data8 != null) {
+                cacheAndPut("/obd2/" + address + "/09", mode + " " + speed + " 1");
+                getSensors(can, address);
+            } else {
+                cacheAndPut("/obd2/" + address + "/09", mode + " " + speed + " 0");
+            }
+
+            can.canOff();
+        } catch (IOException ioe) {
+            SLog.log(SLog.Error, "Can", "IOException");
+        } catch (NumberFormatException nfe) {
+            SLog.log(SLog.Error, "Can", "NumberFormatException");
+        }
+    }
+
+    private void getEcu(Can can, String address) {
         canResult result;
-        result = getObd2(true, address, "090001");
+        result = getObd2(can, true, address, "090001");
         if (result.data8 != null) {
             int[] four = new int[4];
             System.arraycopy(result.data8, 4 + 4, four, 0, four.length);
             String pids = StringFunc.toHexString(four);
             cacheAndPut("/obd2/" + address + "/09/00", result.payload.substring(6));
-            getPids(address, 0x09, 0x00, Long.parseLong(pids, 16), "");
+            getPids(can, address, 0x09, 0x00, Long.parseLong(pids, 16), "");
         }
 
-        getSensors(address);
+        getSensors(can, address);
 
-        result = getObd2(true, address, "0101");
+        result = getObd2(can, true, address, "0101");
         if (result.data8 != null) {
             if (result.data8[4] == 6) {
                 int numDtc = result.data8[4 + 3] & 0x7f;
                 for (int dtc = 1; dtc <= numDtc; dtc++) {
                     int base = 0;
-                    result = getObd2(true, address, "02" + hexString(base) + hexString(dtc));
+                    result = getObd2(can, true, address, "02" + hexString(base) + hexString(dtc));
                     if (result.data8 != null) {
                         int[] four = new int[4];
                         System.arraycopy(result.data8, 4 + 4, four, 0, four.length);
                         String pids = StringFunc.toHexString(four);
                         cacheAndPut("/obd2/" + address + "/02/" + hexString(base) + "/" + hexString(dtc),
                                 result.payload.substring(6));
-                        getPids(address, 0x02, base, Long.parseLong(pids, 16), hexString(dtc));
+                        getPids(can, address, 0x02, base, Long.parseLong(pids, 16), hexString(dtc));
                         if ((four[3] & 0x01) == 0x01) {
                             base += 0x20;
                         } else {
@@ -277,24 +220,24 @@ public class CanManagerThread extends Thread {
             }
         }
 
-        result = getObd2(true, address, "03");
+        result = getObd2(can, true, address, "03");
         if (result.data8 != null) {
             cacheAndPut("/obd2/" + address + "/03", result.payload.substring(2));
         }
     }
 
-    private void getSensors(String address) {
+    private void getSensors(Can can, String address) {
         canResult result;
         int base = 0;
 
         while (true) {
-            result = getObd2(true, address, "01" + hexString(base));
+            result = getObd2(can, true, address, "01" + hexString(base));
             if (result.data8 != null) {
                 int[] four = new int[4];
                 System.arraycopy(result.data8, 4 + 3, four, 0, four.length);
                 String pids = StringFunc.toHexString(four);
                 cacheAndPut("/obd2/" + address + "/01/" + hexString(base), result.payload.substring(4));
-                getPids(address, 0x01, base, Long.parseLong(pids, 16), "");
+                getPids(can, address, 0x01, base, Long.parseLong(pids, 16), "");
                 if ((four[3] & 0x01) == 0x01) {
                     base += 0x20;
                 } else {
@@ -306,10 +249,10 @@ public class CanManagerThread extends Thread {
         }
     }
 
-    private void getPids(String address, int mode, int base, long pids, String payload) {
+    private void getPids(Can can, String address, int mode, int base, long pids, String payload) {
         for (int p = 31; p >= 0; p--) {
             if ((pids & (1 << p)) != 0) {
-                canResult result = getObd2(true, address, hexString(mode) + hexString(base + (32 - p)) + payload);
+                canResult result = getObd2(can, true, address, hexString(mode) + hexString(base + (32 - p)) + payload);
                 if (result.data8 != null) {
                     cacheAndPut("/obd2/" + address + "/" + hexString(mode) + "/" + hexString(base + (32 - p))
                             + ((payload.length() > 0) ? ("/" + payload) : ""),
@@ -319,7 +262,7 @@ public class CanManagerThread extends Thread {
         }
     }
 
-    private canResult getObd2(boolean broadcast, String address, String payload) {
+    private canResult getObd2(Can can, boolean broadcast, String address, String payload) {
         SLog.log(SLog.Debug, "Can", "getObd2 " + address + ":" + payload);
 
         canResult result = new canResult();
@@ -329,7 +272,7 @@ public class CanManagerThread extends Thread {
 
         while (retries > 0) {
             retries--;
-            int[] raw = getObd2RawNomatch(broadcast, address, payload);
+            int[] raw = getObd2RawNomatch(can, broadcast, address, payload);
             if (raw != null) {
                 if (raw[4] < 8) {
                     String hexString = StringFunc.toHexString(raw);
@@ -355,7 +298,7 @@ public class CanManagerThread extends Thread {
                         while (retries > 0) {
                             retries--;
                             result.data8 = null;
-                            int[] multiframeData = getObd2RawNomatch(false, address, "300100");
+                            int[] multiframeData = getObd2RawNomatch(can, false, address, "300100");
                             if (multiframeData != null) {
                                 int seq = multiframeData[4];
                                 if ((seq & 0xf0) == 0x20) {
@@ -400,20 +343,35 @@ public class CanManagerThread extends Thread {
         return result;
     }
 
-    private int[] getObd2RawNomatch(boolean broadcast, String address, String payload) {
+    private int[] getObd2RawNomatch(Can can, boolean broadcast, String address, String payload) {
         SLog.log(SLog.Debug, "CanRaw", "getObd2RawNomatch " + address + ":" + payload);
-        String sendAddress = address.substring(0, 6);
-        int i = Integer.parseInt(address.substring(6), 16);
-        i &= 0xf7;
-        sendAddress = sendAddress.concat(hexString(i));
 
-        int retries = 4;
+        String sendAddress;
+        try {
+            if (can.getCanMode().equalsIgnoreCase("STD")) {
+                sendAddress = address.substring(0, 6);
+                int i = Integer.parseInt(address.substring(6), 16);
+                i &= 0xf7;
+                sendAddress = sendAddress.concat(hexString(i));
+            } else {
+                sendAddress = address.substring(0, 4) + address.substring(6) + address.substring(4, 6);
+            }
 
-        while (retries > 0) {
-            retries--;
-            try {
-                String request = (broadcast ? "000007df" : sendAddress)
-                        + (broadcast ? hexString(payload.length() / 2) : "") + payload;
+            int retries = 4;
+
+            while (retries > 0) {
+                retries--;
+                String request;
+                if (broadcast) {
+                    if (can.getCanMode().equalsIgnoreCase("STD")) {
+                        request = "000007df";
+                    } else {
+                        request = "18db33f1";
+                    }
+                } else {
+                    request = sendAddress;
+                }
+                request += (broadcast ? hexString(payload.length() / 2) : "") + payload;
 
                 while (request.length() < ((4 + 8) * 2)) {
                     request = request.concat("55");
@@ -458,12 +416,168 @@ public class CanManagerThread extends Thread {
                         return truncated;
                     }
                 }
-            } catch (IOException ioe) {
-                SLog.log(SLog.Error, "Can", "IOException " + ioe);
             }
+        } catch (IOException ioe) {
+            SLog.log(SLog.Error, "Can", "IOException " + ioe);
         }
         SLog.log(SLog.Debug, "CanRaw", "getObd2RawNomatch=null");
         return null;
+    }
+
+    private void fmsRaw() {
+        try {
+            Can can;
+            can = new Can();
+            can.deleteAllAddress();
+            can.deleteStandardData();
+            can.setCan("EXT", 250, "STD", "SILENT");
+
+            String fmsAddresses1 = Settings.getInstance().getSetting("fmsAddresses1",
+                    "0000feec,0000fdd1,0000fe6b,0000fe70,0000feea,0000fec0,0000fee6,0000fed5,0000fee9,0000fefc,0000fee5,0000fec1,0000feee,0000fef5,0000feae,0000fd09,0000fe56,0000fd7d");
+            String[] addresses1 = StringFunc.split(fmsAddresses1, ",");
+            for (int i = 0; i < addresses1.length; i++) {
+                SLog.log(SLog.Debug, "CanRaw", "setAddress " + addresses1[i]);
+                can.setAddress(addresses1[i]);
+            }
+
+            can.canOn();
+            SLog.log(SLog.Debug, "CanRaw", "InfrequentWatch" + StringFunc.toHexString(can.getWatchList()));
+            canRaw(can);
+            can.canOff();
+
+            can = new Can();
+            can.deleteAllAddress();
+            can.deleteStandardData();
+            can.setCan("EXT", 250, "STD", "SILENT");
+            String fmsAddresses2 = Settings.getInstance().getSetting("fmsAddresses2",
+                    "0000f004,0000fe6c,0000fef2,0000fef1,0000f003,0000f000,0000fe4e,0000fda5,0000fda4,0000f005,0000fe58,0000ecff,0000ebff");
+            String[] addresses2 = StringFunc.split(fmsAddresses2, ",");
+            for (int i = 0; i < addresses2.length; i++) {
+                SLog.log(SLog.Debug, "CanRaw", "setAddress " + addresses2[i]);
+                can.setAddress(addresses2[i]);
+            }
+
+            can.canOn();
+            SLog.log(SLog.Debug, "CanRaw", "FrequentWatch" + StringFunc.toHexString(can.getWatchList()));
+
+            int loops = Settings.getInstance().getSetting("fmsLoops", 1);
+            while (loops-- > 0) {
+                canRaw(can);
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException ie) {
+                    //
+                }
+            }
+            can.canOff();
+        } catch (IOException ioe) {
+            SLog.log(SLog.Error, "Can", "IOException " + ioe);
+        }
+
+    }
+
+    private void canRaw(Can can) {
+        int[] bytes = null;
+        try {
+            bytes = can.getIntStandardData();
+        } catch (IOException ioe) {
+            SLog.log(SLog.Error, "Can", "IOException " + ioe);
+        }
+
+        if (bytes != null) {
+            String string = StringFunc.toHexString(bytes) + " ";
+            for (int i = 0; i < 18; i++) {
+                int addressSum = 0;
+                for (int j = i * 12; j < i * 12 + 4; j++) {
+                    addressSum += bytes[j];
+                }
+                if (addressSum != 255 * 4) {
+                    SLog.log(SLog.Debug, "CanRaw",
+                            "Address = " + string.substring(i * 12 * 2, i * 12 * 2 + 8)
+                            + " Data = " + string.substring(i * 12 * 2 + 8, i * 12 * 2 + 12 * 2));
+                    cacheAndPut("/fms/raw/" + string.substring(i * 12 * 2, i * 12 * 2 + 8),
+                            string.substring(i * 12 * 2 + 8, i * 12 * 2 + 12 * 2));
+                }
+            }
+        }
+    }
+
+    private void fmsChoral() {
+        try {
+            Can can;
+            can = new Can();
+            can.setCan("EXT", 250, "FMS", "SILENT");
+            can.canOn();
+
+            int loops = Settings.getInstance().getSetting("fmsLoops", 1);
+            while (loops-- > 0) {
+                SLog.log(SLog.Debug, "Can", "canTimeDate=" + StringFunc.toHexString(can.getTimeDate()));
+                if (!fmsDate) {
+                    cacheAndPut("/fms/timedate", StringFunc.toHexString(can.getTimeDate()));
+                    fmsDate = true;
+                }
+
+                SLog.log(SLog.Debug, "Can", "canVehicleID=" + StringFunc.toHexString(can.getVehicleID()));
+                cacheAndPut("/fms/vehicleid", StringFunc.toHexString(can.getVehicleID()));
+                SLog.log(SLog.Debug, "Can", "canDriverID=" + StringFunc.toHexString(can.getDriverID()));
+                cacheAndPut("/fms/driverid", StringFunc.toHexString(can.getDriverID()));
+
+                SLog.log(SLog.Debug, "Can", "canFMSData=" + StringFunc.toHexString(can.getFMSdata()));
+                //cacheAndPut("/fms/data", StringFunc.toHexString(can.getFMSdata()));
+
+                String fmsString = StringFunc.toHexString(can.getFMSdata());
+                cacheAndPut("/fms/data/maxspeed", fmsString.substring(0, 2));
+
+                cacheAndPut("/fms/data/speed0", fmsString.substring(2, 6));
+                cacheAndPut("/fms/data/speed1", fmsString.substring(6, 10));
+                cacheAndPut("/fms/data/speed16", fmsString.substring(10, 14));
+                cacheAndPut("/fms/data/speed46", fmsString.substring(14, 18));
+                cacheAndPut("/fms/data/speed70", fmsString.substring(18, 22));
+
+                cacheAndPut("/fms/data/brakes", fmsString.substring(22, 26));
+                cacheAndPut("/fms/data/cruise", fmsString.substring(26, 30));
+                cacheAndPut("/fms/data/pto", fmsString.substring(30, 34));
+
+                cacheAndPut("/fms/data/rpm0", fmsString.substring(34, 38));
+                cacheAndPut("/fms/data/rpm801", fmsString.substring(38, 42));
+                cacheAndPut("/fms/data/rpm1101", fmsString.substring(42, 46));
+                cacheAndPut("/fms/data/rpm1451", fmsString.substring(46, 50));
+                cacheAndPut("/fms/data/rpm1701", fmsString.substring(50, 54));
+
+                cacheAndPut("/fms/data/totalfuel", fmsString.substring(54, 62));
+                cacheAndPut("/fms/data/fuellevel", fmsString.substring(62, 64));
+                cacheAndPut("/fms/data/axesweight", fmsString.substring(64, 74));
+                cacheAndPut("/fms/data/enginehours", fmsString.substring(74, 82));
+                cacheAndPut("/fms/data/totaldist", fmsString.substring(82, 90));
+                cacheAndPut("/fms/data/coolingtemp", fmsString.substring(90, 92));
+                cacheAndPut("/fms/data/engineload", fmsString.substring(92, 94));
+                cacheAndPut("/fms/data/servicedist", fmsString.substring(94, 98));
+                cacheAndPut("/fms/data/tachodata", fmsString.substring(98, 106));
+                cacheAndPut("/fms/data/tachospeed", fmsString.substring(106, 110));
+                cacheAndPut("/fms/data/fuelrate", fmsString.substring(110, 114));
+                cacheAndPut("/fms/data/fuelecon", fmsString.substring(114, 118));
+                cacheAndPut("/fms/data/fmssw", fmsString.substring(118, 128));
+
+                cacheAndPut("/fms/data/pedal0", fmsString.substring(128, 132));
+                cacheAndPut("/fms/data/pedal20", fmsString.substring(132, 136));
+                cacheAndPut("/fms/data/pedal40", fmsString.substring(136, 140));
+                cacheAndPut("/fms/data/pedal60", fmsString.substring(140, 144));
+                cacheAndPut("/fms/data/pedal80", fmsString.substring(144, 148));
+
+                cacheAndPut("/fms/data/selectedgear", fmsString.substring(148, 150));
+                cacheAndPut("/fms/data/currentgear", fmsString.substring(150));
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ie) {
+                    //
+                }
+            }
+            can.canOff();
+        } catch (IOException ioe) {
+            SLog.log(SLog.Error, "Can", "IOException " + ioe);
+        }
+
     }
 
     private String hexString(int i) {
