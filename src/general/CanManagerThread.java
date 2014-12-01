@@ -54,12 +54,6 @@ public class CanManagerThread extends Thread {
                     can.setCan("EXT", 250, "FMS", "SILENT");
                     can.canOn();
 
-                    SLog.log(SLog.Debug, "CanRaw", "canState=" + can.canState());
-                    SLog.log(SLog.Debug, "CanRaw", "canMode=" + can.getCanMode());
-                    SLog.log(SLog.Debug, "CanRaw", "canSpeed=" + can.getCanSpeed());
-                    SLog.log(SLog.Debug, "CanRaw", "canType=" + can.getCanType());
-                    SLog.log(SLog.Debug, "CanRaw", "canNodeState=" + can.getCanNodeState());
-
                     int loops = Settings.getInstance().getSetting("fmsLoops", 1);
                     while (loops-- > 0) {
                         SLog.log(SLog.Debug, "Can", "canTimeDate=" + StringFunc.toHexString(can.getTimeDate()));
