@@ -30,22 +30,22 @@ public class Queue {
         this.maxSize = maxSize;
         shrink();
     }
-    
+
     private void shrink() {
         recordID = 1;
         try {
             this.recordStore = RecordStore.openRecordStore(name, false);
             int numRecords = this.recordStore.getNumRecords();
             SLog.log(SLog.Informational, "Queue", "openRecordStore " + name + " " + numRecords);
-            if (numRecords < 1  // < 0 should never happen
+            if (numRecords < 1 // < 0 should never happen
                     || Settings.getInstance().getSetting("killQueue", false)) {
                 SLog.log(SLog.Informational, "Queue", "deleteRecordStore " + name);
+                this.recordStore.closeRecordStore();
+                RecordStore.deleteRecordStore(name);
                 if (Settings.getInstance().getSetting("killQueue", false)) {
                     SLog.log(SLog.Informational, "Queue", "killedQueue");
                     Settings.getInstance().setSetting("killQueue", null);
                 }
-                this.recordStore.closeRecordStore();
-                RecordStore.deleteRecordStore(name);
                 this.recordStore = RecordStore.openRecordStore(name, true);
                 SLog.log(SLog.Informational, "Queue", "openRecordStore (create) " + name);
             }
@@ -82,26 +82,46 @@ public class Queue {
                 }
                 return null;
             } else {
-                boolean gotRecord = false;
-                do {
-                    try {
-                        SLog.log(SLog.Debug, "Queue", "getRecord " + recordID);
-                        bytes = recordStore.getRecord(recordID);
-                        gotRecord = true;
-                    } catch (InvalidRecordIDException irie) {
-                        SLog.log(SLog.Informational, "Queue", "InvalidRecordIDException " + recordID);
-                        if (recordID < recordStore.getNextRecordID() - 1) {
-                                recordID++;
-                        } else {
-                            gotRecord = true; // should never happen
+                try {
+                    SLog.log(SLog.Debug, "Queue", "getRecord " + recordID);
+                    bytes = recordStore.getRecord(recordID);
+                } catch (InvalidRecordIDException irie) {
+                    SLog.log(SLog.Informational, "Queue", "InvalidRecordIDException " + recordID);
+                    int half = recordStore.getNextRecordID() / 2;
+                    int rID = half;
+                    while (half > 0) {
+                        half /= 2;
+                        try {
+                            SLog.log(SLog.Informational, "Queue", "binarySearchingRecord " + rID);
+                            bytes = null;
+                            bytes = recordStore.getRecord(rID);
+                            SLog.log(SLog.Informational, "Queue", "got record " + rID);
+                            rID -= half;
+                        } catch (InvalidRecordIDException irie2) {
+                            SLog.log(SLog.Informational, "Queue", "InvalidRecordIDException " + rID);
+                            rID += half;
                         }
                     }
-                } while (!gotRecord);
+                    if (bytes == null) {
+                        rID++;
+                        try {
+                            SLog.log(SLog.Informational, "Queue", "advancingToRecord " + rID);
+                            bytes = null;
+                            bytes = recordStore.getRecord(recordID);
+                            SLog.log(SLog.Informational, "Queue", "finally got record " + rID);
+                        } catch (InvalidRecordIDException irie2) {
+                            SLog.log(SLog.Informational, "Queue", "InvalidRecordIDException " + rID);
+                        }
+                    }
+                    recordID = rID;
+                }
             }
         } catch (RecordStoreNotOpenException rsnoe) {
             SLog.log(SLog.Error, "Queue", "RecordStoreNotOpenException getRecord " + recordID);
+            bytes = null;
         } catch (RecordStoreException rse) {
             SLog.log(SLog.Error, "Queue", "RecordStoreException getRecord " + recordID);
+            bytes = null;
         }
         return bytes;
     }
