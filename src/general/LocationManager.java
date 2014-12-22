@@ -232,13 +232,13 @@ public class LocationManager {
                     tempVel = 0.0;
                 }
             } catch (NumberFormatException nfe) {
-                SLog.log(SLog.Error, "LocationManager", "RMC NumberFormatException");
+                SLog.log(SLog.Warning, "LocationManager", "RMC NumberFormatException");
                 rmc = null;
             } catch (StringIndexOutOfBoundsException sioobe) {
-                SLog.log(SLog.Error, "LocationManager", "RMC StringIndexOutOfBoundsException");
+                SLog.log(SLog.Warning, "LocationManager", "RMC StringIndexOutOfBoundsException");
                 rmc = null;
             } catch (ArrayIndexOutOfBoundsException aioobe) {
-                SLog.log(SLog.Error, "LocationManager", "RMC ArrayIndexOutOfBoundsException");
+                SLog.log(SLog.Warning, "LocationManager", "RMC ArrayIndexOutOfBoundsException");
                 rmc = null;
             }
         }
@@ -302,10 +302,10 @@ public class LocationManager {
                     tempAlt = 0.0;
                 }
             } catch (NumberFormatException nfe) {
-                SLog.log(SLog.Error, "LocationManager", "GGA NumberFormatException");
+                SLog.log(SLog.Warning, "LocationManager", "GGA NumberFormatException");
                 return;
             } catch (ArrayIndexOutOfBoundsException aioobe) {
-                SLog.log(SLog.Error, "LocationManager", "GGA ArrayIndexOutOfBoundsException");
+                SLog.log(SLog.Warning, "LocationManager", "GGA ArrayIndexOutOfBoundsException");
                 return;
             }
             if (fix && rmc != null) {
