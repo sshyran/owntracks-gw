@@ -208,7 +208,8 @@ public class AppMain extends MIDlet {
         while (SocketGPRSThread.getInstance().qSize() > 0) {
             SLog.log(SLog.Debug, "AppMain", "waiting qSize= " + SocketGPRSThread.getInstance().qSize());
             if (SocketGPRSThread.getInstance().isGPRSTimeout()
-                    || SocketGPRSThread.getInstance().isMQTTTimeout()) {
+                    || SocketGPRSThread.getInstance().isMQTTTimeout()
+                    || BatteryManager.getInstance().isBatteryVoltageLow()) {
                 break;
             }
             try {
@@ -372,18 +373,6 @@ public class AppMain extends MIDlet {
             return true;
         }
 
-        //if (LocationManager.getInstance().isTimeout()) {
-        //    SLog.log(SLog.Debug, "AppMain", "fixTimeout");
-        //    return true;
-        //}
-        //if (SocketGPRSThread.getInstance().isGPRSTimeout()) {
-        //    SLog.log(SLog.Debug, "AppMain", "gprsTimeout");
-        //    return true;
-        //}
-        //if (SocketGPRSThread.getInstance().isMQTTTimeout()) {
-        //    SLog.log(SLog.Debug, "AppMain", "mqttTimeout");
-        //    return true;
-        //}
         return false;
     }
 

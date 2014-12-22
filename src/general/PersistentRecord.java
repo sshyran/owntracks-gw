@@ -23,14 +23,21 @@ public class PersistentRecord {
 
     PersistentRecord(String name) {
         this.name = name;
-        openAndCreate();
+        openAndCreate(false);
     }
-    
-    private void openAndCreate() {
+
+    private void openAndCreate(boolean force) {
         try {
+            if (this.recordStore != null) {
+                try {
+                    this.recordStore.closeRecordStore();
+                } catch (RecordStoreNotOpenException rsnoe) {
+                    SLog.log(SLog.Error, "Persistent", "RecordStoreNotOpenException closeRecordStore");
+                }
+            }
             this.recordStore = RecordStore.openRecordStore(name, false);
             SLog.log(SLog.Informational, "Persistent", "openRecordStore " + name);
-            if (Settings.getInstance().getSetting("killPersistent", false)) {
+            if (Settings.getInstance().getSetting("killPersistent", false) || force) {
                 SLog.log(SLog.Informational, "Persistent", "deleteRecordStore " + name);
                 if (Settings.getInstance().getSetting("killPersistent", false)) {
                     SLog.log(SLog.Informational, "Persistent", "killPersistent");
@@ -86,15 +93,19 @@ public class PersistentRecord {
             recordStore.setRecord(recordID, bytes, 0, bytes.length);
         } catch (RecordStoreNotOpenException rsnoe) {
             SLog.log(SLog.Error, "Persistent", "RecordStoreNotOpenException setRecord");
+            openAndCreate(true);
             return false;
         } catch (RecordStoreFullException rsfe) {
             SLog.log(SLog.Error, "Persistent", "RecordStoreFullException setRecord");
+            openAndCreate(true);
             return false;
         } catch (InvalidRecordIDException irie) {
             SLog.log(SLog.Error, "Persistent", "InvalidRecordIDException setRecord");
+            openAndCreate(true);
             return false;
         } catch (RecordStoreException rse) {
             SLog.log(SLog.Error, "Persistent", "RecordStoreException setRecord");
+            openAndCreate(true);
             return false;
         }
         return true;
