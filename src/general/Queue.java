@@ -91,32 +91,35 @@ public class Queue {
                 }
             } else {
                 if (recordID == 0) {
-                    int half = recordStore.getNextRecordID() / 2;
-                    int rID = half;
-                    while (half > 0) {
-                        half /= 2;
+                    int mid = 0;
+                    int left = 1;
+                    int right = recordStore.getNextRecordID() - 1;
+                    while (left <= right) {
+                        int add = ((right - left) / 2);
+                        mid = left + add;
                         try {
-                            SLog.log(SLog.Informational, "Queue", "binarySearchingRecord " + rID);
+                            SLog.log(SLog.Informational, "Queue", "binarySearchingRecord " + mid);
                             bytes = null;
-                            bytes = recordStore.getRecord(rID);
-                            SLog.log(SLog.Informational, "Queue", "got record " + rID);
-                            rID -= half;
+                            bytes = recordStore.getRecord(mid);
+                            SLog.log(SLog.Informational, "Queue", "got record " + mid);
+                            right = mid - 1;
                         } catch (InvalidRecordIDException irie2) {
-                            SLog.log(SLog.Informational, "Queue", "InvalidRecordIDException " + rID);
-                            rID += half;
+                            SLog.log(SLog.Informational, "Queue", "InvalidRecordIDException " + mid);
+                            left = mid + 1;
                         }
                     }
+
                     if (bytes == null) {
-                        rID++;
+                        mid++;
                     }
-                    if (recordStore.getNextRecordID() - recordStore.getNumRecords() != rID) {
+                    if (recordStore.getNextRecordID() - recordStore.getNumRecords() != mid) {
                         SLog.log(SLog.Warning, "Queue", "InconsistentQueue "
                                 + "next:" + recordStore.getNextRecordID()
                                 + " - num:" + recordStore.getNumRecords()
-                                + " != rID:" + rID);
+                                + " != mid:" + mid);
                         shrink(true);
                     } else {
-                        recordID = rID;
+                        recordID = mid;
                     }
                 }
                 try {
