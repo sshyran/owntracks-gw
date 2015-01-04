@@ -134,7 +134,7 @@
       values: 0,1...
       validity: immediate
       default: 0
-      desc: if > 0, device will try to connect every obd2Interval seconds via Can Bus to get ODB2 data including vehicle information, trouble codes, etc. and publish to mqtt
+      desc: "if > 0, device will try to connect every obd2Interval seconds via Can Bus to get ODB2 data including vehicle information, trouble codes, etc. and publish to mqtt"
   - obd2Sensors:
       values: 0,1...
       validity: immediate
@@ -143,7 +143,7 @@
   - obd2Addresses:
       values: comma separated list of obd2 controller addresses to scan (use lower case, 8 character hex values)
       validity: immediate
-      default: "000007e8" for STD (11 bit) addressing, "18daf110" for EXT (29 bit) addressing
+      default: "`000007e8` for STD (11 bit) addressing, `18daf110` for EXT (29 bit) addressing"
       desc: device addresses to listen to (restricting the number of addresses speeds up the data collection cycle)
   - obd2Speeds:
       values: comma separated list of obd2 speeds to try scanning
@@ -155,7 +155,6 @@
       validity: immediate
       default: "STD,EXT"
       desc: Can bus modes STD=11 bit, EXT= 29 bit (restricting the number of modes up the data collection cycle)
-  - obd2Modes:
 
 - MQTT:
   - block: >
@@ -308,7 +307,13 @@
            setting is persistent: Even after reboot or restart by alarm clock,
            the suspension remains active.  The only exceptions are the wakeup by
            accerelometer (alarm), which will publish a location, and the `gps` command
-           which will report the last-known (and thus non-secret) location.
+           which will report the last-known (and thus non-secret) location. Starting with
+           v0.11.42, the `offUntil` setting, when active, will cause the device to *not*
+           transmit any location messages, alarms, any voltage messages, cellInfo, operators,
+           FMS or OBD2 messages. The `state` command's response will neither contain cellinfo
+           nor operators in it. In addition, `lastFix` is neither stored nor updated, nor
+           is the trip counter updated. What *is* transmitted, is the `start` message. The
+           response to the `gps` command will contain `"no location available"`.
                  
   - sensitivity:
       values: "0-..."
