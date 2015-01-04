@@ -51,7 +51,7 @@ public class GPIOManager {
         ATManager.getInstance().executeCommandSynchron("at^scpol=0,2\r");
         if (MicroManager.getInstance().isAdvanced()) {
             ATManager.getInstance().executeCommandSynchron("at^scpol=0,1\r");
-            ATManager.getInstance().executeCommandSynchron("at^scpol=0,4\r");            
+            ATManager.getInstance().executeCommandSynchron("at^scpol=0,4\r");
         }
         ATManager.getInstance().executeCommandSynchron("at^scpol=0,6\r");
 
@@ -59,7 +59,7 @@ public class GPIOManager {
         ATManager.getInstance().executeCommandSynchron("at^scpin=0,2\r");
         if (MicroManager.getInstance().isAdvanced()) {
             ATManager.getInstance().executeCommandSynchron("at^scpin=0,1\r");
-            ATManager.getInstance().executeCommandSynchron("at^scpin=0,4\r");            
+            ATManager.getInstance().executeCommandSynchron("at^scpin=0,4\r");
         }
         ATManager.getInstance().executeCommandSynchron("at^scpin=0,6\r");
 
@@ -167,71 +167,49 @@ public class GPIOManager {
             case 0:
                 gpio1 = value;
                 if (Settings.getInstance().getSetting("useGPIO1", false)) {
-                    SocketGPRSThread.getInstance().put(
-                            Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                            + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
-                            + "/gpio/1",
-                            Settings.getInstance().getSetting("qos", 1),
-                            Settings.getInstance().getSetting("retain", true),
-                            ("" + (1 - value)).getBytes()
-                    );
+                    sendAny(1, value);
                 }
                 break;
             case 2:
                 gpio3 = value;
                 if (Settings.getInstance().getSetting("useGPIO3", false)) {
-                    SocketGPRSThread.getInstance().put(
-                            Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                            + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
-                            + "/gpio/3",
-                            Settings.getInstance().getSetting("qos", 1),
-                            Settings.getInstance().getSetting("retain", true),
-                            ("" + (1 - value)).getBytes()
-                    );
+                    sendAny(3, value);
                 }
                 break;
 
             case 1:
                 gpio2 = value;
                 if (Settings.getInstance().getSetting("useGPIO2", false)) {
-                    SocketGPRSThread.getInstance().put(
-                            Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                            + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
-                            + "/gpio/2",
-                            Settings.getInstance().getSetting("qos", 1),
-                            Settings.getInstance().getSetting("retain", true),
-                            ("" + (1 - value)).getBytes()
-                    );
+                    sendAny(2, value);
                 }
                 break;
 
             case 4:
                 gpio5 = value;
                 if (Settings.getInstance().getSetting("useGPIO5", false)) {
-                    SocketGPRSThread.getInstance().put(
-                            Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                            + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
-                            + "/gpio/5",
-                            Settings.getInstance().getSetting("qos", 1),
-                            Settings.getInstance().getSetting("retain", true),
-                            ("" + (1 - value)).getBytes()
-                    );
+                    sendAny(5, value);
                 }
                 break;
 
             case 6:
                 gpio7 = value;
-                SocketGPRSThread.getInstance().put(
-                        Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                        + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
-                        + "/gpio/7",
-                        Settings.getInstance().getSetting("qos", 1),
-                        Settings.getInstance().getSetting("retain", true),
-                        ("" + (1 - value)).getBytes()
-                );
+                sendAny(7, value);
                 break;
             default:
                 break;
+        }
+    }
+
+    private void sendAny(int id, int value) {
+        if (!AppMain.getInstance().isOff()) {
+            SocketGPRSThread.getInstance().put(
+                    Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                    + "/gpio/" + id,
+                    Settings.getInstance().getSetting("qos", 1),
+                    Settings.getInstance().getSetting("retain", true),
+                    ("" + (1 - value)).getBytes()
+            );
         }
     }
 

@@ -155,14 +155,16 @@ public class LocationManager {
         }
 
         if (Settings.getInstance().getSetting("raw", false)) {
-            SocketGPRSThread.getInstance().put(
-                    Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
-                    + "/raw",
-                    Settings.getInstance().getSetting("qos", 1),
-                    Settings.getInstance().getSetting("retain", true),
-                    rmc.getBytes()
-            );
+            if (!AppMain.getInstance().isOff()) {
+                SocketGPRSThread.getInstance().put(
+                        Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                        + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                        + "/raw",
+                        Settings.getInstance().getSetting("qos", 1),
+                        Settings.getInstance().getSetting("retain", true),
+                        rmc.getBytes()
+                );
+            }
         }
 
         String[] components = StringFunc.split(rmc, ",");
@@ -175,8 +177,7 @@ public class LocationManager {
                         fix = false;
                         setLED(false);
                         startTimer();
-                        String payload = getlastPayloadString("l");
-                        send(payload);
+                        send(getlastPayloadString("l"));
                     }
 
                 } else {
@@ -273,14 +274,16 @@ public class LocationManager {
         }
 
         if (Settings.getInstance().getSetting("raw", false)) {
-            SocketGPRSThread.getInstance().put(
-                    Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
-                    + "/raw",
-                    Settings.getInstance().getSetting("qos", 1),
-                    Settings.getInstance().getSetting("retain", true),
-                    gga.getBytes()
-            );
+            if (!AppMain.getInstance().isOff()) {
+                SocketGPRSThread.getInstance().put(
+                        Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                        + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                        + "/raw",
+                        Settings.getInstance().getSetting("qos", 1),
+                        Settings.getInstance().getSetting("retain", true),
+                        gga.getBytes()
+                );
+            }
         }
 
         String[] components = StringFunc.split(gga, ",");
@@ -325,11 +328,7 @@ public class LocationManager {
         secretLocation.speed = vel;
         secretLocation.altitude = alt;
 
-        Date offUntil = new Date(Settings.getInstance().getSetting("offUntil", 0L) * 1000);
-        SLog.log(SLog.Debug, "LocationManager",
-                "offUntil " + DateFormatter.isoString(offUntil)
-                + " date " + DateFormatter.isoString(date));
-        if (offUntil.getTime() < date.getTime()) {
+        if (!AppMain.getInstance().isOff()) {
             int minDistance = Settings.getInstance().getSetting("minDistance", 100);
             int minSpeed = Settings.getInstance().getSetting("minSpeed", 5);
             int maxInterval = Settings.getInstance().getSetting("maxInterval", 60);
@@ -386,8 +385,8 @@ public class LocationManager {
         if (lastLocation != null) {
             double distance = lastLocation.distance(currentLocation);
             SLog.log(SLog.Debug, "LocationManager",
-                    "move: " + distance +
-                    " speed: " + currentLocation.speed);
+                    "move: " + distance
+                    + " speed: " + currentLocation.speed);
             if (distance > Settings.getInstance().getSetting("sensitivity", 1)) {
                 incrementalDistance += distance;
                 trip += distance;
@@ -399,25 +398,21 @@ public class LocationManager {
     }
 
     public void sendAlarm(String payload) {
-        if (payload != null) {
-            SocketGPRSThread.getInstance().put(
-                    Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
-                    + "/alarm",
-                    Settings.getInstance().getSetting("qos", 1),
-                    false,
-                    payload.getBytes()
-            );
-        }
+        sendAny("/alarm", false, payload);
     }
 
     public void send(String payload) {
-        if (payload != null) {
+        sendAny("", true, payload);
+    }
+
+    public void sendAny(String subTopic, boolean retain, String payload) {
+        if (payload != null && !AppMain.getInstance().isOff()) {
             SocketGPRSThread.getInstance().put(
                     Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI()),
+                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                    + subTopic,
                     Settings.getInstance().getSetting("qos", 1),
-                    Settings.getInstance().getSetting("retain", true),
+                    retain,
                     payload.getBytes()
             );
         }

@@ -200,9 +200,11 @@ public class AppMain extends MIDlet {
     protected void cleanup() {
         SLog.log(SLog.Debug, "AppMain", "cleanup");
 
-        String json = LocationManager.getInstance().getlastPayloadString("L");
-        LocationManager.getInstance().send(json);
-        Settings.getInstance().setSetting("lastFix", json);
+        if (!isOff()) {
+            String json = LocationManager.getInstance().getlastPayloadString("L");
+            LocationManager.getInstance().send(json);
+            Settings.getInstance().setSetting("lastFix", json);
+        }
 
         SLog.log(SLog.Debug, "AppMain", "sending remaining messages");
         while (SocketGPRSThread.getInstance().qSize() > 0) {
@@ -383,4 +385,33 @@ public class AppMain extends MIDlet {
         }
         return s;
     }
+
+    public boolean offUntil(int minutes) {
+        SLog.log(SLog.Debug, "AppMain", "offUntil minutes: " + minutes);
+
+        if (minutes >= 0) {
+            if (minutes == 0) {
+                Settings.getInstance().setSetting("offUntil", null);
+            } else {
+                Date now = new Date();
+                Date until = new Date(now.getTime() + minutes * 60L * 1000L);
+                Settings.getInstance().setSetting("offUntil", Long.toString(until.getTime() / 1000));
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean isOff() {
+        Date offUntil = new Date(Settings.getInstance().getSetting("offUntil", 0L) * 1000);
+        Date date = new Date();
+
+        SLog.log(SLog.Debug, "AppMain",
+                "offUntil " + DateFormatter.isoString(offUntil)
+                + " date " + DateFormatter.isoString(date));
+
+        return (offUntil.getTime() > date.getTime());
+    }
+
 }

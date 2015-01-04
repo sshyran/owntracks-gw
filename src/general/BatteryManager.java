@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package general;
 
 import java.util.Timer;
@@ -17,17 +16,17 @@ import java.io.IOException;
  * @author christoph
  */
 public class BatteryManager {
-    
+
     private final int BatteryRequestLoop = 60;
-    
-    private double batteryVoltage;
+
+    private double batteryVoltage = -1.0;
     private double lastBatteryVoltage = -1.0;
     private double lastExternalVoltage = -1.0;
 
     private final PowerManager powerManager;
     private final Timer timer;
     private final TimerTask timerTask;
-    
+
     private BatteryManager() {
         batteryVoltage = 0.0;
         powerManager = new PowerManager();
@@ -35,53 +34,54 @@ public class BatteryManager {
         timerTask = new BatteryRequestTimerTask();
         timer.schedule(timerTask, 0, BatteryRequestLoop * 1000);
     }
-    
+
     public static BatteryManager getInstance() {
         return PowerManagerHolder.INSTANCE;
     }
-    
+
     private static class PowerManagerHolder {
 
         private static final BatteryManager INSTANCE = new BatteryManager();
     }
-    
+
     public boolean isBatteryVoltageLow() {
-        if (lastBatteryVoltage == -1.0) {
+        if (batteryVoltage == -1.0) {
             SLog.log(SLog.Informational, "BatteryManager", "Battery Voltage not known yet");
             return false;
         }
         return batteryVoltage <= Settings.getInstance().getSetting("lowBattery", 3599) / 1000.0;
     }
-    
+
     public double getBatteryVoltage() {
         return batteryVoltage;
     }
-    
+
     private String voltageString(double voltage) {
-        return "" + (int)Math.floor(voltage) + "." + (int)(Math.floor(voltage * 10)) % 10;
+        return "" + (int) Math.floor(voltage) + "." + (int) (Math.floor(voltage * 10)) % 10;
     }
-    
+
     public String getBatteryVoltageString() {
         return voltageString(batteryVoltage);
     }
-    
+
     public double getExternalVoltage() {
         try {
             double voltage = powerManager.getDoubleVIN();
-            {
-                long longVoltage = (long)(voltage * 1000.0);
-                voltage = longVoltage / 1000.0;
-            }
-            if (Math.abs(lastExternalVoltage - voltage) > Settings.getInstance().getSetting("dExtVoltage", 500) / 1000.0) {
-                SocketGPRSThread.getInstance().put(
-                        Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                        + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
-                        + "/voltage/ext",
-                        Settings.getInstance().getSetting("qos", 1),
-                        Settings.getInstance().getSetting("retain", true),
-                        voltageString(voltage).getBytes()
-                );
-                lastExternalVoltage = voltage;
+            long longVoltage = (long) (voltage * 1000.0);
+            voltage = longVoltage / 1000.0;
+
+            if (!AppMain.getInstance().isOff()) {
+                if (Math.abs(lastExternalVoltage - voltage) > Settings.getInstance().getSetting("dExtVoltage", 500) / 1000.0) {
+                    SocketGPRSThread.getInstance().put(
+                            Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                            + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                            + "/voltage/ext",
+                            Settings.getInstance().getSetting("qos", 1),
+                            Settings.getInstance().getSetting("retain", true),
+                            voltageString(voltage).getBytes()
+                    );
+                    lastExternalVoltage = voltage;
+                }
             }
             return voltage;
         } catch (IOException ioe) {
@@ -89,34 +89,35 @@ public class BatteryManager {
             return 0.0;
         }
     }
-    
+
     public String getExternalVoltageString() {
         return voltageString(getExternalVoltage());
     }
-    
+
     public void setBatteryVoltage(double voltage) {
-        {
-            long longVoltage = (long)(voltage * 1000.0);
-            voltage = longVoltage / 1000.0;
-        }
-        if (Math.abs(lastBatteryVoltage - voltage) > Settings.getInstance().getSetting("dBattVoltage", 100) / 1000.0) {
-            SocketGPRSThread.getInstance().put(
-                    Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
-                    + "/voltage/batt",
-                    Settings.getInstance().getSetting("qos", 1),
-                    Settings.getInstance().getSetting("retain", true),
-                    voltageString(voltage).getBytes()
-            );
-            lastBatteryVoltage = voltage;
+        long longVoltage = (long) (voltage * 1000.0);
+        voltage = longVoltage / 1000.0;
+
+        if (!AppMain.getInstance().isOff()) {
+            if (Math.abs(lastBatteryVoltage - voltage) > Settings.getInstance().getSetting("dBattVoltage", 100) / 1000.0) {
+                SocketGPRSThread.getInstance().put(
+                        Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                        + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                        + "/voltage/batt",
+                        Settings.getInstance().getSetting("qos", 1),
+                        Settings.getInstance().getSetting("retain", true),
+                        voltageString(voltage).getBytes()
+                );
+                lastBatteryVoltage = voltage;
+            }
         }
         batteryVoltage = voltage;
     }
-    
+
     public void eventLowBattery() {
         setBatteryVoltage(Settings.getInstance().getSetting("lowBattery", 3599) / 1000.0);
     }
-    
+
     public boolean reboot() {
         try {
             return (powerManager.setReboot() == 1);
@@ -136,6 +137,7 @@ public class BatteryManager {
     }
 
     class BatteryRequestTimerTask extends TimerTask {
+
         public void run() {
             String response = ATManager.getInstance().executeCommandSynchron("AT^SBV\r");
             final String SBV = "^SBV: ";

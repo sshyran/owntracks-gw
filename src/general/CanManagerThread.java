@@ -430,7 +430,7 @@ public class CanManagerThread extends Thread {
             can = new Can();
             can.deleteAllAddress();
             can.deleteStandardData();
-            can.setCan("EXT", 250, "STD", "SILENT");
+            can.setCan("STD", 250, "STD", "SILENT");
 
             String fmsAddresses1 = Settings.getInstance().getSetting("fmsAddresses1",
                     "0000feec,0000fdd1,0000fe6b,0000fe70,0000feea,0000fec0,0000fee6,0000fed5,0000fee9,0000fefc,0000fee5,0000fec1,0000feee,0000fef5,0000feae,0000fd09,0000fe56,0000fd7d");
@@ -442,13 +442,21 @@ public class CanManagerThread extends Thread {
 
             can.canOn();
             SLog.log(SLog.Debug, "CanRaw", "InfrequentWatch" + StringFunc.toHexString(can.getWatchList()));
-            canRaw(can);
+            int loops = 10;
+            while (loops-- > 0) {
+                canRaw(can);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ie) {
+                    //
+                }
+            }
             can.canOff();
 
             can = new Can();
             can.deleteAllAddress();
             can.deleteStandardData();
-            can.setCan("EXT", 250, "STD", "SILENT");
+            can.setCan("STD", 250, "STD", "SILENT");
             String fmsAddresses2 = Settings.getInstance().getSetting("fmsAddresses2",
                     "0000f004,0000fe6c,0000fef2,0000fef1,0000f003,0000f000,0000fe4e,0000fda5,0000fda4,0000f005,0000fe58,0000ecff,0000ebff");
             String[] addresses2 = StringFunc.split(fmsAddresses2, ",");
@@ -460,7 +468,7 @@ public class CanManagerThread extends Thread {
             can.canOn();
             SLog.log(SLog.Debug, "CanRaw", "FrequentWatch" + StringFunc.toHexString(can.getWatchList()));
 
-            int loops = Settings.getInstance().getSetting("fmsLoops", 1);
+            loops = Settings.getInstance().getSetting("fmsLoops", 1000);
             while (loops-- > 0) {
                 canRaw(can);
                 try {
@@ -485,6 +493,19 @@ public class CanManagerThread extends Thread {
         }
 
         if (bytes != null) {
+            //DEBUG
+            for (int D = 0; D < bytes.length; D += 4 + 8) {
+                if (bytes[D + 0] + bytes[D + 1] + bytes[D + 2] + bytes[D + 3] > 0) {
+                    int[] truncated = new int[5 + 7];
+                    System.arraycopy(bytes, D, truncated, 0, truncated.length);
+                    String hexString = StringFunc.toHexString(truncated);
+                    SLog.log(SLog.Debug, "CanRaw", "recv= " + hexString.substring(0, 8)
+                            + " " + hexString.substring(8, 10)
+                            + " " + hexString.substring(10)
+                    );
+                }
+            }
+            //
             String string = StringFunc.toHexString(bytes) + " ";
             for (int i = 0; i < 18; i++) {
                 int addressSum = 0;
@@ -589,19 +610,21 @@ public class CanManagerThread extends Thread {
     }
 
     private void cacheAndPut(String subtopic, String payload) {
-        String topic = Settings.getInstance().getSetting("publish", "owntracks/gw/")
-                + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
-                + subtopic;
+        if (!AppMain.getInstance().isOff()) {
+            String topic = Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                    + subtopic;
 
-        String value = (String) hashtable.get(topic);
-        if (value == null || !value.equals(payload)) {
-            SocketGPRSThread.getInstance().put(
-                    topic,
-                    Settings.getInstance().getSetting("qos", 1),
-                    Settings.getInstance().getSetting("retain", true),
-                    payload.getBytes()
-            );
-            hashtable.put(topic, payload);
+            String value = (String) hashtable.get(topic);
+            if (value == null || !value.equals(payload)) {
+                SocketGPRSThread.getInstance().put(
+                        topic,
+                        Settings.getInstance().getSetting("qos", 1),
+                        Settings.getInstance().getSetting("retain", true),
+                        payload.getBytes()
+                );
+                hashtable.put(topic, payload);
+            }
         }
     }
 }

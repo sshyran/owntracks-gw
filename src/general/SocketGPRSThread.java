@@ -403,7 +403,7 @@ public class SocketGPRSThread extends Thread {
             }
 
             String cellInfo = "" + MCC + " " + MNC + " " + cgregLAC + " " + cgregCellID; // + " " + rssi + " " + ber;
-            if (!lastCellInfo.equals(cellInfo)) {
+            if (!lastCellInfo.equals(cellInfo) && !AppMain.getInstance().isOff()) {
                 if (Settings.getInstance().getSetting("cellInfo", false)) {
                     put(
                             Settings.getInstance().getSetting("publish", "owntracks/gw/")
@@ -494,7 +494,7 @@ public class SocketGPRSThread extends Thread {
             for (int i = 0; i < unknownOperatorVector.size(); i++) {
                 operatorList = operatorList.concat(" ?" + (String) unknownOperatorVector.elementAt(i));
             }
-            if (operatorList.length() > 0 && !lastOperatorList.equals(operatorList)) {
+            if (operatorList.length() > 0 && !lastOperatorList.equals(operatorList) && !AppMain.getInstance().isOff()) {
                 put(
                         Settings.getInstance().getSetting("publish", "owntracks/gw/")
                         + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())

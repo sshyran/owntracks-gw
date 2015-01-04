@@ -113,24 +113,24 @@ public class CommandProcessor {
             LocationManager locationManager = LocationManager.getInstance();
 
             String human = locationManager.getLastHumanString();
-            if (human != null) {
+            if (!AppMain.getInstance().isOff() && human != null) {
                 message = message.concat(human);
             } else {
                 message = message.concat("no location available");
             }
 
-            String json = locationManager.getlastPayloadString("m");
-            if (json != null) {
-                SocketGPRSThread.getInstance().put(
-                        settings.getSetting("publish", "owntracks/gw/")
-                        + settings.getSetting("clientID", MicroManager.getInstance().getIMEI()),
-                        settings.getSetting("qos", 1),
-                        settings.getSetting("retain", true),
-                        json.getBytes());
-                return true;
-            } else {
-                return false;
+            if (!AppMain.getInstance().isOff()) {
+                String json = locationManager.getlastPayloadString("m");
+                if (json != null) {
+                    SocketGPRSThread.getInstance().put(
+                            settings.getSetting("publish", "owntracks/gw/")
+                            + settings.getSetting("clientID", MicroManager.getInstance().getIMEI()),
+                            settings.getSetting("qos", 1),
+                            settings.getSetting("retain", true),
+                            json.getBytes());
+                }
             }
+            return true;
 
         } else if (command.equalsIgnoreCase(reboot)) {
             AppMain.getInstance().reboot = true;
@@ -152,7 +152,7 @@ public class CommandProcessor {
             }
             message = message.concat("destroying app");
             return true;
-            
+
         } else if (command.equalsIgnoreCase(restart)) {
             SLog.log(SLog.Informational, "CommandProcessor", "restarting...");
             ATManager.getInstance().executeCommandSynchron("AT+CFUN=1,1\r");
@@ -198,7 +198,8 @@ public class CommandProcessor {
         }
     }
 
-    boolean setCommand(String[] parameters) {
+    boolean setCommand(String[] parameters
+    ) {
         message = "";
         Settings settings = Settings.getInstance();
         if (parameters.length == 1) {
@@ -235,7 +236,8 @@ public class CommandProcessor {
         return false;
     }
 
-    boolean outCommand(String[] parameters) {
+    boolean outCommand(String[] parameters
+    ) {
         message = "";
         if (parameters.length == 3) {
             int num;
@@ -280,7 +282,8 @@ public class CommandProcessor {
         return false;
     }
 
-    boolean bootstrapCommand(String[] parameters) {
+    boolean bootstrapCommand(String[] parameters
+    ) {
         message = "";
         Settings settings = Settings.getInstance();
 
@@ -296,7 +299,7 @@ public class CommandProcessor {
                     settings.setSettingNoWrite("user", components[5]);
                     settings.setSetting("password", components[6]);
                     BatteryManager.getInstance().reboot();
-                    return true;                    
+                    return true;
                 }
             }
         }
@@ -304,7 +307,8 @@ public class CommandProcessor {
         return false;
     }
 
-    boolean offCommand(String[] parameters) {
+    boolean offCommand(String[] parameters
+    ) {
         message = "";
         if (parameters.length == 2) {
             int min;
@@ -315,14 +319,7 @@ public class CommandProcessor {
                 min = -1;
             }
 
-            if (min >= 0) {
-                if (min == 0) {
-                    Settings.getInstance().setSetting("offUntil", null);
-                } else {
-                    Date now = new Date();
-                    Date until = new Date(now.getTime() + min * 60L * 1000L);
-                    Settings.getInstance().setSetting("offUntil", Long.toString(until.getTime() / 1000));
-                }
+            if (AppMain.getInstance().offUntil(min)) {
                 return true;
             }
         }
@@ -330,27 +327,31 @@ public class CommandProcessor {
         return false;
     }
 
-    boolean stateCommand(String[] parameters) {
+    boolean stateCommand(String[] parameters
+    ) {
         message = "NUMSAT=" + LocationManager.getInstance().getNumSat() + CRLF;
         message = message.concat("BEARER=" + Bearer.getInstance().getBearerState() + CRLF);
         message = message.concat("GPRS=" + (Bearer.getInstance().isGprsOn() ? 1 : 0) + CRLF);
-        message = message.concat("BATT=" + BatteryManager.getInstance().getBatteryVoltageString() + CRLF);
-        message = message.concat("EXTV=" + BatteryManager.getInstance().getExternalVoltageString() + CRLF);
-        
+
         SocketGPRSThread s = SocketGPRSThread.getInstance();
         message = message.concat("QSIZE=" + s.qSize() + CRLF);
         message = message.concat("CONN=" + (s.isConnected() ? 1 : 0) + CRLF);
         message = message.concat("NETW=" + (s.isNetwork() ? 1 : 0) + CRLF);
-        message = message.concat("CELL=" + s.getCellInfo() + CRLF);
-        message = message.concat("QUAL=" + s.rssi + "," + s.ber + CRLF);        
-        message = message.concat("OPER=" + s.getOperatorList() + CRLF);
-        
+        message = message.concat("QUAL=" + s.rssi + "," + s.ber + CRLF);
+        if (!AppMain.getInstance().isOff()) {
+            message = message.concat("CELL=" + s.getCellInfo() + CRLF);
+            message = message.concat("OPER=" + s.getOperatorList() + CRLF);
+            message = message.concat("BATT=" + BatteryManager.getInstance().getBatteryVoltageString() + CRLF);
+            message = message.concat("EXTV=" + BatteryManager.getInstance().getExternalVoltageString() + CRLF);
+        }
+
         message = message.concat("WAKEUP=" + AppMain.getInstance().wakeupMode + CRLF);
         message = message.concat("DATE=" + DateFormatter.isoString(new Date()) + CRLF);
         return true;
     }
 
-    boolean deviceCommand(String[] parameters) {
+    boolean deviceCommand(String[] parameters
+    ) {
         message = "uFW=" + MicroManager.getInstance().getRelease()
                 + "," + MicroManager.getInstance().getBootRelease()
                 + "," + MicroManager.getInstance().getJavaRelease() + CRLF;
@@ -361,7 +362,8 @@ public class CommandProcessor {
         return true;
     }
 
-    boolean logCommand(String[] parameters) {
+    boolean logCommand(String[] parameters
+    ) {
         if (parameters.length == 1) {
             message = SLog.readCurrentLog().toString();
             return true;
@@ -382,7 +384,8 @@ public class CommandProcessor {
         }
     }
 
-    boolean execCommand(String[] parameters) {
+    boolean execCommand(String[] parameters
+    ) {
         String response;
         if (parameters.length == 2) {
             response = ATManager.getInstance().executeCommandSynchron(parameters[1] + "\r");
