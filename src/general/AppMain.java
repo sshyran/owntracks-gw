@@ -113,6 +113,7 @@ public class AppMain extends MIDlet {
             ATManager.getInstance().executeCommandSynchron("AT^SCKS=1\r");
 
             BatteryManager.getInstance();
+            SensorManager.getInstance();
             GPIOManager.getInstance();
 
             setWakeupMode();

@@ -265,6 +265,22 @@
       default: see above
       desc: Topic for MQTT Last Will and Testament
 
+- Sensors:
+  - block: |
+           The SensorManager is responsible for monitoring and publishing sensor values.
+	   Currently 2 temperature sensors are supported. 
+
+  - temperatureInterval:
+      values: "0-...", typical value 60 (seconds)
+      validity: reboot
+      default: "0"
+      desc: Interval for requesting new sensor values in seconds. 0 means, no monitoring
+  - dTemperature:
+      values: "0-..."
+      validity: immediate
+      default: "1"
+      desc: threshold for temperature updates in 0.01 degrees Celsius. E.g. if set to 10, changes in temperature will only be published if the difference to the last published value is > 0.1 degrees Celsius.
+
 - LocationManager:
   - block: |
            The LocationManager is responsible for determining when to publish
