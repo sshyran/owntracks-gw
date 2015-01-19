@@ -46,6 +46,16 @@ owntracks/gw/C1/voltage/batt 4.4
 owntracks/gw/C1/voltage/ext 12.2
 ```
 
+### `../temperature`
+
+Temperature sensors `0` and `1` readings in degrees Celsius with 2 decimals are published to `../voltage/\[01\]` when temperature changes "significantly"
+(defined in [Settings](README_Settings.md)).
+
+```
+owntracks/gw/C1/temperature/0 4.41
+owntracks/gw/C1/temperature/1 24.82
+```
+
 ### `../operators` and `../cellinfo`
 
 The current operator, allowed other operators, forbidden operators and unknown operators (all in MCC + MNC numeric format)
