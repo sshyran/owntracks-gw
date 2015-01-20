@@ -11,7 +11,7 @@ import java.util.TimerTask;
 
 /**
  *
- * @author christoph
+ * @author Christoph Krey <krey.christoph@gmail.com>
  */
 public class GPIO6WatchDogTask extends TimerTask {
 
@@ -47,7 +47,7 @@ public class GPIO6WatchDogTask extends TimerTask {
             GPRSRunning = false;
 
             GPIOManager.getInstance().setGPIO(5, gpio6On);
-            
+
             gpio6On = !gpio6On;
 
             SLog.log(SLog.Debug, "GPIO6WatchDogTask", "gpio6 " + gpio6On);

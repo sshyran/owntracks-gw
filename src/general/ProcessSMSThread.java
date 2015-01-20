@@ -1,8 +1,8 @@
-/*	
+/*
  * Class 	ProcessSMSThread
- * 
+ *
  * This software is developed for Choral devices with Java.
- * Copyright Choral srl. All Rights reserved. 
+ * Copyright Choral srl. All Rights reserved.
  */
 package general;
 
@@ -11,6 +11,8 @@ package general;
  *
  * @version	1.04 <BR> <i>Last update</i>: 14-12-2007
  * @author alessioza
+ * @author Christoph Krey <krey.christoph@gmail.com>
+ *
  *
  */
 public class ProcessSMSThread extends Thread {
@@ -162,7 +164,7 @@ public class ProcessSMSThread extends Thread {
                 SLog.log(SLog.Debug, "ProcessSMSThread", "response (" + response.length() + "): " + response);
 
                 if (response.length() > 0) {
-                    // max length SMS 140/160 
+                    // max length SMS 140/160
                     if (response.length() > 140) {
                         response = response.substring(0, 140);
                     }

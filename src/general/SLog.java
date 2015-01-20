@@ -1,8 +1,8 @@
-/*	
+/*
  * Class 	SLog
- * 
+ *
  * This software is developed for Choral devices with Java.
- * Copyright Choral srl. All Rights reserved. 
+ * Copyright Choral srl. All Rights reserved.
  */
 package general;
 
@@ -16,12 +16,13 @@ import com.cinterion.io.file.FileConnection;
  *
  * @version	1.06 <BR> <i>Last update</i>: 07-05-2008
  * @author matteobo
+ * @author Christoph Krey <krey.christoph@gmail.com>
  *
  */
 public class SLog {
-    
+
     private static final String level = "PACEWNID";
-    
+
     public static final String Emergency = "P";
     public static final String Alert = "A";
     public static final String Critical = "C";
@@ -30,14 +31,14 @@ public class SLog {
     public static final String Notice = "N";
     public static final String Informational = "I";
     public static final String Debug = "D";
-    
+
     private static final String url = "file:///a:/log/";
     private static final String fileLog = "log.txt";
     private static final String fileOLD = "logOLD.txt";
     private static final int maxSize = 20000;
 
     private static boolean free = true;
-    
+
     public static void log(String priority, String component, String error) {
         if (priority.equals(Debug)) {
             String[] fields = StringFunc.split(Settings.getInstance().getSetting("dbgComp", "none"), ",");
@@ -47,7 +48,7 @@ public class SLog {
                 }
             }
         }
-        
+
         String stderrLogLevel = Settings.getInstance().getSetting("stderrLogLevel", "D");
         if (level.indexOf(priority) <= level.indexOf(stderrLogLevel)) {
             System.err.println(DateFormatter.isoString(new Date())
@@ -57,7 +58,7 @@ public class SLog {
             );
             System.err.flush();
         }
-        
+
         String fileLogLevel = Settings.getInstance().getSetting("fileLogLevel", "E");
         if (level.indexOf(priority) <= level.indexOf(fileLogLevel)) {
             getLogSemaphore();
@@ -67,7 +68,7 @@ public class SLog {
                     + " " + error);
             freeLogSemaphore();
         }
-        
+
         String topicLogLevel = Settings.getInstance().getSetting("topicLogLevel", "E");
         if (level.indexOf(priority) <= level.indexOf(topicLogLevel)) {
             SocketGPRSThread.getInstance().put(
@@ -137,14 +138,15 @@ public class SLog {
         freeLogSemaphore();
         return buffer;
     }
-    
+
     public static StringBuffer readCurrentLog() {
         return readLog(url + fileLog);
     }
+
     public static StringBuffer readOldLog() {
         return readLog(url + fileOLD);
     }
-    
+
     public static void deleteLog() {
         getLogSemaphore();
 
@@ -174,6 +176,5 @@ public class SLog {
     private synchronized static void freeLogSemaphore() {
         free = true;
     }
-
 
 }

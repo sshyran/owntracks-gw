@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package general;
 
 import com.cinterion.io.BearerControlListener;
@@ -11,24 +10,24 @@ import com.m2mgo.util.GPRSConnectOptions;
 
 /**
  *
- * @author christoph
+ * @author Christoph Krey <krey.christoph@gmail.com>
  */
 public class Bearer implements BearerControlListener {
-    
+
     private int bearerState;
     private boolean gprsOn;
-    
+
     private Bearer() {
         GPRSConnectOptions.getConnectOptions().setAPN(Settings.getInstance().getSetting("apn", "internet"));
         GPRSConnectOptions.getConnectOptions().setBearerType("gprs");
         GPRSConnectOptions.getConnectOptions().setUser(Settings.getInstance().getSetting("apnUser", ""));
         GPRSConnectOptions.getConnectOptions().setPasswd(Settings.getInstance().getSetting("apnPassword", ""));
     }
-    
+
     public static Bearer getInstance() {
         return BearerHolder.INSTANCE;
     }
-    
+
     private static class BearerHolder {
 
         private static final Bearer INSTANCE = new Bearer();

@@ -6,7 +6,7 @@ import javax.microedition.midlet.MIDletStateChangeException;
 
 /**
  *
- * @author christoph krey
+ * @author Christoph Krey <krey.christoph@gmail.com>
  */
 public class CommandProcessor {
 

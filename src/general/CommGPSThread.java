@@ -1,8 +1,8 @@
-/*	
+/*
  * Class 	CommGPSThread
- * 
+ *
  * This software is developed for Choral devices with Java.
- * Copyright Choral srl. All Rights reserved. 
+ * Copyright Choral srl. All Rights reserved.
  */
 package general;
 
@@ -17,6 +17,7 @@ import javax.microedition.io.*;
  *
  * @version	1.00 <BR> <i>Last update</i>: 14-08-2008
  * @author matteoBo
+ * @author Christoph Krey <krey.christoph@gmail.com>
  *
  */
 public class CommGPSThread extends Thread {
@@ -104,7 +105,7 @@ public class CommGPSThread extends Thread {
     private void init_GPS(OutputStream outData) throws IOException {
 
         /* Delete GPS trasparent messages that are not use for application */
-        // Byte array with code for output time 
+        // Byte array with code for output time
         outData.write(0xFF);
         outData.write(0xFF);
         outData.write(0xFF);

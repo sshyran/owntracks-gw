@@ -16,7 +16,7 @@ import org.json.me.JSONArray;
 
 /**
  *
- * @author christoph
+ * @author Christoph Krey <krey.christoph@gmail.com>
  */
 public class VersionChecker {
 

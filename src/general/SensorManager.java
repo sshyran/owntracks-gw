@@ -1,7 +1,11 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (c) 2014-2015 OwnTracks.de
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ *      OwnTracks.de Christoph Krey <krey.christoph@gmail.com> - initial API and implementation and/or initial documentation
  */
 package general;
 
@@ -10,9 +14,24 @@ import java.util.TimerTask;
 
 /**
  *
- * @author christoph
+ * @author Christoph Krey <krey.christoph@gmail.com>
  */
 public class SensorManager {
+
+    /**
+     * Returns the singleton object for managing sensors. It instanciates or
+     * returns the existing SensorManager object and starts the monitoring
+     * activities.
+     *
+     * @return the <code>SensorManager</code> object.
+     */
+    public static SensorManager getInstance() {
+        return PowerManagerHolder.INSTANCE;
+    }
+
+    private static double temperature(int voltage) {
+        return (voltage / 10.0 / 0.184) - 273.0;
+    }
 
     private final int NUMTEMPERATURES = 2;
     final private double temperatures[] = new double[NUMTEMPERATURES];
@@ -20,6 +39,9 @@ public class SensorManager {
     private final Timer timer;
     private final TimerTask timerTask;
 
+    /**
+     * Don't let anyone else instantiate this class
+     */
     private SensorManager() {
         for (int i = 0; i < NUMTEMPERATURES; i++) {
             temperatures[i] = temperature(32767);
@@ -33,23 +55,21 @@ public class SensorManager {
         }
     }
 
-    public static SensorManager getInstance() {
-        return PowerManagerHolder.INSTANCE;
+    /**
+     * convert a temperature to a temperature string
+     *
+     * @param temperature
+     * @return String representation of temperature with 2 decimals
+     */
+    public String temperatureString(double temperature) {
+        return "" + (int) Math.floor(temperature)
+                + "." + (int) (Math.floor(Math.abs(temperature) * 10)) % 10
+                + (int) (Math.floor(Math.abs(temperature) * 100)) % 10;
     }
 
     private static class PowerManagerHolder {
 
         private static final SensorManager INSTANCE = new SensorManager();
-    }
-
-    private static double temperature(int voltage) {
-        return (voltage / 10.0 / 0.184) - 273.0;
-    }
-
-    String temperatureString(double temperature) {
-        return "" + (int) Math.floor(temperature)
-                + "." + (int) (Math.floor(temperature * 10)) % 10
-                + (int) (Math.floor(temperature * 100)) % 10;
     }
 
     class TemperatureRequestTimerTask extends TimerTask {

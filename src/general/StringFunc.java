@@ -4,10 +4,10 @@ import java.util.Vector;
 
 /**
  *
- * @author christoph krey
+ * @author Christoph Krey <krey.christoph@gmail.com>
  */
 public class StringFunc {
-    
+
     public static String[] split(String original, String separator) {
         Vector nodes = new Vector();
         int index = original.indexOf(separator);
@@ -26,7 +26,7 @@ public class StringFunc {
         }
         return result;
     }
-    
+
     public static boolean isInStringArray(String string, String[] stringArray) {
         for (int i = 0; i < stringArray.length; i++) {
             if (string.equalsIgnoreCase(stringArray[i])) {
@@ -35,7 +35,7 @@ public class StringFunc {
         }
         return false;
     }
-    
+
     public static String toHexString(int[] ints) {
         String string = "";
         for (int i = 0; i < ints.length; i++) {
@@ -51,7 +51,7 @@ public class StringFunc {
     public static String toHexString(byte[] bytes) {
         String string = "";
         for (int i = 0; i < bytes.length; i++) {
-            String hex = Integer.toHexString(((int)bytes[i]) & 0xFF);
+            String hex = Integer.toHexString(((int) bytes[i]) & 0xFF);
             if (hex.length() < 2) {
                 hex = "0" + hex;
             }
@@ -85,6 +85,5 @@ public class StringFunc {
         } while (indexOldString >= 0);
         return intermediateString;
     }
-
 
 }

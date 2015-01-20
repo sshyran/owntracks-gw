@@ -1,14 +1,15 @@
-/*	
+/*
  * Class 	CommASC0Thread
- * 
+ *
  * This software is developed for Choral devices with Java.
- * Copyright Choral srl. All Rights reserved. 
+ * Copyright Choral srl. All Rights reserved.
  */
 package general;
 
 /**
  * @version	1.07 <BR> <i>Last update</i>: 04-08-2008
  * @author matteobo
+ * @author Christoph Krey <krey.christoph@gmail.com>
  *
  */
 import java.io.IOException;

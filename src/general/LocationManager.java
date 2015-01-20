@@ -8,7 +8,7 @@ import java.io.IOException;
 
 /**
  *
- * @author christoph krey
+ * @author Christoph Krey <krey.christoph@gmail.com>
  */
 public class LocationManager {
 

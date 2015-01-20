@@ -12,7 +12,7 @@ import java.io.IOException;
 
 /**
  *
- * @author christoph krey
+ * @author Christoph Krey <krey.christoph@gmail.com>
  */
 public class MicroManager implements MovListener {
 
@@ -115,7 +115,7 @@ public class MicroManager implements MovListener {
     public String getJavaRelease() {
         return javaRelease;
     }
-    
+
     public boolean isAdvanced() {
         return release.startsWith("02");
     }

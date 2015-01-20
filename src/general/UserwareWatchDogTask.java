@@ -12,7 +12,7 @@ import java.util.TimerTask;
 
 /**
  *
- * @author christoph
+ * @author Christoph Krey <krey.christoph@gmail.com>
  */
 public class UserwareWatchDogTask extends TimerTask {
 

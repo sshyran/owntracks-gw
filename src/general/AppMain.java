@@ -1,7 +1,7 @@
 /* Class 	AppMain
- * 
+ *
  * This software is developed for Choral devices with Java
- * Copyright Choral srl. All Rights reserved. 
+ * Copyright Choral srl. All Rights reserved.
  */
 package general;
 
@@ -18,6 +18,8 @@ import javax.microedition.midlet.*;
  *
  * @version	1.00 <BR> <i>Last update</i>: 28-05-2008
  * @author matteobo
+ *
+ * @author Christoph Krey <krey.christoph@gmail.com>
  */
 public class AppMain extends MIDlet {
 

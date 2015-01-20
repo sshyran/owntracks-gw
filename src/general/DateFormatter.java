@@ -10,10 +10,10 @@ import java.util.Date;
 
 /**
  *
- * @author christoph
+ * @author Christoph Krey <krey.christoph@gmail.com>
  */
 public class DateFormatter {
-    
+
     public static Date parse(String DDMMYY, String HHMMSS) {
         long timeStamp = 0;
 
@@ -76,7 +76,7 @@ public class DateFormatter {
         }
         return new Date(timeStamp * 1000L);
     }
-    
+
     public static String atString(Date date) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
@@ -96,7 +96,7 @@ public class DateFormatter {
         cal.setTime(date);
 
         int year = cal.get(Calendar.YEAR);
-        String s = ((year < 0) ? "-" : "") 
+        String s = ((year < 0) ? "-" : "")
                 + leadingZeroes(Math.abs(cal.get(Calendar.YEAR)), 4)
                 + leadingZeroes(cal.get(Calendar.MONTH) + 1, 2)
                 + leadingZeroes(cal.get(Calendar.DAY_OF_MONTH), 2)
@@ -123,7 +123,7 @@ public class DateFormatter {
         cal.setTime(date);
 
         int year = cal.get(Calendar.YEAR);
-        String s = ((year < 0) ? "-" : "") 
+        String s = ((year < 0) ? "-" : "")
                 + leadingZeroes(Math.abs(cal.get(Calendar.YEAR)), 4)
                 + "-" + leadingZeroes(cal.get(Calendar.MONTH) + 1, 2)
                 + "-" + leadingZeroes(cal.get(Calendar.DAY_OF_MONTH), 2);

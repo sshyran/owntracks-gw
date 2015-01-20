@@ -11,7 +11,7 @@ import java.util.Hashtable;
 
 /**
  *
- * @author christoph
+ * @author Christoph Krey <krey.christoph@gmail.com>
  */
 public class CanManagerThread extends Thread {
 

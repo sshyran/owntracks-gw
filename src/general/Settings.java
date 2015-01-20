@@ -12,7 +12,7 @@ import com.cinterion.io.file.FileConnection;
 
 /**
  *
- * @author christoph krey
+ * @author Christoph Krey <krey.christoph@gmail.com>
  */
 public class Settings {
 
@@ -126,7 +126,7 @@ public class Settings {
                     fconn.close();
                     fconn = (FileConnection) Connector.open(filePath + fileName);
                     fconn.create();
-                } else {    
+                } else {
                     fconn.rename(fileName);
                     fconn.close();
                     fconn = (FileConnection) Connector.open(filePath + fileName);
