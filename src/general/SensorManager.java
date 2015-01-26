@@ -34,7 +34,7 @@ public class SensorManager {
     }
 
     private final int NUMTEMPERATURES = 2;
-    final private double temperatures[] = new double[NUMTEMPERATURES];
+    final double temperatures[] = new double[NUMTEMPERATURES];
 
     private final Timer timer;
     private final TimerTask timerTask;
