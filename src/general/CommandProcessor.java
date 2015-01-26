@@ -10,6 +10,10 @@ import javax.microedition.midlet.MIDletStateChangeException;
  */
 public class CommandProcessor {
 
+    public static CommandProcessor getInstance() {
+        return CommandProcessorHolder.INSTANCE;
+    }
+
     private final String login = "login";
     private final String logout = "logout";
     private final String gps = "gps";
@@ -52,15 +56,6 @@ public class CommandProcessor {
     public String message = null;
 
     private CommandProcessor() {
-    }
-
-    public static CommandProcessor getInstance() {
-        return CommandProcessorHolder.INSTANCE;
-    }
-
-    private static class CommandProcessorHolder {
-
-        private static final CommandProcessor INSTANCE = new CommandProcessor();
     }
 
     public synchronized boolean execute(String commandLine, boolean ignoreAuthorization) {
@@ -198,8 +193,7 @@ public class CommandProcessor {
         }
     }
 
-    boolean setCommand(String[] parameters
-    ) {
+    boolean setCommand(String[] parameters) {
         message = "";
         Settings settings = Settings.getInstance();
         if (parameters.length == 1) {
@@ -236,8 +230,7 @@ public class CommandProcessor {
         return false;
     }
 
-    boolean outCommand(String[] parameters
-    ) {
+    boolean outCommand(String[] parameters) {
         message = "";
         if (parameters.length == 3) {
             int num;
@@ -282,8 +275,7 @@ public class CommandProcessor {
         return false;
     }
 
-    boolean bootstrapCommand(String[] parameters
-    ) {
+    boolean bootstrapCommand(String[] parameters) {
         message = "";
         Settings settings = Settings.getInstance();
 
@@ -307,8 +299,7 @@ public class CommandProcessor {
         return false;
     }
 
-    boolean offCommand(String[] parameters
-    ) {
+    boolean offCommand(String[] parameters) {
         message = "";
         if (parameters.length == 2) {
             int min;
@@ -327,8 +318,7 @@ public class CommandProcessor {
         return false;
     }
 
-    boolean stateCommand(String[] parameters
-    ) {
+    boolean stateCommand(String[] parameters) {
         message = "NUMSAT=" + LocationManager.getInstance().getNumSat() + CRLF;
         message = message.concat("BEARER=" + Bearer.getInstance().getBearerState() + CRLF);
         message = message.concat("GPRS=" + (Bearer.getInstance().isGprsOn() ? 1 : 0) + CRLF);
@@ -343,6 +333,10 @@ public class CommandProcessor {
             message = message.concat("OPER=" + s.getOperatorList() + CRLF);
             message = message.concat("BATT=" + BatteryManager.getInstance().getBatteryVoltageString() + CRLF);
             message = message.concat("EXTV=" + BatteryManager.getInstance().getExternalVoltageString() + CRLF);
+
+            SensorManager sensors = SensorManager.getInstance();
+            message = message.concat("TEMP0=" + sensors.temperatureString(sensors.temperatures[0]) + CRLF);
+            message = message.concat("TEMP1=" + sensors.temperatureString(sensors.temperatures[1]) + CRLF);
         }
 
         message = message.concat("WAKEUP=" + AppMain.getInstance().wakeupMode + CRLF);
@@ -350,8 +344,7 @@ public class CommandProcessor {
         return true;
     }
 
-    boolean deviceCommand(String[] parameters
-    ) {
+    boolean deviceCommand(String[] parameters) {
         message = "uFW=" + MicroManager.getInstance().getRelease()
                 + "," + MicroManager.getInstance().getBootRelease()
                 + "," + MicroManager.getInstance().getJavaRelease() + CRLF;
@@ -362,8 +355,7 @@ public class CommandProcessor {
         return true;
     }
 
-    boolean logCommand(String[] parameters
-    ) {
+    boolean logCommand(String[] parameters) {
         if (parameters.length == 1) {
             message = SLog.readCurrentLog().toString();
             return true;
@@ -384,8 +376,7 @@ public class CommandProcessor {
         }
     }
 
-    boolean execCommand(String[] parameters
-    ) {
+    boolean execCommand(String[] parameters) {
         String response;
         if (parameters.length == 2) {
             response = ATManager.getInstance().executeCommandSynchron(parameters[1] + "\r");
@@ -399,5 +390,10 @@ public class CommandProcessor {
             message = "usage " + exec + " at-cmd";
             return false;
         }
+    }
+
+    private static class CommandProcessorHolder {
+
+        private static final CommandProcessor INSTANCE = new CommandProcessor();
     }
 }

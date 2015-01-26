@@ -428,12 +428,35 @@ public class CanManagerThread extends Thread {
         try {
             Can can;
             can = new Can();
+            can.canOff();
             can.deleteAllAddress();
             can.deleteStandardData();
-            can.setCan("STD", 250, "STD", "SILENT");
+            can.setCan(
+                    Settings.getInstance().getSetting("fmsMode", "EXT"),
+                    Settings.getInstance().getSetting("fmsSpeed", 250),
+                    Settings.getInstance().getSetting("fmsType", "FMS"),
+                    Settings.getInstance().getSetting("fmsState", "SILENT")
+            );
 
             String fmsAddresses1 = Settings.getInstance().getSetting("fmsAddresses1",
-                    "0000feec,0000fdd1,0000fe6b,0000fe70,0000feea,0000fec0,0000fee6,0000fed5,0000fee9,0000fefc,0000fee5,0000fec1,0000feee,0000fef5,0000feae,0000fd09,0000fe56,0000fd7d");
+                    "18feec00,"
+                    + "18fdd100,"
+                    + "18fe6b00,"
+                    + "18fe7000,"
+                    + "18feea00,"
+                    + "18fec000,"
+                    + "18fee600,"
+                    + "18fed500,"
+                    + "18fee900,"
+                    + "18fefc00,"
+                    + "18fee500,"
+                    + "18fec100,"
+                    + "18feee00,"
+                    + "18fef500,"
+                    + "18feae00,"
+                    + "18fd0900,"
+                    + "18fe5600,"
+                    + "18fd7d00");
             String[] addresses1 = StringFunc.split(fmsAddresses1, ",");
             for (int i = 0; i < addresses1.length; i++) {
                 SLog.log(SLog.Debug, "CanRaw", "setAddress " + addresses1[i]);
@@ -442,11 +465,12 @@ public class CanManagerThread extends Thread {
 
             can.canOn();
             SLog.log(SLog.Debug, "CanRaw", "InfrequentWatch" + StringFunc.toHexString(can.getWatchList()));
-            int loops = 10;
+
+            int loops = Settings.getInstance().getSetting("fmsLoops1", 10);
             while (loops-- > 0) {
                 canRaw(can);
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(10);
                 } catch (InterruptedException ie) {
                     //
                 }
@@ -454,11 +478,29 @@ public class CanManagerThread extends Thread {
             can.canOff();
 
             can = new Can();
+            can.canOff();
             can.deleteAllAddress();
             can.deleteStandardData();
-            can.setCan("STD", 250, "STD", "SILENT");
+            can.setCan(
+                    Settings.getInstance().getSetting("fmsMode", "EXT"),
+                    Settings.getInstance().getSetting("fmsSpeed", 250),
+                    Settings.getInstance().getSetting("fmsType", "FMS"),
+                    Settings.getInstance().getSetting("fmsState", "SILENT")
+            );
             String fmsAddresses2 = Settings.getInstance().getSetting("fmsAddresses2",
-                    "0000f004,0000fe6c,0000fef2,0000fef1,0000f003,0000f000,0000fe4e,0000fda5,0000fda4,0000f005,0000fe58,0000ecff,0000ebff");
+                    "18f00400,"
+                    + "18fe6c00,"
+                    + "18fef200,"
+                    + "18fef100,"
+                    + "18f00300,"
+                    + "18f00000,"
+                    + "18fe4e00,"
+                    + "18fda500,"
+                    + "18fda400,"
+                    + "18f00500,"
+                    + "18fe5800,"
+                    + "18ecff00,"
+                    + "18ebff00");
             String[] addresses2 = StringFunc.split(fmsAddresses2, ",");
             for (int i = 0; i < addresses2.length; i++) {
                 SLog.log(SLog.Debug, "CanRaw", "setAddress " + addresses2[i]);
@@ -468,7 +510,7 @@ public class CanManagerThread extends Thread {
             can.canOn();
             SLog.log(SLog.Debug, "CanRaw", "FrequentWatch" + StringFunc.toHexString(can.getWatchList()));
 
-            loops = Settings.getInstance().getSetting("fmsLoops", 1000);
+            loops = Settings.getInstance().getSetting("fmsLoops2", 10);
             while (loops-- > 0) {
                 canRaw(can);
                 try {
@@ -499,7 +541,7 @@ public class CanManagerThread extends Thread {
                     int[] truncated = new int[5 + 7];
                     System.arraycopy(bytes, D, truncated, 0, truncated.length);
                     String hexString = StringFunc.toHexString(truncated);
-                    SLog.log(SLog.Debug, "CanRaw", "recv= " + hexString.substring(0, 8)
+                    SLog.log(SLog.Debug, "CanLow", "recv= " + hexString.substring(0, 8)
                             + " " + hexString.substring(8, 10)
                             + " " + hexString.substring(10)
                     );
@@ -527,7 +569,15 @@ public class CanManagerThread extends Thread {
         try {
             Can can;
             can = new Can();
-            can.setCan("EXT", 250, "FMS", "SILENT");
+            can.canOff();
+            can.deleteAllAddress();
+            can.deleteStandardData();
+            can.setCan(
+                    Settings.getInstance().getSetting("fmsMode", "EXT"),
+                    Settings.getInstance().getSetting("fmsSpeed", 250),
+                    Settings.getInstance().getSetting("fmsType", "FMS"),
+                    Settings.getInstance().getSetting("fmsState", "SILENT")
+            );
             can.canOn();
 
             int loops = Settings.getInstance().getSetting("fmsLoops", 1);
@@ -567,7 +617,7 @@ public class CanManagerThread extends Thread {
 
                 cacheAndPut("/fms/data/totalfuel", fmsString.substring(54, 62));
                 cacheAndPut("/fms/data/fuellevel", fmsString.substring(62, 64));
-                cacheAndPut("/fms/data/axesweight", fmsString.substring(64, 74));
+                cacheAndPut("/fms/data/axlesweight", fmsString.substring(64, 74));
                 cacheAndPut("/fms/data/enginehours", fmsString.substring(74, 82));
                 cacheAndPut("/fms/data/totaldist", fmsString.substring(82, 90));
                 cacheAndPut("/fms/data/coolingtemp", fmsString.substring(90, 92));
