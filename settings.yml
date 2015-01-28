@@ -128,8 +128,29 @@
   - fmsLoops:
       values: 1... 
       validity: immediate
-      default: 1
+      default: 30
       desc: sets the number of consecutive FMS data reads before closing the interface
+  - fmsIdle:
+      values: 1... 
+      validity: immediate
+      default: 60
+      desc: the idle interval between data reads in s 
+  - fmsSpeed:
+      values: "25|125|250|500|1000"
+      validity: immediate
+      default: "250"
+      desc: Can Bus baud rates in kbps
+  - fmsMode:
+      values: "STD|EXT"
+      validity: immediate
+      default: "EXT"
+      desc: Can bus modes STD=11 bit, EXT= 29 bit (restricting the number of modes up the data collection cycle)
+  - fmsState:
+      values: "ACTIVE|SILENT"
+      validity: immediate
+      default: "SILENT"
+      desc: Can bus handling
+
   - obd2Interval:
       values: 0,1...
       validity: immediate
