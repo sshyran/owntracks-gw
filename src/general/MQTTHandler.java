@@ -139,7 +139,7 @@ public class MQTTHandler implements MqttCallback {
             message.setQos(qos);
             message.setRetained(retained);
             MqttDeliveryToken token;
-            
+
             try {
                 SLog.log(SLog.Debug, "MQTTHandler", "publish " + StringFunc.toHexString(payload));
                 token = topic.publish(message);
@@ -192,6 +192,19 @@ public class MQTTHandler implements MqttCallback {
         }
     }
 
+    public synchronized void unsubscribe(String topicName) {
+        SLog.log(SLog.Debug, "MQTTHandler", "unsubscribe " + topicName);
+        if (client != null && client.isConnected()) {
+            try {
+                client.unsubscribe(topicName);
+            } catch (MqttException e) {
+                SLog.log(SLog.Warning, "MQTTHandler", "unsubscribe: " + e.getReasonCode());
+            }
+        } else {
+            // not connected
+        }
+    }
+
     public synchronized void disconnect() {
         SLog.log(SLog.Debug, "MQTTHandler", "disconnect");
 
@@ -225,22 +238,35 @@ public class MQTTHandler implements MqttCallback {
                 + " q" + message.getQos()
                 + " r" + (message.isRetained() ? "1" : "0")
                 + "\r\n" + new String(message.getPayload()));
-        CommandProcessor commandProcessor = CommandProcessor.getInstance();
-        String response;
-        if (commandProcessor.execute(message.toString(), true)) {
-            response = commandProcessor.message;
-        } else {
-            response = "NACK: " + commandProcessor.message;
-        }
-        
-        if (response.length() > 0) {
-            SLog.log(SLog.Informational, "MQTTHandler", "response(" + response.length() + ") " + response);
-            String[] lines = StringFunc.split(response, "\r\n");
-            for (int i = 0; i < lines.length; i++) {
-                if (lines[i].length() > 0) {
-                    SocketGPRSThread.getInstance().put(topic.getName() + "/out", 0, false, lines[i].getBytes());
+
+        final String proxy = "/proxy/";
+        int proxyIndex = topic.getName().indexOf(proxy);
+
+        if (proxyIndex == -1) {
+
+            CommandProcessor commandProcessor = CommandProcessor.getInstance();
+            String response;
+            if (commandProcessor.execute(message.toString(), true)) {
+                response = commandProcessor.message;
+            } else {
+                response = "NACK: " + commandProcessor.message;
+            }
+
+            if (response.length() > 0) {
+                SLog.log(SLog.Informational, "MQTTHandler", "response(" + response.length() + ") " + response);
+                String[] lines = StringFunc.split(response, "\r\n");
+                for (int i = 0; i < lines.length; i++) {
+                    if (lines[i].length() > 0) {
+                        SocketGPRSThread.getInstance().put(topic.getName() + "/out", 0, false, lines[i].getBytes());
+                    }
                 }
             }
+
+        } else {
+            CommASC0Thread.getInstance().println(
+                    topic.getName().substring(proxyIndex + proxy.length())
+                    + " " + message.toString()
+            );
         }
     }
 

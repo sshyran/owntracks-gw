@@ -53,7 +53,7 @@ public class CommASC0Thread extends Thread {
             }
 
             try {
-                serialOut.write('>');
+                //serialOut.write('>');
 
                 int rx = 0;
                 do {
@@ -90,6 +90,16 @@ public class CommASC0Thread extends Thread {
                 }
             } catch (IOException ioe) {
                 SLog.log(SLog.Error, "CommASC0Thread", "IOException");
+            }
+        }
+    }
+
+    public void println(String s) {
+        if (serialOut != null) {
+            try {
+                serialOut.write(("\r\n< " + s + "\r\n").getBytes());
+            } catch (IOException ioe) {
+                SLog.log(SLog.Error, "CommASC0Thread", "IOException print");
             }
         }
     }

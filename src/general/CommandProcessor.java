@@ -33,6 +33,11 @@ public class CommandProcessor {
     private final String stop = "stop";
     private final String restart = "restart";
 
+    private final String sub = "sub";
+    private final String pub = "pub";
+    private final String unsub = "unsub";
+    private final String mqtt = "mqtt";
+
     private final String[] authorizedCommands = {
         set,
         device,
@@ -47,7 +52,11 @@ public class CommandProcessor {
         exec,
         upgrade,
         stop,
-        restart
+        restart,
+        sub,
+        pub,
+        unsub,
+        mqtt
     };
 
     private final String CRLF = "\r\n";
@@ -162,6 +171,18 @@ public class CommandProcessor {
 
         } else if (command.equalsIgnoreCase(set)) {
             return setCommand(parameters);
+
+        } else if (command.equalsIgnoreCase(sub)) {
+            return subCommand(parameters);
+
+        } else if (command.equalsIgnoreCase(pub)) {
+            return pubCommand(parameters);
+
+        } else if (command.equalsIgnoreCase(unsub)) {
+            return unsubCommand(parameters);
+
+        } else if (command.equalsIgnoreCase(mqtt)) {
+            return mqttCommand(parameters);
 
         } else if (command.equalsIgnoreCase(out)) {
             return outCommand(parameters);
@@ -376,7 +397,99 @@ public class CommandProcessor {
         }
     }
 
-    boolean execCommand(String[] parameters) {
+    boolean subCommand(String[] parameters) {
+        if (parameters.length == 3) {
+            int qos;
+
+            try {
+                qos = Integer.parseInt(parameters[1]);
+            } catch (NumberFormatException nfe) {
+                qos = -1;
+            }
+
+            if (qos >= 0 && qos <= 2) {
+                MQTTHandler.getInstance().subscribe(
+                        Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                        + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                        + "/proxy/"
+                        + parameters[2],
+                        qos);
+                return true;
+            }
+        }
+        message = "usage " + sub + " <qos> <topic>";
+        return false;
+    }
+
+    boolean pubCommand(String[] parameters) {
+        if (parameters.length >= 5) {
+            int qos;
+
+            try {
+                qos = Integer.parseInt(parameters[1]);
+            } catch (NumberFormatException nfe) {
+                qos = -1;
+            }
+
+            int retain;
+
+            try {
+                retain = Integer.parseInt(parameters[3]);
+            } catch (NumberFormatException nfe) {
+                retain = -1;
+            }
+
+            if (qos >= 0 && qos <= 2 && retain >= 0 && retain <= 1) {
+                String payload = "";
+
+                for (int i = 4; i < parameters.length; i++) {
+                    if (payload.length() > 0) {
+                        payload = payload + " ";
+                    }
+                    payload = payload + parameters[i];
+                }
+
+                MQTTHandler.getInstance().publishIfConnected(
+                        Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                        + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                        + "/proxy/"
+                        + parameters[2],
+                        qos,
+                        (retain == 1),
+                        payload.getBytes()
+                );
+                return true;
+            }
+        }
+        message = "usage " + pub + " <qos> <topic> <retain> <message>";
+        return false;
+    }
+
+    boolean unsubCommand(String[] parameters) {
+        if (parameters.length == 2) {
+            MQTTHandler.getInstance().unsubscribe(
+                    Settings.getInstance().getSetting("publish", "owntracks/gw/")
+                    + Settings.getInstance().getSetting("clientID", MicroManager.getInstance().getIMEI())
+                    + "/proxy/"
+                    + parameters[1]
+            );
+            return true;
+        }
+        message = "usage " + unsub + " <topic>";
+        return false;
+    }
+
+    boolean mqttCommand(String[] parameters) {
+        if (parameters.length == 1) {
+            CommASC0Thread.getInstance().println("MQTT " + (MQTTHandler.getInstance().isConnected() ? "1" : "0"));
+            return true;
+        }
+        message = "usage " + mqtt;
+        return false;
+    }
+
+    boolean execCommand(String[] parameters
+    ) {
         String response;
         if (parameters.length == 2) {
             response = ATManager.getInstance().executeCommandSynchron(parameters[1] + "\r");
@@ -389,6 +502,7 @@ public class CommandProcessor {
         } else {
             message = "usage " + exec + " at-cmd";
             return false;
+
         }
     }
 
