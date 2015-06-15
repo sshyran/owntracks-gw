@@ -57,7 +57,7 @@
     auth: true
     desc: |
         Shows or resets log files in persistent memory. `log` shows the current
-        log file, `log old` the previous, and `log delete` resets the log file.
+        log file, `log old` the previous, and `log del` resets the log file.
 
 - destroy:
     params: ""
