@@ -25,10 +25,10 @@
       default: ""
       desc: GPRS access point password (for `apnUser`), required by some providers
   - gprsTimeout:
-      values: 1...
+      values: 0...
       validity: next loop
       default: 600
-      desc: time in seconds after which the system no longer expects GPRS
+      desc: time in seconds after which the system no longer expects GPRS, 0 means no monitoring
   - cellInfo:
       values: 0/1
       validity: cell change
@@ -216,10 +216,10 @@
       default: 60
       desc: MQTT keepalive in seconds
   - mqttTimeout:
-      values: 1-..
+      values: 0-..
       validity: next loop
       default: 600
-      desc: time in seconds after which device no longer expects establishing an MQTT connection.
+      desc: time in seconds after which device no longer expects establishing an MQTT connection, 0 means no monitoring.
   - port:
       values: 1-..
       validity: reboot
@@ -378,10 +378,10 @@
       default: "3600"
       desc: Mininum time in seconds before publish in _stationary_ (park) mode
   - fixTimeout:
-      values: "1-..."
+      values: "0-..."
       validity: immediate
       default: "600"
-      desc: Time in seconds after which the device no longer expects a GPS fix.
+      desc: Time in seconds after which the device no longer expects a GPS fix, 0 means no monitoring
   - offUntil:
       values: "0,1-..."
       validity: immediate
