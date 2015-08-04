@@ -1,8 +1,8 @@
-/*	
+/*
  * Class 	SocketGPRSThread
- * 
+ *
  * This software is developed for Choral devices with Java.
- * Copyright Choral srl. All Rights reserved. 
+ * Copyright Choral srl. All Rights reserved.
  */
 package general;
 
@@ -109,24 +109,29 @@ public class SocketGPRSThread extends Thread {
     private synchronized void startTimeoutTimer() {
         stopTimeoutTimer();
 
-        GPRSTimeoutTimer = new Timer();
-        GPRSTimeoutTimerTask = new GPRSTimeout();
-        GPRSTimeoutTimer.schedule(GPRSTimeoutTimerTask,
-                Settings.getInstance().getSetting("gprsTimeout", 600) * 1000);
-
-        MQTTTimeoutTimer = new Timer();
-        MQTTTimeoutTimerTask = new MQTTTimeout();
-        MQTTTimeoutTimer.schedule(MQTTTimeoutTimerTask,
-                Settings.getInstance().getSetting("mqttTimeout", 600) * 1000);
-
-        SLog.log(SLog.Debug, "SocketGRPSThread", "start gprsTimeout  & mqttTimeout timer");
+        int gprsTimeout = Settings.getInstance().getSetting("gprsTimeout", 600) * 1000;
+        if (gprsTimeout > 0) {
+            GPRSTimeoutTimer = new Timer();
+            GPRSTimeoutTimerTask = new GPRSTimeout();
+            GPRSTimeoutTimer.schedule(GPRSTimeoutTimerTask, gprsTimeout);
+            SLog.log(SLog.Debug, "SocketGRPSThread", "start gprsTimeout timer");
+        }
+        int mqttTimeout = Settings.getInstance().getSetting("mqttTimeout", 600) * 1000;
+        if (mqttTimeout > 0) {
+            MQTTTimeoutTimer = new Timer();
+            MQTTTimeoutTimerTask = new MQTTTimeout();
+            MQTTTimeoutTimer.schedule(MQTTTimeoutTimerTask, mqttTimeout);
+            SLog.log(SLog.Debug, "SocketGRPSThread", "start mqttTimeout timer");
+        }
     }
 
     private synchronized void stopTimeoutTimer() {
         if (GPRSTimeoutTimer != null) {
+            SLog.log(SLog.Debug, "SocketGRPSThread", "stop gprsTimeout timer");
             GPRSTimeoutTimer.cancel();
         }
         if (MQTTTimeoutTimer != null) {
+            SLog.log(SLog.Debug, "SocketGRPSThread", "stop mqttTimeout timer");
             MQTTTimeoutTimer.cancel();
         }
         GPRSTimeout = false;
@@ -230,6 +235,9 @@ public class SocketGPRSThread extends Thread {
 
         String cgatt;
         do {
+            if (GPRSTimeout || MQTTTimeout) {
+                break;
+            }
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ie) {
@@ -270,6 +278,8 @@ public class SocketGPRSThread extends Thread {
 
     public void run() {
         while (!terminate) {
+            SLog.log(SLog.Debug, "SocketGPRSThread", "running");
+
             AppMain.getInstance().userwareWatchDogTask.GPRSRunning = true;
             AppMain.getInstance().gpio6WatchDogTask.GPRSRunning = true;
 

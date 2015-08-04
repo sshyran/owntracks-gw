@@ -378,6 +378,21 @@ public class AppMain extends MIDlet {
             return true;
         }
 
+        if (SocketGPRSThread.getInstance().isGPRSTimeout()) {
+            SLog.log(SLog.Informational, "AppMain", "GPRSTimeout");
+            return true;
+        }
+
+        if (SocketGPRSThread.getInstance().isMQTTTimeout()) {
+            SLog.log(SLog.Informational, "AppMain", "MQTTTimeout");
+            return true;
+        }
+
+        if (LocationManager.getInstance().isTimeout()) {
+            SLog.log(SLog.Informational, "AppMain", "FixTimeout");
+            return true;
+        }
+
         return false;
     }
 

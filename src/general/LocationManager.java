@@ -80,18 +80,21 @@ public class LocationManager {
 
     private void startTimer() {
         stopTimer();
-        timer = new Timer();
-        timerTask = new FixTimeout();
-        timer.schedule(timerTask, Settings.getInstance().getSetting("fixTimeout", 600) * 1000);
-        SLog.log(SLog.Debug, "LocationManager", "start fixTimeout timer");
+        int fixTimeout = Settings.getInstance().getSetting("fixTimeout", 600) * 1000;
+        if (fixTimeout > 0) {
+            timer = new Timer();
+            timerTask = new FixTimeout();
+            timer.schedule(timerTask, fixTimeout);
+            SLog.log(SLog.Debug, "LocationManager", "start fixTimeout timer");
+        }
     }
 
     private void stopTimer() {
         if (timer != null) {
+            SLog.log(SLog.Debug, "LocationManager", "stop fixTimeout timer");
             timer.cancel();
         }
         timeout = false;
-        SLog.log(SLog.Debug, "LocationManager", "stop fixTimeout timer");
     }
 
     private void setLED(boolean on) {
@@ -185,6 +188,9 @@ public class LocationManager {
                         fix = true;
                         setLED(true);
                         stopTimer();
+                        SLog.log(SLog.Debug, "LocationManager", "set RTC w/ first fix " + DateFormatter.isoString(tempDate));
+                        String rtc = "at+cclk=\"" + DateFormatter.atString(tempDate) + "\"\r";
+                        ATManager.getInstance().executeCommandSynchron(rtc);
                     }
                 }
 
@@ -338,9 +344,6 @@ public class LocationManager {
             calculateIncrementalDistances();
 
             if (lastReportedLocation == null) {
-                SLog.log(SLog.Debug, "LocationManager", "set RTC w/ first fix " + DateFormatter.isoString(date));
-                String rtc = "at+cclk=\"" + DateFormatter.atString(date) + "\"\r";
-                ATManager.getInstance().executeCommandSynchron(rtc);
                 send(getPayloadString("f"));
             } else {
                 boolean transitionMoveToPark = false;
