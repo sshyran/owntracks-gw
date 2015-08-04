@@ -391,7 +391,7 @@
       values: "numeric"
       validity: reboot
       default: "1048576"
-      desc: maximum size of persistent message store in bytes (default = 1 MB). When app starts and no unsent records are in storage, storage is reset.  When storage reaches maxSize and all records are sent, storage is reset while running.  When storage reaches maxSize, new records are not stored anymore
+      desc: maximum size of persistent message store in bytes (default = 1 MB). When app starts and no unsent records are in storage, storage is reset.  When storage reaches maxSize and all records are sent, storage is reset while running.  When storage reaches maxSize, new records are not stored anymore. Do not set to < 1024
   - raw:
       values: 0/1
       validity: immediate
