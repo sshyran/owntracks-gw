@@ -105,35 +105,57 @@ public class SLog {
                 FileConnection fconn1 = (FileConnection) Connector.open(url + fileOLD);
                 if (fconn1.exists()) {
                     fconn1.delete();
-                    fconn1.close();
                 }
+                fconn1.close();
                 fconn.rename(fileOLD);
             }
             fconn.close();
         } catch (IOException ioe) {
-            //
+            System.err.println(DateFormatter.isoString(new Date())
+                    + " " + "E"
+                    + " " + "Log"
+                    + " " + "write IOException " + ioe.toString()
+            );
+            System.err.flush();
         } catch (SecurityException e) {
-            //
+            System.err.println(DateFormatter.isoString(new Date())
+                    + " " + "E"
+                    + " " + "Log"
+                    + " " + "write IOException " + e.toString()
+            );
+            System.err.flush();
         }
     }
 
     private static StringBuffer readLog(String fileName) {
-        StringBuffer buffer = null;
+        StringBuffer buffer = new StringBuffer();
         getLogSemaphore();
 
         try {
             FileConnection fconn = (FileConnection) Connector.open(fileName);
             if (fconn.exists()) {
                 DataInputStream dos = fconn.openDataInputStream();
-                buffer = new StringBuffer();
                 while (dos.available() > 0) {
                     buffer.append((char) dos.read());
                 }
+                dos.close();
             } else {
             }
             fconn.close();
         } catch (IOException ioe) {
+            System.err.println(DateFormatter.isoString(new Date())
+                    + " " + "E"
+                    + " " + "Log"
+                    + " " + "readLog IOException " + ioe.toString()
+            );
+            System.err.flush();
         } catch (SecurityException e) {
+            System.err.println(DateFormatter.isoString(new Date())
+                    + " " + "E"
+                    + " " + "Log"
+                    + " " + "readLog SecurityException " + e.toString()
+            );
+            System.err.flush();
         }
         freeLogSemaphore();
         return buffer;
@@ -151,14 +173,86 @@ public class SLog {
         getLogSemaphore();
 
         try {
-            FileConnection fconn1 = (FileConnection) Connector.open(url + fileLog);
+            FileConnection fconn1 = (FileConnection) Connector.open(url + fileOLD);
+            System.err.println(DateFormatter.isoString(new Date())
+                    + " " + "D"
+                    + " " + "Log"
+                    + " " + "opened " + url + fileOLD
+            );
+            System.err.flush();
             if (fconn1.exists()) {
+                System.err.println(DateFormatter.isoString(new Date())
+                        + " " + "D"
+                        + " " + "Log"
+                        + " " + "exists old"
+                );
+                System.err.flush();
                 fconn1.delete();
+                System.err.println(DateFormatter.isoString(new Date())
+                        + " " + "D"
+                        + " " + "Log"
+                        + " " + "deleted"
+                );
+                System.err.flush();
             }
             fconn1.close();
-        } catch (IOException e) {
 
+            System.err.println(DateFormatter.isoString(new Date())
+                    + " " + "D"
+                    + " " + "Log"
+                    + " " + "old closed"
+            );
+            System.err.flush();
+            System.err.println(DateFormatter.isoString(new Date())
+                    + " " + "D"
+                    + " " + "Log"
+                    + " " + "Connector.open " + url + fileLog
+            );
+            System.err.flush();
+            FileConnection fconn = (FileConnection) Connector.open(url + fileLog);
+            System.err.println(DateFormatter.isoString(new Date())
+                    + " " + "D"
+                    + " " + "Log"
+                    + " " + "opened"
+            );
+            System.err.flush();
+            if (fconn.exists()) {
+                System.err.println(DateFormatter.isoString(new Date())
+                        + " " + "D"
+                        + " " + "Log"
+                        + " " + "exists"
+                );
+                System.err.flush();
+
+                fconn.rename(fileOLD);
+                System.err.println(DateFormatter.isoString(new Date())
+                        + " " + "D"
+                        + " " + "Log"
+                        + " " + "renamed"
+                );
+                System.err.flush();
+            }
+            fconn.close();
+            System.err.println(DateFormatter.isoString(new Date())
+                    + " " + "D"
+                    + " " + "Log"
+                    + " " + "closed"
+            );
+            System.err.flush();
+        } catch (IOException e) {
+            System.err.println(DateFormatter.isoString(new Date())
+                    + " " + "E"
+                    + " " + "Log"
+                    + " " + "deleteLog IOException " + e.toString()
+            );
+            System.err.flush();
         } catch (SecurityException e) {
+            System.err.println(DateFormatter.isoString(new Date())
+                    + " " + "E"
+                    + " " + "Log"
+                    + " " + "deleteLog SecurityException " + e.toString()
+            );
+            System.err.flush();
         }
         freeLogSemaphore();
     }
