@@ -86,7 +86,6 @@ public class Queue {
             if (recordStore.getNumRecords() < 1) { // < 0 should never happen
                 if (recordStore.getSize() + maxRecord > maxSize
                         || maxRecord > recordStore.getSizeAvailable()) {
-                    recordStore.closeRecordStore();
                     shrink(true);
                 }
             } else {
