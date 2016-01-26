@@ -289,10 +289,10 @@
 - Sensors:
   - block: |
            The SensorManager is responsible for monitoring and publishing sensor values.
-	   Currently 2 temperature sensors are supported. 
+           Currently 2 temperature sensors are supported. 
 
   - temperatureInterval:
-      values: "0-...", typical value 60 (seconds)
+      values: "0-..., typical value 60 (seconds)"
       validity: reboot
       default: "0"
       desc: Interval for requesting new sensor values in seconds. 0 means, no monitoring
