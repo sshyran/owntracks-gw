@@ -6,6 +6,6 @@ header-includes:
     - \usepackage{fancyhdr}
     - \pagestyle{fancy}
     - \fancyhead[CO,CE]{OwnTracks}
-    - \fancyfoot[CO,CE]{Choral OwnTracks}
+    - \fancyfoot[CO,CE]{OwnTracks Greenwich}
     - \fancyfoot[LE,RO]{\thepage}
 ---
